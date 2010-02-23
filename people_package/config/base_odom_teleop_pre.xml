@@ -1,0 +1,50 @@
+<launch>
+
+<node pkg="pr2_backup_safety_sound" type="backingup.py" machine="four" />
+
+<!--ps3 joystick -->
+<!-- Start up pairing thing -->
+<node machine="two_root" pkg="ps3joy" output="screen"
+      type="ps3joy.py" name="ps3_connector" />
+
+<!-- PS3 joy node -->
+<node machine="two" respawn="true" pkg="ps3joy"
+      type="ps3_joy_node" name="ps3_joy" >
+  <param name="dev" type="string" value="/dev/sensors/ps3joy" />
+  <param name="deadzone" value="0.12" />
+</node>
+
+<!-- Axes -->
+<param name="axis_vx" value="3" type="int"/>
+<param name="axis_vy" value="2" type="int"/>
+<param name="axis_vw" value="0" type="int"/>
+<param name="axis_pan" value="0" type="int"/>
+<param name="axis_tilt" value="3" type="int"/>
+
+<!-- Base velocities -->
+<param name="max_vw" value="0.8" />
+<param name="max_vx" value="0.5" />
+<param name="max_vy" value="0.5" />
+<param name="max_vw_run" value="1.4" />
+<param name="max_vx_run" value="1.0" />
+<param name="max_vy_run" value="1.0" />
+
+<!-- Head -->
+<param name="max_pan" value="2.7" />
+<param name="max_tilt" value="1.4" />
+<param name="min_tilt" value="-0.4" />
+<param name="tilt_step" value="0.015" />
+<param name="pan_step" value="0.02" />
+
+<!-- Buttons have changed for PS3 controller mapping -->
+<param name="run_button" value="11" type="int" />
+<param name="torso_dn_button" value="14" type="int" />
+<param name="torso_up_button" value="12" type="int" />
+<param name="head_button" value="8" type="int" />
+<param name="deadman_button" value="10" type="int"/>
+
+<node pkg="teleop_pr2" type="teleop_pr2" output="screen" args="--deadman_no_publish">
+  <remap from="head_controller/command" to="JUNK"/>
+</node>
+
+</launch>

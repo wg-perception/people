@@ -1,0 +1,25 @@
+<launch>
+<include file="$(find pr2_machine)/$(env ROBOT).machine" />
+
+<node pkg="mux" type="throttle" args="3.0 /move_base_local/local_costmap/voxel_grid /move_base_local/local_costmap/voxel_grid_throttled" />
+
+<!-- Run the move base translator -->
+<node pkg="move_base_client" type="move_base_translator" name="move_base_local_translator" machine="four">
+  <param name="action_name" value="move_base_local" />
+</node>
+
+<node pkg="move_base" type="move_base" respawn="false" name="move_base_local_node" machine="two" output="screen">
+  <remap from="odom" to="pr2_base_odometry/odom" />
+  <remap from="move_base" to="move_base_local" />
+  <remap from="move_base_simple" to="move_base_local_simple" />
+  <param name="controller_frequency" value="10.0" />
+  <!--param name="base_global_planner" value="CarrotPlanner" /-->
+  <param name="base_global_planner" value="PersonFollowingPlanner" />
+
+  <rosparam file="$(find 2dnav_pr2)/config/costmap_common_params.yaml" command="load" ns="global_costmap" />
+  <rosparam file="$(find 2dnav_pr2)/config/costmap_common_params.yaml" command="load" ns="local_costmap" />
+  <rosparam file="$(find 2dnav_pr2)/move_base_local/costmap_params.yaml" command="load"  ns="global_costmap" />
+  <rosparam file="$(find 2dnav_pr2)/move_base_local/costmap_params.yaml" command="load"  ns="local_costmap" />
+  <rosparam file="$(find 2dnav_pr2)/move_base_carrot/base_local_planner_params.yaml" command="load" />
+</node>
+</launch>

@@ -1,0 +1,13 @@
+Specifications of the INRIA dataset format (reverse engineered and based on comments at http://pascal.inrialpes.fr/data/human):
+
+Training data is stored in a directory of your choosing, ${TRAIN_DIR}.
+This contains two directories, "neg" and "pos", and two files, "neg.lst" and "pos.lst".
+
+Images in "pos":
+	file extension is always png, but this probably doesn't matter
+	filename doesn't seem to matter
+	all have same size, in this case 64x128 PLUS a border. for train the border is 16 for a total of 96x160. for test the border is 3 for a total of 70x134.
+	may contain multiple people
+
+Images in "neg":
+	don't contain people anywhere. can be any size. 64x128 patches will be sampled out of them, and this could cause people in the image to be used as negative samples.
