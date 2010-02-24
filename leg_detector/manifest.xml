@@ -1,0 +1,14 @@
+<package>
+  <description brief="leg_detector">
+
+     leg_detector
+
+  </description>
+  <author>Caroline Pantofaru</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/leg_detector</url>
+
+</package>
+
+

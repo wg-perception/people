@@ -1,0 +1,14 @@
+<package>
+  <description brief="face_detector">
+
+     face_detector
+
+  </description>
+  <author>Caroline Pantofaru</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/face_detector</url>
+
+</package>
+
+

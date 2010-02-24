@@ -1,0 +1,14 @@
+<package>
+  <description brief="pedestrian_detector_HOG">
+
+     pedestrian_detector_HOG
+
+  </description>
+  <author>Caroline Pantofaru</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/pedestrian_detector_HOG</url>
+
+</package>
+
+
