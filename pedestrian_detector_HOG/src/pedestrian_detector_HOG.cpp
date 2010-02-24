@@ -58,7 +58,7 @@
 #include <boost/thread/mutex.hpp>
 #include "opencv/cvaux.hpp"
 
-#include "utils.h"
+//#include "people_package/utils.h"
 
 //#include "HOG/hog.hpp"
 

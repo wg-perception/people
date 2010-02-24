@@ -78,8 +78,8 @@ rosbuild_add_executable(train_leg_detector
 
 #rosbuild_add_pyunit(test/directed.py)
 
-rosbuild_add_executable(pedestrian_detector_HOG
-			src/pedestrian_detector_HOG.cpp)
+#rosbuild_add_executable(pedestrian_detector_HOG
+#			src/pedestrian_detector_HOG.cpp)
 
 rosbuild_add_executable(height_tracker
                         src/height_tracker.cpp)
