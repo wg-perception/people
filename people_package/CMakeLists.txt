@@ -36,9 +36,9 @@ rosbuild_add_executable(face_detector
                        src/utils.cpp)
 rosbuild_link_boost(face_detector thread)
 
-rosbuild_add_executable(people_follower
-                       src/people_follower.cpp )
-rosbuild_link_boost(people_follower thread)
+#rosbuild_add_executable(people_follower
+#                       src/people_follower.cpp )
+#rosbuild_link_boost(people_follower thread)
 
 
 #rosbuild_add_executable(stereo_face_color_tracker
