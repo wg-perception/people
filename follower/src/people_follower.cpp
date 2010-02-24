@@ -62,13 +62,13 @@ namespace estimation
 	node_.param("~/publish_rate", publish_rate_, 2.0);
 
     // advertise filter output
-	filter_output_pub_ = node_.advertise<people_package::PositionMeasurement>("people_tracker_filter",10);
+	filter_output_pub_ = node_.advertise<people_msgs::PositionMeasurement>("people_tracker_filter",10);
 
     // advertise visualization
 	viz_pub_ = node_.advertise<sensor_msgs::PointCloud>("goal_pos",10);
 
     // register message sequencer
-    people_notifier_ = new MessageNotifier<people_package::PositionMeasurement>(robot_state_, boost::bind(&PeopleFollower::callback, this, _1),
+    people_notifier_ = new MessageNotifier<people_msgs::PositionMeasurement>(robot_state_, boost::bind(&PeopleFollower::callback, this, _1),
                                                                "people_tracker_filter", fixed_frame_, 10);
     // advertise robot poses
     goal_pub_ = node_.advertise<geometry_msgs::PoseStamped>("/move_base_local/activate", 10);
@@ -323,7 +323,7 @@ namespace estimation
   }
 
   // callback for messages
-  void PeopleFollower::callback(const MessageNotifier<people_package::PositionMeasurement>::MessagePtr& people_pos_msg)
+  void PeopleFollower::callback(const MessageNotifier<people_msgs::PositionMeasurement>::MessagePtr& people_pos_msg)
   {
 	ROS_DEBUG("Got a people position measurement callback!");
 	cout<<"Got a callback people position msg, almost there!"<<endl;

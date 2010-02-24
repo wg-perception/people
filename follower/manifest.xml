@@ -1,7 +1,7 @@
 <package>
   <description brief="follower">
 
-     person_follower
+     follower
 
   </description>
   <author>Caroline Pantofaru</author>
@@ -31,11 +31,12 @@
   <depend package="person_following_planner" />
   <depend package="message_notifier" />
   <depend package="people_package" />
-  <rosdep name="python-numpy"/>
+  <depend package="people_msgs" />
+ <rosdep name="python-numpy"/>
   <export>
     <cpp cflags="-I${prefix}/msg/cpp -I${prefix}/srv/cpp"/>
   </export>
-
+-->
 </package>
 
 

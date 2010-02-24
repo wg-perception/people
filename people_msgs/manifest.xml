@@ -1,0 +1,18 @@
+<package>
+  <description brief="people_msgs">
+
+     people_msgs
+
+  </description>
+  <author>Caroline Pantofaru</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/people_msgs</url>
+
+  <depend package="geometry_msgs"/>
+  <export>
+    <cpp cflags="-I${prefix}/msg/cpp -I${prefix}/srv/cpp"/>
+  </export>
+</package>
+
+

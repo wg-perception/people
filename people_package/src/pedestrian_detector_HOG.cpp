@@ -40,13 +40,13 @@
 #include "ros/ros.h"
 #include "ros/console.h"
 #include "CvStereoCamModel.h"
-#include <people_package/PositionMeasurement.h>
+#include <people_msgs/PositionMeasurement.h>
 #include "sensor_msgs/CameraInfo.h"
 #include "sensor_msgs/Image.h"
 #include <image_transport/subscriber_filter.h>
 #include "image_transport/image_transport.h"
 #include "cv_bridge/CvBridge.h"
-#include "people_package/ColoredLines.h"
+#include "people_msgs/ColoredLines.h"
 #include <message_filters/subscriber.h>
 #include "message_filters/time_synchronizer.h"
 #include "tf/transform_listener.h"
@@ -127,11 +127,11 @@ namespace people
       local_nh_.param("do_display", do_display_, true);
        
       // Advertise a 3d position measurement for each head.
-      people_pub_ = nh_.advertise<people_package::PositionMeasurement>("people_tracker_measurements",1);
+      people_pub_ = nh_.advertise<people_msgs::PositionMeasurement>("people_tracker_measurements",1);
 
       // Advertise the display boxes.
       if (do_display_) {
-	line_pub_ = nh_.advertise<people_package::ColoredLines>("lines_to_draw",1);
+	line_pub_ = nh_.advertise<people_msgs::ColoredLines>("lines_to_draw",1);
 	ROS_INFO_STREAM_NAMED("pedestrian_detector_HOG","Advertising colored lines to draw remotely.");
 	//cv::namedWindow("people detector", 1);
       }

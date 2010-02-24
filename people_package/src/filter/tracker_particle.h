@@ -89,7 +89,7 @@ public:
 
   /// get filter posterior
   virtual void getEstimate(BFL::StatePosVel& est) const;
-  virtual void getEstimate(people_package::PositionMeasurement& est) const;
+  virtual void getEstimate(people_msgs::PositionMeasurement& est) const;
 
   // get evenly spaced particle cloud
   void getParticleCloud(const tf::Vector3& step, double threshold, sensor_msgs::PointCloud& cloud) const;
