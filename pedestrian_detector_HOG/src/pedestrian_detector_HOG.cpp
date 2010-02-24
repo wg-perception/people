@@ -145,8 +145,8 @@ namespace people
 	std::string disp_topic = nh_.resolveName("stereo") + "/disparity";
 	std::string left_info_topic = nh_.resolveName("stereo") + "/left/camera_info";
 	std::string right_info_topic = nh_.resolveName("stereo") + "/right/camera_info";
-	left_sub_.subscribe(nh_, left_topic, 10);
-	disp_sub_.subscribe(nh_, disp_topic, 10);
+	left_sub_.subscribe(it_, left_topic, 10);
+	disp_sub_.subscribe(it_, disp_topic, 10);
 	left_info_sub_.subscribe(nh_, left_info_topic, 10);
 	right_info_sub_.subscribe(nh_, right_info_topic, 10);
 	stereo_sync_.connectInput(left_sub_, left_info_sub_, disp_sub_, right_info_sub_);
