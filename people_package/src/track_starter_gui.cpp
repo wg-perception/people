@@ -47,7 +47,7 @@
 #include "sensor_msgs/Image.h"
 #include "cv_bridge/CvBridge.h"
 #include "CvStereoCamModel.h"
-#include <people/PositionMeasurement.h>
+#include <people_package/PositionMeasurement.h>
 #include "color_calib.h"
 #include "topic_synchronizer/topic_synchronizer.h"
 

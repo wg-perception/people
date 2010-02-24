@@ -83,7 +83,7 @@ public:
 
   /// get filter posterior
   void getEstimate(tf::Vector3& est) const;
-  void getEstimate(people::PositionMeasurement& est) const;
+  void getEstimate(people_package::PositionMeasurement& est) const;
 
   // get evenly spaced particle cloud
   void getParticleCloud(const tf::Vector3& step, double threshold, sensor_msgs::PointCloud& cloud) const;

@@ -36,7 +36,7 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-#include "people/people.h"
+#include "people_package/people.h"
 #include <cfloat>
 
 #define __PEOPLE_DEBUG__ 0

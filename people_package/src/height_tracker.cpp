@@ -52,7 +52,7 @@
 #include "sensor_msgs/CameraInfo.h"
 #include "sensor_msgs/Image.h"
 #include "cv_bridge/CvBridge.h"
-#include "people/PositionMeasurement.h"
+#include "people_package/PositionMeasurement.h"
 #include "utils.h"
 #include <opencv/highgui.h>
 
@@ -112,8 +112,8 @@ private:
 
   tf::MessageFilter<sensor_msgs::PointCloud> *filter_;
 
-  message_filters::Subscriber<people::PositionMeasurement> *people_sub_;
-  tf::MessageFilter<people::PositionMeasurement> *people_pos_notifier_;
+  message_filters::Subscriber<people_package::PositionMeasurement> *people_sub_;
+  tf::MessageFilter<people_package::PositionMeasurement> *people_pos_notifier_;
 
   ros::Subscriber rebroadcast_sub_;
   ros::Subscriber cloud_only_sub_;
@@ -198,7 +198,7 @@ public:
     H = (unsigned int)tmp_H;
 
     //Advertise the measurements in the local namespace
-    pos_pub_ = private_nh_.advertise<people::PositionMeasurement>("people_tracker_measurements",1);
+    pos_pub_ = private_nh_.advertise<people_package::PositionMeasurement>("people_tracker_measurements",1);
     head_target_pub_ = nh_.advertise<geometry_msgs::PointStamped>("/head_controller/point_head",1);
     
     //Visualization support
@@ -211,8 +211,8 @@ public:
 
     //Listen to position measurements back from the overall people tracking filter, delaying the messages
     //until they can be transformed into the fixed_frame_ (e.g. /base_footprint)
-    people_sub_ = new message_filters::Subscriber<people::PositionMeasurement>(nh_, "people_tracker_filter", 1);
-    people_pos_notifier_ = new tf::MessageFilter<people::PositionMeasurement>(*people_sub_, tf_client_, fixed_frame_, 10);
+    people_sub_ = new message_filters::Subscriber<people_package::PositionMeasurement>(nh_, "people_tracker_filter", 1);
+    people_pos_notifier_ = new tf::MessageFilter<people_package::PositionMeasurement>(*people_sub_, tf_client_, fixed_frame_, 10);
     people_pos_notifier_->registerCallback(boost::bind(&HeightTracker::peopleCallback, this, _1));
 
     //Initialize tracking default window to legal window in top-left corner
@@ -332,7 +332,7 @@ public:
 	vis_flat_bridge_.fromIpltoRosImage(annotatedFlattened, flat_img_msg);
 	flat_pub_.publish(flat_img_msg);
 
-	people::PositionMeasurement pos;
+	people_package::PositionMeasurement pos;
 	pos.header = cloud.header;
 	pos.name = "head_height_tracker";
 	pos.object_id = objID_;
@@ -439,14 +439,14 @@ private:
    * Receive a message from the overall person tracking filter and
    * start or update the tracked box if necessary
    */
-  void peopleCallback(const people::PositionMeasurement::ConstPtr &pos_ptr)
+  void peopleCallback(const people_package::PositionMeasurement::ConstPtr &pos_ptr)
   {
-    const people::PositionMeasurement &pos = *pos_ptr;
+    const people_package::PositionMeasurement &pos = *pos_ptr;
     geometry_msgs::PointStamped in, out;
     in.point = pos.pos;
     in.header = pos.header;
     try { tf_client_.transformPoint(fixed_frame_, in, out); }
-    catch ( ... ) { ROS_ERROR("TF exception transforming incoming people::PositionMeasurement."); return; }
+    catch ( ... ) { ROS_ERROR("TF exception transforming incoming people_package::PositionMeasurement."); return; }
     int xWin, yWin;
     globalFrameToWindow(out.point.x, out.point.y, xWin, yWin);
     int x = (top_down_window_.x+top_down_window_.width/2);

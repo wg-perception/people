@@ -138,7 +138,7 @@ namespace estimation
   };
 
 
-  void TrackerParticle::getEstimate(people::PositionMeasurement& est) const
+  void TrackerParticle::getEstimate(people_package::PositionMeasurement& est) const
   {
     StatePosVel tmp = filter_->PostGet()->ExpectedValueGet();
 

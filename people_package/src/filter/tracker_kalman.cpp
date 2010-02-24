@@ -183,7 +183,7 @@ bool TrackerKalman::updateCorrection(const tf::Vector3&  meas, const MatrixWrapp
   };
 
 
-  void TrackerKalman::getEstimate(people::PositionMeasurement& est) const
+  void TrackerKalman::getEstimate(people_package::PositionMeasurement& est) const
   {
     ColumnVector tmp = filter_->PostGet()->ExpectedValueGet();
 

@@ -44,7 +44,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/thread/mutex.hpp>
 
-#include <people/PositionMeasurement.h>
+#include <people_package/PositionMeasurement.h>
 #include <message_filters/subscriber.h>
 #include <message_filters/time_synchronizer.h>
 #include <image_transport/subscriber_filter.h>
@@ -52,21 +52,21 @@
 #include "sensor_msgs/Image.h"
 #include "stereo_msgs/DisparityImage.h"
 #include "cv_bridge/CvBridge.h"
-#include "people/ColoredLine.h"
-#include "people/ColoredLines.h"
+#include "people_package/ColoredLine.h"
+#include "people_package/ColoredLines.h"
 #include "tf/transform_listener.h"
 #include "visualization_msgs/Marker.h"
 #include "visualization_msgs/MarkerArray.h"
 #include "sensor_msgs/PointCloud.h"
 #include "geometry_msgs/Point32.h"
-#include "people/StartDetection.h"
-#include "people/StopDetection.h"
+#include "people_package/StartDetection.h"
+#include "people_package/StopDetection.h"
 
 #include "opencv/cxcore.h"
 #include "opencv/cv.h"
 #include "opencv/highgui.h"
 
-#include "people/people.h"
+#include "people_package/people.h"
 #include "utils.h"
 
 #include "CvStereoCamModel.h"
@@ -139,7 +139,7 @@ public:
 
   struct RestampedPositionMeasurement {
     ros::Time restamp;
-    people::PositionMeasurement pos;
+    people_package::PositionMeasurement pos;
     double dist;
   };
   map<string, RestampedPositionMeasurement> pos_list_; /**< Queue of updated people positions from the filter. */
@@ -211,7 +211,7 @@ public:
     ROS_INFO_STREAM_NAMED("face_detector","Subscribed to images");
 
     // Advertise a position measure message.
-    pos_pub_ = nh_.advertise<people::PositionMeasurement>("face_detector/people_tracker_measurements",1);
+    pos_pub_ = nh_.advertise<people_package::PositionMeasurement>("face_detector/people_tracker_measurements",1);
 
     ROS_INFO_STREAM_NAMED("face_detector","Advertised people_tracker_measurements");
 
@@ -221,7 +221,7 @@ public:
 
     // Advertise the rectangles to draw if stereo_view is running.
     if (do_display_ == "remote") {
-      clines_pub_ = nh_.advertise<people::ColoredLines>("lines_to_draw",1);
+      clines_pub_ = nh_.advertise<people_package::ColoredLines>("lines_to_draw",1);
       ROS_INFO_STREAM_NAMED("face_detector","Advertising colored lines to draw remotely.");
     }
     // Subscribe to filter measurements.
@@ -256,7 +256,7 @@ public:
 
 
   // Start the detector running. It will automatically stop running when at least one face is found.
-  bool startDetection(people::StartDetection::Request &req, people::StartDetection::Response &resp)
+  bool startDetection(people_package::StartDetection::Request &req, people_package::StartDetection::Response &resp)
   {
     ROS_DEBUG_STREAM_NAMED("face_detector","In service call - start");
     run_detector_ = true;
@@ -264,7 +264,7 @@ public:
   }
 
   // Stop the detector.
-  bool stopDetection(people::StopDetection::Request &req, people::StopDetection::Response &resp)
+  bool stopDetection(people_package::StopDetection::Request &req, people_package::StopDetection::Response &resp)
   {
     ROS_DEBUG_STREAM_NAMED("face_detector","In service call - stop");
     run_detector_ = false;
@@ -277,7 +277,7 @@ public:
    * When hooked into the person tracking filter, this callback will listen to messages 
    * from the filter with a person id and 3D position and adjust the person's face position accordingly.
    */ 
-  void posCallback(const people::PositionMeasurementConstPtr& pos_ptr) {
+  void posCallback(const people_package::PositionMeasurementConstPtr& pos_ptr) {
 
     // Put the incoming position into the position queue. It'll be processed in the next image callback.
     boost::mutex::scoped_lock lock(pos_mutex_);
@@ -352,8 +352,8 @@ public:
 
     bool published = false;
 
-    people::ColoredLines all_cls;
-    vector<people::ColoredLine> lines;
+    people_package::ColoredLines all_cls;
+    vector<people_package::ColoredLine> lines;
     // Clear out the old visualization markers. 
     markers_sub_.markers.clear();
     markers_sub_.markers = markers_add_.markers;
@@ -398,7 +398,7 @@ public:
 
       // Associate the found faces with previously seen faces, and publish all good face centers.
       Box2D3D *one_face;
-      people::PositionMeasurement pos;
+      people_package::PositionMeasurement pos;
       
       for (uint iface = 0; iface < faces_vector.size(); iface++) {
 	one_face = &faces_vector[iface];

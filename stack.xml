@@ -16,5 +16,15 @@
   <depend stack="stereo" /> <!-- stereo_utils -->
   <depend stack="vision_opencv" /> <!-- opencv2, cv_bridge -->
   <depend stack="visualization_common" /> <!-- visualization_msgs -->
+  <depend stack="image_common"/> <!-- image_transport --> 
+  <depend stack="stereo"/> <!-- stereo_utils, vop --> 
+  <depend stack="vision_opencv"/> <!-- opencv2, cv_bridge --> 
+  <depend stack="geometry"/> <!-- tf, kdl, eigen, angles, bullet --> 
+  <depend stack="visualization_common"/> <!-- visualization_msgs --> 
+  <depend stack="image_pipeline"/> <!-- stereo_msgs --> 
+  <depend stack="laser_pipeline"/> <!-- laser_assembler, laser_geometry --> 
+  <depend stack="sandbox"/> <!-- person_following_planner --> 
+  <depend stack="common"/> <!-- filters, bfl --> 
+  <depend stack="common_msgs"/> <!-- geometry_msgs, sensor_msgs --> 
 
 </stack>

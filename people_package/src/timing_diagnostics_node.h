@@ -44,7 +44,7 @@
 #include <ros/node.h>
 
 // messages
-#include <people/PositionMeasurement.h>
+#include <people_package/PositionMeasurement.h>
  
 // log files
 #include <fstream>

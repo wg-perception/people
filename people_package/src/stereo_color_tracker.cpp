@@ -41,13 +41,13 @@
 #include "ros/console.h"
 #include "CvStereoCamModel.h"
 #include "color_calib.h"
-#include <people/PositionMeasurement.h>
+#include <people_package/PositionMeasurement.h>
 #include "stereo_msgs/StereoInfo.h"
 #include "stereo_msgs/DisparityInfo.h"
 #include "sensor_msgs/CameraInfo.h"
 #include "sensor_msgs/Image.h"
 #include "cv_bridge/CvBridge.h"
-#include "people/ColoredLines.h"
+#include "people_package/ColoredLines.h"
 #include "topic_synchronizer/topic_synchronizer.h"
 #include "tf/transform_listener.h"
 #include <tf/message_notifier.h>

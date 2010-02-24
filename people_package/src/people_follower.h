@@ -49,7 +49,7 @@
 
 // messages
 #include <sensor_msgs/PointCloud.h>
-#include <people/PositionMeasurement.h>
+#include <people_package/PositionMeasurement.h>
 #include <pr2_robot_actions/Pose2D.h>
  
 // log files
@@ -68,7 +68,7 @@ public:
   ~PeopleFollower();
 
   /// callback for people messages
-  void callback(const tf::MessageNotifier<people::PositionMeasurement>::MessagePtr& people_pos);
+  void callback(const tf::MessageNotifier<people_package::PositionMeasurement>::MessagePtr& people_pos);
 
 
 private:
@@ -87,7 +87,7 @@ private:
   tf::TransformBroadcaster tf_server_;
 
   // message notifier
-  tf::MessageNotifier<people::PositionMeasurement>*  people_notifier_;
+  tf::MessageNotifier<people_package::PositionMeasurement>*  people_notifier_;
 
   // list of distances and people poses
   std::list<double> distances_;

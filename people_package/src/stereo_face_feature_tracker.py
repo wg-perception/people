@@ -1,5 +1,5 @@
 import roslib
-roslib.load_manifest('people')
+roslib.load_manifest('people_package')
 import rospy
 import rostest
 import face_detection
@@ -8,7 +8,7 @@ import camera
 from std_msgs.msg import String
 from deprecated_msgs.msg import ImageArray
 from geometry_msgs.msg import PointStamped, PointCloud, Point
-from people.msg import PositionMeasurement
+from people_package.msg import PositionMeasurement
 import visual_odometry as VO
 import starfeature
 import calonder

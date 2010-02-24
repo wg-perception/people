@@ -44,7 +44,7 @@
 #include "ros/console.h"
 #include "CvStereoCamModel.h"
 #include "color_calib.h"
-#include <people/PositionMeasurement.h>
+#include <people_package/PositionMeasurement.h>
 #include "stereo_msgs/StereoInfo.h"
 #include "stereo_msgs/DisparityInfo.h"
 #include "sensor_msgs/CameraInfo.h"
@@ -58,7 +58,7 @@
 #include "opencv/highgui.h"
 #include <boost/thread/mutex.hpp>
 
-#include "people/people.h"
+#include "people_package/people.h"
 #include "utils.h"
 
 #define __FACE_COLOR_TRACKER_DEBUG__ 0

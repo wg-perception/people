@@ -42,7 +42,7 @@
 
 #include "rosrecord/Player.h"
 
-#include "people/PositionMeasurement.h"
+#include "people_package/PositionMeasurement.h"
 #include "sensor_msgs/LaserScan.h"
 #include "roslib/Header.h"
 
@@ -226,9 +226,9 @@ public:
   ros::Publisher leg_cloud_pub_;
   ros::Publisher tracker_measurements_pub_;
 
-  message_filters::Subscriber<people::PositionMeasurement> people_sub_;
+  message_filters::Subscriber<people_package::PositionMeasurement> people_sub_;
   message_filters::Subscriber<sensor_msgs::LaserScan> laser_sub_;
-  tf::MessageFilter<people::PositionMeasurement> people_notifier_;
+  tf::MessageFilter<people_package::PositionMeasurement> people_notifier_;
   tf::MessageFilter<sensor_msgs::LaserScan> laser_notifier_;
 
   LegDetector(ros::NodeHandle nh) :
@@ -252,7 +252,7 @@ public:
 
     // advertise topics
     leg_cloud_pub_ = nh_.advertise<sensor_msgs::PointCloud>("kalman_filt_cloud",10);
-    tracker_measurements_pub_ = nh_.advertise<people::PositionMeasurement>("people_tracker_measurements",1);
+    tracker_measurements_pub_ = nh_.advertise<people_package::PositionMeasurement>("people_tracker_measurements",1);
 
     people_notifier_.registerCallback(boost::bind(&LegDetector::peopleCallback, this, _1));
     people_notifier_.setTolerance(ros::Duration(0.01));
@@ -271,7 +271,7 @@ public:
 
   // Find the tracker that is closest to this person message
   // If a tracker was already assigned to a person, keep this assignment when the distance between them is not too large.
-  void peopleCallback(const people::PositionMeasurement::ConstPtr& people_meas)
+  void peopleCallback(const people_package::PositionMeasurement::ConstPtr& people_meas)
   {
     // If there are no legs, return.
     if (saved_features_.empty()) 
@@ -663,7 +663,7 @@ public:
       filter_visualize[i].z = est.pos_[2];
       weights[i] = *(float*)&(rgb[min(998, max(1, (int)trunc( reliability*999.0 )))]);
 
-      people::PositionMeasurement pos;
+      people_package::PositionMeasurement pos;
       pos.header.stamp = (*sf_iter)->time_;
       pos.header.frame_id = fixed_frame;
       pos.name = "leg_detector";

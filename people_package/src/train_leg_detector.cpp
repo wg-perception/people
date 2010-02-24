@@ -41,7 +41,7 @@
 
 #include "rosrecord/Player.h"
 
-#include "people/PositionMeasurement.h"
+#include "people_package/PositionMeasurement.h"
 #include "sensor_msgs/LaserScan.h"
 
 using namespace std;
