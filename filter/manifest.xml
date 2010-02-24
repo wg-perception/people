@@ -1,5 +1,5 @@
 <package>
-  <description brief="tracker">
+  <description brief="filter">
 
      tracker
 
@@ -7,7 +7,7 @@
   <author>Caroline Pantofaru</author>
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
-  <url>http://ros.org/wiki/tracker</url>
+  <url>http://ros.org/wiki/filter</url>
 
 </package>
 
