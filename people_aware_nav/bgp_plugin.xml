@@ -1,0 +1,7 @@
+<library path="lib/libnavfn_constrained">
+  <class name="NavfnROSConstrained" type="people_aware_nav::NavfnROSConstrained" base_class_type="nav_core::BaseGlobalPlanner">
+    <description>
+      A constrained version of the navfn planner
+    </description>
+  </class>
+</library>

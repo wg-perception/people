@@ -1,0 +1,27 @@
+<launch>
+  <master auto="start"/>
+  <group>
+  <!-- old broken xml spawning
+    <node pkg="pr2_controller_manager" type="spawner" args="$(find pr2_default_controllers)/head_servoing_controller.xml" />-->
+    <node pkg="people_aware_nav" type="head_controller" output="screen" name="head_controller" >
+      <param name="head_control_type" type="string" value="look_forward"/> <!--look_at_goal-->
+      <param name="default_speed" type="double" value="-1.0"/>
+    </node>
+
+    <param name="/use_sim_time" value="false"/>
+
+    <param name="move_base/base_global_planner" value="NavfnROSConstrained"/>
+    <include file="$(find 2dnav_pr2)/move_base/2dnav_pr2.launch" />
+
+
+    <node pkg="people_aware_nav" type="person_pos_sender" output="screen" />
+    <node pkg="people_aware_nav" type="is_person_on_path" output="screen" >
+      <param name="person_radius" type="double" value="1.2"/>
+    </node>
+
+    <node pkg="pr2_mechanism_controllers" type="tuckarm.py" args="r"/>
+
+    <!-- node pkg="people_aware_nav" type="hallway_move" output="screen" /> -->
+
+  </group>
+</launch>

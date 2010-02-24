@@ -1,0 +1,8 @@
+#Overrides of 2dnav_pr2's costmap params
+global_costmap: 
+  global_frame: /odom_combined
+  static_map: false
+  publish_frequency: 0.2
+  rolling_window: true
+  width: 30
+  height: 30
