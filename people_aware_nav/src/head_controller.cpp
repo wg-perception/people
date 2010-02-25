@@ -32,7 +32,7 @@
 #include <ros/ros.h>
 #include <ros/console.h>
 
-#include <people/PositionMeasurement.h>
+#include <people_msgs/PositionMeasurement.h>
 #include <geometry_msgs/Point.h>
 #include <geometry_msgs/PointStamped.h>
 #include <geometry_msgs/PoseStamped.h>

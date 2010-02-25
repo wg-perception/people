@@ -52,7 +52,7 @@
 (defun setup-node ()
   (subscribe "hallway_points" "sensor_msgs/PointCloud" #'hallway-callback)
   (subscribe "goal" "geometry_msgs/PoseStamped" #'goal-callback)
-  (subscribe "face_detector/people_tracker_measurements" "people/PositionMeasurement" (store-message-in *person-position*))
+  (subscribe "face_detector/people_tracker_measurements" "people_msgs/PositionMeasurement" (store-message-in *person-position*))
   (subscribe "robot_pose" "geometry_msgs/Pose2D" #'pose-callback)
   (setq *status-pub* (advertise "~status" "std_msgs/Byte")
 	*goal-pub* (advertise "~goal" "geometry_msgs/PoseStamped")

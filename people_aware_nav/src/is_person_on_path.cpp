@@ -40,7 +40,7 @@
 
 #include <ros/ros.h>
 #include <people_aware_nav/PersonOnPath.h>
-#include <people/PositionMeasurement.h>
+#include <people_msgs/PositionMeasurement.h>
 #include <nav_msgs/Path.h>
 #include "tf/transform_listener.h"
 #include <tf/message_filter.h>
@@ -61,12 +61,12 @@ namespace people_aware_nav
   }
 
 namespace mf=message_filters;
-typedef tf::MessageFilter<people::PositionMeasurement> PosFilter;
+typedef tf::MessageFilter<people_msgs::PositionMeasurement> PosFilter;
 typedef tf::MessageFilter<nav_msgs::Path> PathFilter;
 typedef boost::shared_ptr<PosFilter> PosFilterPtr;
 typedef boost::shared_ptr<PathFilter> PathFilterPtr;
 
-typedef mf::Subscriber<people::PositionMeasurement> PosSub;
+typedef mf::Subscriber<people_msgs::PositionMeasurement> PosSub;
 typedef mf::Subscriber<nav_msgs::Path> PathSub;
 typedef boost::shared_ptr<PosSub> PosSubPtr;
 typedef boost::shared_ptr<PathSub> PathSubPtr;
@@ -83,7 +83,7 @@ public:
   PosFilterPtr ppl_filter_;
   PathFilterPtr path_filter_;
 
-  people::PositionMeasurement person_pos_;
+  people_msgs::PositionMeasurement person_pos_;
   nav_msgs::Path path_;
   bool got_person_pos_, got_path_;
   std::string fixed_frame_;
@@ -120,7 +120,7 @@ public:
   }
 
   // Person callback
-  void personPosCB(const people::PositionMeasurement::ConstPtr& person_pos_msg) 
+  void personPosCB(const people_msgs::PositionMeasurement::ConstPtr& person_pos_msg) 
   {
     boost::mutex::scoped_lock l2(person_mutex_);
     person_pos_ = *person_pos_msg;

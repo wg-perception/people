@@ -31,7 +31,7 @@
 #include <boost/shared_ptr.hpp>
 #include <ros/ros.h>
 #include <ros/console.h>
-#include <people/PositionMeasurement.h>
+#include <people_msgs/PositionMeasurement.h>
 #include <geometry_msgs/Point.h>
 #include <geometry_msgs/PointStamped.h>
 #include <sensor_msgs/PointCloud.h>
@@ -46,7 +46,7 @@ namespace people_aware_nav
 
 using geometry_msgs::Point;
 using geometry_msgs::PointStamped;
-using people::PositionMeasurement;
+using people_msgs::PositionMeasurement;
 using sensor_msgs::PointCloud;
 using geometry_msgs::Pose2D;
 using ros::Time;
@@ -136,7 +136,7 @@ public:
 private:
   ros::NodeHandle nh_;
   string global_frame_;
-  people::PositionMeasurement person_message_;
+  people_msgs::PositionMeasurement person_message_;
   ConstrainedGoal goal_message_;
   PointCloud hallway_points_;
   tf::TransformListener tf_;
