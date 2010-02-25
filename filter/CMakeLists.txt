@@ -28,3 +28,20 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 #rosbuild_link_boost(${PROJECT_NAME} thread)
 #rosbuild_add_executable(example examples/example.cpp)
 #target_link_libraries(example ${PROJECT_NAME})
+
+
+#rosbuild_add_executable(people_tracker
+rosbuild_add_library(filter 
+                     src/uniform_vector.cpp 
+                       src/gaussian_vector.cpp 
+                       src/gaussian_pos_vel.cpp 
+                       src/mcpdf_pos_vel.cpp
+                       src/mcpdf_vector.cpp
+                       src/sysmodel_pos_vel.cpp
+                       src/sysmodel_vector.cpp
+                       src/measmodel_pos.cpp
+                       src/measmodel_vector.cpp
+		       src/tracker_particle.cpp 
+		       src/tracker_kalman.cpp 
+		       src/detector_particle.cpp )
+#		       src/people_tracking_node.cpp )

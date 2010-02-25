@@ -34,7 +34,7 @@
 
 /* Author: Wim Meeussen */
 
-#include "measmodel_vector.h"
+#include "filter/measmodel_vector.h"
 
 using namespace std;
 using namespace BFL;

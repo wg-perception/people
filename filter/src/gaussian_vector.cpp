@@ -34,8 +34,7 @@
 
 /* Author: Wim Meeussen */
 
-
-#include "gaussian_pos_vel.h"
+#include "filter/gaussian_vector.h"
 #include <wrappers/rng/rng.h>
 #include <cmath> 
 #include <cassert>
@@ -44,42 +43,56 @@ using namespace tf;
 
 namespace BFL
 {
-  GaussianPosVel::GaussianPosVel (const StatePosVel& mu, const StatePosVel& sigma)
-    : Pdf<StatePosVel> ( 1 ),
+  GaussianVector::GaussianVector(const Vector3& mu, const Vector3& sigma)
+    : Pdf<Vector3> ( 1 ),
       mu_(mu),
       sigma_(sigma),
-      gauss_pos_(mu.pos_, sigma.pos_),
-      gauss_vel_(mu.vel_, sigma.vel_)
-  {}
-
-
-  GaussianPosVel::~GaussianPosVel(){}
-
-  GaussianPosVel* GaussianPosVel::Clone() const
+      sigma_changed_(true)
   {
-    return new GaussianPosVel(mu_, sigma_);
+    for (unsigned int i=0; i<3; i++)
+      assert(sigma[i] > 0);
   }
 
-  std::ostream& operator<< (std::ostream& os, const GaussianPosVel& g)
+
+  GaussianVector::~GaussianVector(){}
+
+
+  std::ostream& operator<< (std::ostream& os, const GaussianVector& g)
   {
-    os << "\nMu pos :\n"    << g.ExpectedValueGet().pos_ << endl
-       << "\nMu vel :\n"    << g.ExpectedValueGet().vel_ << endl 
-       << "\nSigma:\n" << g.CovarianceGet() << endl;
+    os << "Mu   :\n" << g.ExpectedValueGet() << endl
+       << "Sigma:\n" << g.CovarianceGet() << endl;
     return os;
   }
 
-
-  Probability GaussianPosVel::ProbabilityGet(const StatePosVel& input) const
+  void GaussianVector::sigmaSet( const Vector3& sigma )
   {
-    return gauss_pos_.ProbabilityGet(input.pos_) * gauss_vel_.ProbabilityGet(input.vel_);
+    sigma_ = sigma;
+    sigma_changed_ = true;
+  }
+
+  Probability GaussianVector::ProbabilityGet(const Vector3& input) const
+  {
+    if (sigma_changed_){
+      sigma_changed_ = false;
+      // 2 * sigma^2
+      for (unsigned int i=0; i<3; i++)
+	sigma_sq_[i] = 2 * sigma_[i] * sigma_[i];
+      // sqrt
+      sqrt_ = 1/ sqrt(M_PI*M_PI*M_PI* sigma_sq_[0] * sigma_sq_[1] * sigma_sq_[2]);
+    }
+
+    Vector3 diff = input - mu_;
+    return sqrt_ * exp( - (diff[0]*diff[0]/sigma_sq_[0])
+			- (diff[1]*diff[1]/sigma_sq_[1])
+			- (diff[2]*diff[2]/sigma_sq_[2]) );
   }
 
 
   bool
-  GaussianPosVel::SampleFrom (vector<Sample<StatePosVel> >& list_samples, const int num_samples, int method, void * args) const
+  GaussianVector::SampleFrom (vector<Sample<Vector3> >& list_samples, const int num_samples, int method, void * args) const
   {
     list_samples.resize(num_samples);
-    vector<Sample<StatePosVel> >::iterator sample_it = list_samples.begin();
+    vector<Sample<Vector3> >::iterator sample_it = list_samples.begin();
     for (sample_it=list_samples.begin(); sample_it!=list_samples.end(); sample_it++)
       SampleFrom( *sample_it, method, args);
 
@@ -88,33 +101,34 @@ namespace BFL
 
 
   bool
-  GaussianPosVel::SampleFrom (Sample<StatePosVel>& one_sample, int method, void * args) const
+  GaussianVector::SampleFrom (Sample<Vector3>& one_sample, int method, void * args) const
   {
-    one_sample.ValueSet( StatePosVel(Vector3(rnorm(mu_.pos_[0], sigma_.pos_[0]*dt_), 
-					     rnorm(mu_.pos_[1], sigma_.pos_[1]*dt_),
-					     rnorm(mu_.pos_[2], sigma_.pos_[2]*dt_)),
-				     Vector3(rnorm(mu_.vel_[0], sigma_.vel_[0]*dt_), 
-					     rnorm(mu_.vel_[1], sigma_.vel_[1]*dt_),
-					     rnorm(mu_.vel_[2], sigma_.vel_[2]*dt_))) );
+    one_sample.ValueSet( Vector3(rnorm(mu_[0], sigma_[0]), 
+				 rnorm(mu_[1], sigma_[1]),
+				 rnorm(mu_[2], sigma_[2])));
     return true;
   }
 
 
-  StatePosVel
-  GaussianPosVel::ExpectedValueGet (  ) const 
+  Vector3
+  GaussianVector::ExpectedValueGet (  ) const 
   { 
     return mu_;
   }
 
   SymmetricMatrix
-  GaussianPosVel::CovarianceGet () const
+  GaussianVector::CovarianceGet () const
   {
-    SymmetricMatrix sigma(6); sigma = 0;
-    for (unsigned int i=0; i<3; i++){
-      sigma(i+1,i+1) = pow(sigma_.pos_[i],2);
-      sigma(i+4,i+4) = pow(sigma_.vel_[i],2);
-    }
+    SymmetricMatrix sigma(3); sigma = 0;
+    for (unsigned int i=0; i<3; i++)
+      sigma(i+1,i+1) = pow(sigma_[i],2);
     return sigma;
+  }
+
+  GaussianVector* 
+  GaussianVector::Clone() const
+  {
+    return new GaussianVector(mu_, sigma_);
   }
 
 } // End namespace BFL

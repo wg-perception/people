@@ -34,78 +34,78 @@
 
 /* Author: Wim Meeussen */
 
-
-#include "sysmodel_pos_vel.h"
-
+#include "filter/measmodel_pos.h"
 
 using namespace std;
 using namespace BFL;
 using namespace tf;
 
 
-static const unsigned int NUM_SYS_POS_VEL_COND_ARGS = 1;
-static const unsigned int DIM_SYS_POS_VEL           = 6;
+static const unsigned int NUM_MEASMODEL_POS_COND_ARGS   = 1;
+static const unsigned int DIM_MEASMODEL_POS             = 13;
+
 
 
 // Constructor
-SysPdfPosVel::SysPdfPosVel(const StatePosVel& sigma)
-  : ConditionalPdf<StatePosVel, StatePosVel>(DIM_SYS_POS_VEL, NUM_SYS_POS_VEL_COND_ARGS),
-    noise_(StatePosVel(Vector3(0,0,0), Vector3(0,0,0)), sigma)
+MeasPdfPos::MeasPdfPos(const Vector3& sigma)
+  : ConditionalPdf<Vector3, StatePosVel>(DIM_MEASMODEL_POS, NUM_MEASMODEL_POS_COND_ARGS),
+    meas_noise_(Vector3(0,0,0), sigma)
 {}
 
 
-
 // Destructor
-SysPdfPosVel::~SysPdfPosVel()
+MeasPdfPos::~MeasPdfPos()
 {}
 
 
 
 Probability 
-SysPdfPosVel::ProbabilityGet(const StatePosVel& state) const
+MeasPdfPos::ProbabilityGet(const Vector3& measurement) const
 {
-  cerr << "SysPdfPosVel::ProbabilityGet Method not applicable" << endl;
-  assert(0);
-  return 0;
+  return meas_noise_.ProbabilityGet(measurement - ConditionalArgumentGet(0).pos_);
 }
+
 
 
 bool
-SysPdfPosVel::SampleFrom (Sample<StatePosVel>& one_sample, int method, void *args) const
+MeasPdfPos::SampleFrom (Sample<Vector3>& one_sample, int method, void *args) const
 {
-  StatePosVel& res = one_sample.ValueGet();
-
-  // get conditional argument: state
-  res = this->ConditionalArgumentGet(0);
-
-  // apply system model
-  res.pos_ += (res.vel_ * dt_);
-
-  // add noise
-  Sample<StatePosVel> noise_sample;
-  noise_.SetDt(dt_);
-  noise_.SampleFrom(noise_sample, method, args);
-  res += noise_sample.ValueGet();
-
-  return true;
-}
-
-
-StatePosVel
-SysPdfPosVel::ExpectedValueGet() const
-{
-  cerr << "SysPdfPosVel::ExpectedValueGet Method not applicable" << endl;
+  cerr << "MeasPdfPos::SampleFrom Method not applicable" << endl;
   assert(0);
-  return StatePosVel();
-
+  return false;
 }
+
+
+
+
+Vector3
+MeasPdfPos::ExpectedValueGet() const
+{
+  cerr << "MeasPdfPos::ExpectedValueGet Method not applicable" << endl;
+  Vector3 result;
+  assert(0);
+  return result;
+}
+
+
+
 
 SymmetricMatrix 
-SysPdfPosVel::CovarianceGet() const
+MeasPdfPos::CovarianceGet() const
 {
-  cerr << "SysPdfPosVel::CovarianceGet Method not applicable" << endl;
-  SymmetricMatrix Covar(DIM_SYS_POS_VEL);
+  cerr << "MeasPdfPos::CovarianceGet Method not applicable" << endl;
+  SymmetricMatrix Covar(DIM_MEASMODEL_POS);
   assert(0);
   return Covar;
 }
+
+
+void
+MeasPdfPos::CovarianceSet(const MatrixWrapper::SymmetricMatrix& cov)
+{
+  tf::Vector3 cov_vec(sqrt(cov(1,1)), sqrt(cov(2,2)),sqrt(cov(3,3)));
+  meas_noise_.sigmaSet(cov_vec);
+}
+
+
 

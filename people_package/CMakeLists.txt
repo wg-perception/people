@@ -14,31 +14,11 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 #                       src/timing_diagnostics_node.cpp )
 #rosbuild_link_boost(timing_diagnostics_node thread)
 
-# rosbuild_add_executable(people_tracker
-#                       src/filter/uniform_vector.cpp 
-#                       src/filter/gaussian_vector.cpp 
-#                       src/filter/gaussian_pos_vel.cpp 
-#                       src/filter/mcpdf_pos_vel.cpp
-#                       src/filter/mcpdf_vector.cpp
-#                       src/filter/sysmodel_pos_vel.cpp
-#                       src/filter/sysmodel_vector.cpp
-#                       src/filter/measmodel_pos.cpp
-#                       src/filter/measmodel_vector.cpp
-#		       src/filter/tracker_particle.cpp 
-#		       src/filter/tracker_kalman.cpp 
-#		       src/filter/detector_particle.cpp 
-#		       src/filter/people_tracking_node.cpp )
-#rosbuild_link_boost(people_tracker thread)
-
 rosbuild_add_executable(face_detector
                        src/face_detection.cpp 
                        src/people.cpp 
                        src/utils.cpp)
 rosbuild_link_boost(face_detector thread)
-
-#rosbuild_add_executable(people_follower
-#                       src/people_follower.cpp )
-#rosbuild_link_boost(people_follower thread)
 
 
 #rosbuild_add_executable(stereo_face_color_tracker
@@ -68,18 +48,16 @@ include_directories(${PYTHON_INCLUDE_PATH})
 rosbuild_add_executable(leg_detector 
                        src/laser_processor.cpp
                        src/leg_detector.cpp 
-                       src/calc_leg_features.cpp
-                       src/filter/tracker_kalman.cpp)
+                       src/calc_leg_features.cpp)
+
 
 rosbuild_add_executable(train_leg_detector
                        src/laser_processor.cpp
                        src/train_leg_detector.cpp 
                        src/calc_leg_features.cpp)
 
-#rosbuild_add_pyunit(test/directed.py)
 
-#rosbuild_add_executable(pedestrian_detector_HOG
-#			src/pedestrian_detector_HOG.cpp)
+#rosbuild_add_pyunit(test/directed.py)
 
 rosbuild_add_executable(height_tracker
                         src/height_tracker.cpp)

@@ -34,8 +34,8 @@
 
 /* Author: Wim Meeussen */
 
-#include "tracker_particle.h"
-#include "gaussian_pos_vel.h"
+#include "filter/tracker_particle.h"
+#include "filter/gaussian_pos_vel.h"
 
 using namespace MatrixWrapper;
 using namespace BFL;

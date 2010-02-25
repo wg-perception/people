@@ -34,8 +34,8 @@
 
 /* Author: Wim Meeussen */
 
-#include "detector_particle.h"
-#include "uniform_vector.h"
+#include "filter/detector_particle.h"
+#include "filter/uniform_vector.h"
 
 using namespace MatrixWrapper;
 using namespace BFL;

@@ -8,6 +8,25 @@
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/filter</url>
+  
+  <depend package="message_notifier"/>
+  <depend package="roscpp"/>
+  <depend package="std_msgs"/>
+  <depend package="deprecated_msgs"/>
+  <depend package="geometry_msgs"/>
+  <depend package="topic_synchronizer"/>
+  <depend package="topic_synchronizer2"/>
+  <depend package="tf"/>
+  <depend package="bfl"/>
+  <depend package="bullet"/>
+  <depend package="message_sequencing" />
+  <depend package="people_msgs" />
+  <depend package="sensor_msgs" />
+
+ <export>
+ <cpp cflags="-I${prefix}/include" lflags="-Wl,-rpath,${prefix}/lib -L${prefix}/lib -lfilter `rosboost-cfg --lflags thread,signals`" />
+ </export>
+
 
 </package>
 

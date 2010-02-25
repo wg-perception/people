@@ -52,7 +52,7 @@
 
 // messages
 #include <sensor_msgs/PointCloud.h>
-#include <people/PositionMeasurement.h>
+#include <people_msgs/PositionMeasurement.h>
 #include <message_sequencing/time_sequencer.h>
  
 // log files
@@ -104,10 +104,10 @@ private:
   std::string fixed_frame_;
   boost::mutex filter_mutex_;
 
-  sensor_msgs::PointCloud  meas_cloud_; 
+  sensor_msgs::PointCloud  meas_cloud_;
   unsigned int meas_visualize_counter_;
 
-  // Track only one person who the robot will follow. 
+  // Track only one person who the robot will follow.
   bool follow_one_person_;
 
 

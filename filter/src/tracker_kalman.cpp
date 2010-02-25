@@ -34,7 +34,7 @@
 
 /* Author: Wim Meeussen */
 
-#include "tracker_kalman.h"
+#include "filter/tracker_kalman.h"
 
 using namespace MatrixWrapper;
 using namespace BFL;
@@ -226,6 +226,5 @@ bool TrackerKalman::updateCorrection(const tf::Vector3&  meas, const MatrixWrapp
   }
 
 }; // namespace
-
 
 

@@ -20,10 +20,7 @@
 <depend package="cv_bridge"/>
 <depend package="stereo_utils"/>
 <depend package="stereo_msgs"/>
-<!--<depend package="visual_odometry"/>-->
-<!--depend package="pyrob"/-->
 <depend package="rospy"/>
-<depend package="sensor_msgs"/>
 <depend package="sensor_msgs"/>
 <depend package="topic_synchronizer"/>
 <depend package="topic_synchronizer2"/>
@@ -38,6 +35,7 @@
 <depend package="image_transport" />
 <depend package="person_following_planner" />
 <depend package="people_msgs" />
+<depend package="filter" />
 <rosdep name="python-numpy"/>
 <export>
 <cpp cflags="-I${prefix}/msg/cpp -I${prefix}/srv/cpp"/>

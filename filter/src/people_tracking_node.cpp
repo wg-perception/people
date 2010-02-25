@@ -34,12 +34,12 @@
 
 /* Author: Wim Meeussen */
 
-#include "people_tracking_node.h"
-#include "tracker_particle.h"
-#include "tracker_kalman.h"
-#include "state_pos_vel.h"
-#include "rgb.h"
-#include <people/PositionMeasurement.h>
+#include "filter/people_tracking_node.h"
+#include "filter/tracker_particle.h"
+#include "filter/tracker_kalman.h"
+#include "filter/state_pos_vel.h"
+#include "filter/rgb.h"
+#include <people_msgs/PositionMeasurement.h>
 
 
 using namespace std;
@@ -82,14 +82,14 @@ namespace estimation
     local_nh.param("follow_one_person", follow_one_person_, false);
 
     // advertise filter output
-    people_filter_pub_ = nh_.advertise<people::PositionMeasurement>("people_tracker_filter",10);
+    people_filter_pub_ = nh_.advertise<people_msgs::PositionMeasurement>("people_tracker_filter",10);
 
     // advertise visualization
     people_filter_vis_pub_ = nh_.advertise<sensor_msgs::PointCloud>("people_tracker_filter_visualization",10);
     people_tracker_vis_pub_ = nh_.advertise<sensor_msgs::PointCloud>("people_tracker_measurements_visualization",10);
 
     // register message sequencer
-    message_sequencer_ = new TimeSequencer<people::PositionMeasurement>(this, "people_tracker_measurements",		boost::bind(&PeopleTrackingNode::callbackRcv,  this, _1),
+    message_sequencer_ = new TimeSequencer<people_msgs::PositionMeasurement>(this, "people_tracker_measurements",		boost::bind(&PeopleTrackingNode::callbackRcv,  this, _1),
 								boost::bind(&PeopleTrackingNode::callbackDrop, this, _1),
 								ros::Duration().fromSec(sequencer_delay), 
 								sequencer_internal_buffer, sequencer_subscribe_buffer);
@@ -113,7 +113,7 @@ namespace estimation
 
 
   // callback for messages
-  void PeopleTrackingNode::callbackRcv(const people::PositionMeasurement::ConstPtr& message)
+  void PeopleTrackingNode::callbackRcv(const people_msgs::PositionMeasurement::ConstPtr& message)
   {
     ROS_DEBUG("Tracking node got a people position measurement (%f,%f,%f)",
 	      message->pos.x, message->pos.y, message->pos.z);
@@ -198,7 +198,7 @@ namespace estimation
 
 
   // callback for dropped messages
-  void PeopleTrackingNode::callbackDrop(const people::PositionMeasurement::ConstPtr& message)
+  void PeopleTrackingNode::callbackDrop(const people_msgs::PositionMeasurement::ConstPtr& message)
   {
     ROS_INFO("DROPPED PACKAGE for %s from %s with delay %f !!!!!!!!!!!", 
 	     message->object_id.c_str(), message->name.c_str(), (ros::Time::now() - message->header.stamp).toSec());
@@ -230,7 +230,7 @@ namespace estimation
 	(*it)->updatePrediction(ros::Time::now().toSec() - sequencer_delay);
 
 	// publish filter result
-	people::PositionMeasurement est_pos;
+	people_msgs::PositionMeasurement est_pos;
 	(*it)->getEstimate(est_pos);
 	est_pos.header.frame_id = fixed_frame_;
 
@@ -292,7 +292,7 @@ int main(int argc, char **argv)
   ros::NodeHandle(nh);
 
   // create tracker node
-  PeopleTrackingNode my_tracking_node(nh);
+    PeopleTrackingNode my_tracking_node(nh);
 
   // wait for filter to finish
   my_tracking_node.spin();
