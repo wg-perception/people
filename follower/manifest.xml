@@ -32,6 +32,7 @@
   <depend package="message_notifier" />
   <depend package="people_package" />
   <depend package="people_msgs" />
+  <depend package="filter" />
  <rosdep name="python-numpy"/>
   <export>
     <cpp cflags="-I${prefix}/msg/cpp -I${prefix}/srv/cpp"/>
