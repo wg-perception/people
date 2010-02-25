@@ -14,11 +14,11 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 #                       src/timing_diagnostics_node.cpp )
 #rosbuild_link_boost(timing_diagnostics_node thread)
 
-rosbuild_add_executable(face_detector
-                       src/face_detection.cpp 
-                       src/people.cpp 
-                       src/utils.cpp)
-rosbuild_link_boost(face_detector thread)
+#rosbuild_add_executable(face_detector
+#                       src/face_detection.cpp 
+#                       src/people.cpp 
+#                       src/utils.cpp)
+#rosbuild_link_boost(face_detector thread)
 
 
 #rosbuild_add_executable(stereo_face_color_tracker
@@ -63,7 +63,7 @@ rosbuild_add_executable(height_tracker
                         src/height_tracker.cpp)
 
 
-rosbuild_download_test_data(http://pr.willowgarage.com/data/people_package/face_detector_noface_test.bag face_detector_noface_test.bag 6dce1a1b06fd43c37fdb34f754d38632)
-rosbuild_download_test_data(http://pr.willowgarage.com/data/people_package/face_detector_withface_test.bag face_detector_withface_test.bag e81af59b9f649c9615d2a83a7d12b784)
-rosbuild_add_rostest(test/face_detector_true_rtest.xml)
-rosbuild_add_rostest(test/face_detector_false_rtest.xml)
+#rosbuild_download_test_data(http://pr.willowgarage.com/data/people_package/face_detector_noface_test.bag face_detector_noface_test.bag 6dce1a1b06fd43c37fdb34f754d38632)
+#rosbuild_download_test_data(http://pr.willowgarage.com/data/people_package/face_detector_withface_test.bag face_detector_withface_test.bag e81af59b9f649c9615d2a83a7d12b784)
+#rosbuild_add_rostest(test/face_detector_true_rtest.xml)
+#rosbuild_add_rostest(test/face_detector_false_rtest.xml)

@@ -59,14 +59,14 @@
 #include "visualization_msgs/MarkerArray.h"
 #include "sensor_msgs/PointCloud.h"
 #include "geometry_msgs/Point32.h"
-#include "people_package/StartDetection.h"
-#include "people_package/StopDetection.h"
+#include "face_detector/StartDetection.h"
+#include "face_detector/StopDetection.h"
 
 #include "opencv/cxcore.h"
 #include "opencv/cv.h"
 #include "opencv/highgui.h"
 
-#include "people_package/people.h"
+#include "face_detector/people.h"
 #include "utils.h"
 
 #include "CvStereoCamModel.h"
@@ -256,7 +256,7 @@ public:
 
 
   // Start the detector running. It will automatically stop running when at least one face is found.
-  bool startDetection(people_package::StartDetection::Request &req, people_package::StartDetection::Response &resp)
+  bool startDetection(face_detector::StartDetection::Request &req, face_detector::StartDetection::Response &resp)
   {
     ROS_DEBUG_STREAM_NAMED("face_detector","In service call - start");
     run_detector_ = true;
@@ -264,7 +264,7 @@ public:
   }
 
   // Stop the detector.
-  bool stopDetection(people_package::StopDetection::Request &req, people_package::StopDetection::Response &resp)
+  bool stopDetection(face_detector::StopDetection::Request &req, face_detector::StopDetection::Response &resp)
   {
     ROS_DEBUG_STREAM_NAMED("face_detector","In service call - stop");
     run_detector_ = false;

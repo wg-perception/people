@@ -1,7 +1,7 @@
 <launch>
-  <node ns="wide_stereo" pkg="stereo_image_proc" type="stereo_image_proc" args="" output="screen" name="stereoproc"/> 
+  <node ns="narrow_stereo" pkg="stereo_image_proc" type="stereo_image_proc" args="" output="screen" name="stereoproc"/>
 
-  <node pkg="people" type="face_detector" name="face_detector" args="stereo:=wide_stereo image:=image_rect" output="screen">
+  <node pkg="face_detector" type="face_detector" name="face_detector" args="stereo:=narrow_stereo image:=image_rect" output="screen">
   	 <param name="classifier_name" type="string" value="frontalface" />
 	 <param name="classifier_filename" type="string" value="$(find opencv2)/opencv/share/opencv/haarcascades/haarcascade_frontalface_alt.xml" />
 	 <param name="classifier_reliability" type="double" value="0.9"/>
@@ -10,7 +10,5 @@
 	 <param name="do_display" type="string" value="none" />
   	 <param name="output" type="string" value="none" />
   </node>
-
-<!--node pkg="image_view" type="image_view" name="iv" args="image:=/wide_stereo/left/image_raw"/-->
 
 </launch>

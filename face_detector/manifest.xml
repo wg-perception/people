@@ -9,6 +9,30 @@
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/face_detector</url>
 
+<depend package="roscpp"/>
+<depend package="std_msgs"/>
+<depend package="geometry_msgs"/>
+<depend package="robot_actions"/>
+<depend package="pr2_robot_actions"/>
+<depend package="std_srvs"/>
+<depend package="opencv2"/>
+<depend package="cv_bridge"/>
+<depend package="stereo_utils"/>
+<depend package="stereo_msgs"/>
+<depend package="rospy"/>
+<depend package="sensor_msgs"/>
+<depend package="laser_geometry"/>
+<depend package="tf"/>
+<depend package="rosrecord"/>
+<depend package="visualization_msgs" />
+<depend package="image_transport" />
+<depend package="people_msgs" />
+<depend package="filter" />
+<rosdep name="python-numpy"/>
+<export>
+<cpp cflags="-I${prefix}/msg/cpp -I${prefix}/srv/cpp"/>
+</export>
+
 </package>
 
 
