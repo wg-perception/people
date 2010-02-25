@@ -7,26 +7,26 @@
   <node ns="wide_stereo" pkg="stereo_image_proc" type="stereo_image_proc" args="" output="screen" name="stereoproc" respawn="false"/>
 
 
-  <node pkg="people" type="leg_detector" args="scan:=base_scan $(find people)/config/trained_leg_detector.yaml" output="screen" respawn="true">
+  <node pkg="leg_detector" type="leg_detector" args="scan:=base_scan $(find leg_detector)/config/trained_leg_detector.yaml" output="screen" respawn="true">
     <remap from="people_tracker_measurements" to="/face_detector/people_tracker_measurements"/>    
   </node>
 
   <include file="$(find pr2_default_controllers)/head_position_controller.launch"/>  
 
-  <node pkg="people" type="people_follower" output="screen">
+  <node pkg="follower" type="people_follower" output="screen">
     <param name="fixed_frame" type="string" value="odom_combined"/>
     <param name="follow_distance" value="0.5"/>
     <param name="publish_rate" value="0.33"/>
     <!--remap from="goal_pos" to="/move_base_local/activate"/-->
   </node>
 
-  <node pkg="people" type="height_tracker" output="screen">
+  <node pkg="height_tracker" type="height_tracker" output="screen">
     <param name="hack_height" type="double" value="164"/>
     <param name="do_display" type="bool" value="false"/>
   </node>
 
   
-  <node pkg="people" type="face_detector" args="stereo:=wide_stereo image:=image_rect" name="face_detector" output="screen" respawn="true">
+  <node pkg="face_detector" type="face_detector" args="stereo:=wide_stereo image:=image_rect" name="face_detector" output="screen" respawn="true">
     <param name="classifier_name" type="string" value="frontalface" />
     <param name="classifier_filename" type="string" value="$(find opencv2)/opencv/share/opencv/haarcascades/haarcascade_frontalface_alt.xml" />
     <param name="classifier_reliability" type="double" value="0.9" />

@@ -8,7 +8,29 @@
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/leg_detector</url>
-
+  <depend package="message_notifier"/>
+<depend package="pr2_machine"/>
+<depend package="roscpp"/>
+<depend package="std_msgs"/>
+<depend package="deprecated_msgs"/>
+<depend package="geometry_msgs"/>
+<depend package="std_srvs"/>
+<depend package="sensor_msgs"/>
+<depend package="topic_synchronizer"/>
+<!--depend package="topic_synchronizer2"/-->
+<depend package="laser_geometry"/>
+<depend package="tf"/>
+<depend package="bfl"/>
+<depend package="bullet"/>
+<depend package="message_sequencing" />
+<depend package="visualization_msgs" />
+<depend package="people_msgs" />
+<depend package="filter" />
+<depend package="opencv2"/>
+<rosdep name="python-numpy"/>
+<export>
+<cpp cflags="-I${prefix}/msg/cpp -I${prefix}/srv/cpp"/>
+</export>
 </package>
 
 

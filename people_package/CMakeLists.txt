@@ -45,16 +45,16 @@ include_directories(${PYTHON_INCLUDE_PATH})
 #                    src/py.cpp src/face_detection.cpp src/people.cpp)
 #set_target_properties(pyface_detection PROPERTIES OUTPUT_NAME face_detection PREFIX "")
 
-rosbuild_add_executable(leg_detector 
-                       src/laser_processor.cpp
-                       src/leg_detector.cpp 
-                       src/calc_leg_features.cpp)
+#rosbuild_add_executable(leg_detector 
+#                       src/laser_processor.cpp
+#                       src/leg_detector.cpp 
+#                       src/calc_leg_features.cpp)
 
 
-rosbuild_add_executable(train_leg_detector
-                       src/laser_processor.cpp
-                       src/train_leg_detector.cpp 
-                       src/calc_leg_features.cpp)
+#rosbuild_add_executable(train_leg_detector
+#                       src/laser_processor.cpp
+#                       src/train_leg_detector.cpp 
+#                       src/calc_leg_features.cpp)
 
 
 #rosbuild_add_pyunit(test/directed.py)
