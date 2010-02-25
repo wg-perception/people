@@ -8,6 +8,35 @@
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/height_tracker</url>
+  <depend package="message_notifier"/>
+<depend package="roscpp"/>
+<depend package="std_msgs"/>
+<depend package="deprecated_msgs"/>
+<depend package="geometry_msgs"/>
+<depend package="robot_actions"/>
+<depend package="pr2_robot_actions"/>
+<depend package="std_srvs"/>
+<depend package="opencv2"/>
+<depend package="cv_bridge"/>
+<depend package="stereo_utils"/>
+<depend package="stereo_msgs"/>
+<depend package="rospy"/>
+<depend package="sensor_msgs"/>
+<depend package="topic_synchronizer"/>
+<depend package="topic_synchronizer2"/>
+<depend package="laser_geometry"/>
+<depend package="tf"/>
+<depend package="color_calib"/>
+<depend package="bfl"/>
+<depend package="bullet"/>
+<depend package="rosrecord"/>
+<depend package="message_sequencing" />
+<depend package="visualization_msgs" />
+<depend package="image_transport" />
+<depend package="person_following_planner" />
+<depend package="people_msgs" />
+<depend package="filter" />
+<!--depend package="face_detector" /-->
 
 </package>
 

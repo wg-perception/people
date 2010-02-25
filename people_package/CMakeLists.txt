@@ -59,8 +59,8 @@ rosbuild_add_executable(train_leg_detector
 
 #rosbuild_add_pyunit(test/directed.py)
 
-rosbuild_add_executable(height_tracker
-                        src/height_tracker.cpp)
+#rosbuild_add_executable(height_tracker
+#                        src/height_tracker.cpp)
 
 
 #rosbuild_download_test_data(http://pr.willowgarage.com/data/people_package/face_detector_noface_test.bag face_detector_noface_test.bag 6dce1a1b06fd43c37fdb34f754d38632)

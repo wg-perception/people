@@ -53,7 +53,7 @@
 #include "sensor_msgs/Image.h"
 #include "cv_bridge/CvBridge.h"
 #include "people_msgs/PositionMeasurement.h"
-#include "utils.h"
+//#include "face_detector/utils.h"
 #include <opencv/highgui.h>
 
 #include <visualization_msgs/Marker.h>
