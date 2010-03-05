@@ -35,7 +35,7 @@
 <depend package="image_transport" />
 <depend package="person_following_planner" />
 <depend package="people_msgs" />
-<depend package="filter" />
+<depend package="people_tracking_filter" />
 <rosdep name="python-numpy"/>
 <export>
 <cpp cflags="-I${prefix}/msg/cpp -I${prefix}/srv/cpp"/>
