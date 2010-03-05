@@ -34,7 +34,7 @@
 
 /* Author: Wim Meeussen */
 
-#include "filter/uniform_vector.h"
+#include "people_tracking_filter/gaussian_vector.h"
 #include <wrappers/rng/rng.h>
 #include <cmath> 
 #include <cassert>
@@ -43,46 +43,53 @@ using namespace tf;
 
 namespace BFL
 {
-  UniformVector::UniformVector(const Vector3& mu, const Vector3& size)
+  GaussianVector::GaussianVector(const Vector3& mu, const Vector3& sigma)
     : Pdf<Vector3> ( 1 ),
       mu_(mu),
-      size_(size)
+      sigma_(sigma),
+      sigma_changed_(true)
   {
     for (unsigned int i=0; i<3; i++)
-      assert(size_[i] > 0);
-
-    probability_ = 1 / (size_[0]*2 * size_[1]*2 * size_[2]*2);
+      assert(sigma[i] > 0);
   }
 
 
-  UniformVector::~UniformVector(){}
+  GaussianVector::~GaussianVector(){}
 
-  UniformVector* UniformVector::Clone() const
-  {
-    return new UniformVector(mu_, size_);
-  }
 
-  std::ostream& operator<< (std::ostream& os, const UniformVector& g)
+  std::ostream& operator<< (std::ostream& os, const GaussianVector& g)
   {
     os << "Mu   :\n" << g.ExpectedValueGet() << endl
-       << "Size :\n" << g.CovarianceGet() << endl;
+       << "Sigma:\n" << g.CovarianceGet() << endl;
     return os;
   }
 
-
-
-  Probability UniformVector::ProbabilityGet(const Vector3& input) const
+  void GaussianVector::sigmaSet( const Vector3& sigma )
   {
-    for (unsigned int i=0; i<3; i++){
-      if (input[i] < (mu_[0] - (size_[0]))) return 0;
-      if (input[i] > (mu_[0] + (size_[0]))) return 0;
+    sigma_ = sigma;
+    sigma_changed_ = true;
+  }
+
+  Probability GaussianVector::ProbabilityGet(const Vector3& input) const
+  {
+    if (sigma_changed_){
+      sigma_changed_ = false;
+      // 2 * sigma^2
+      for (unsigned int i=0; i<3; i++)
+	sigma_sq_[i] = 2 * sigma_[i] * sigma_[i];
+      // sqrt
+      sqrt_ = 1/ sqrt(M_PI*M_PI*M_PI* sigma_sq_[0] * sigma_sq_[1] * sigma_sq_[2]);
     }
-    return probability_;
+
+    Vector3 diff = input - mu_;
+    return sqrt_ * exp( - (diff[0]*diff[0]/sigma_sq_[0])
+			- (diff[1]*diff[1]/sigma_sq_[1])
+			- (diff[2]*diff[2]/sigma_sq_[2]) );
   }
 
 
   bool
-  UniformVector::SampleFrom (vector<Sample<Vector3> >& list_samples, const int num_samples, int method, void * args) const
+  GaussianVector::SampleFrom (vector<Sample<Vector3> >& list_samples, const int num_samples, int method, void * args) const
   {
     list_samples.resize(num_samples);
     vector<Sample<Vector3> >::iterator sample_it = list_samples.begin();
@@ -94,28 +101,34 @@ namespace BFL
 
 
   bool
-  UniformVector::SampleFrom (Sample<Vector3>& one_sample, int method, void * args) const
+  GaussianVector::SampleFrom (Sample<Vector3>& one_sample, int method, void * args) const
   {
-    one_sample.ValueSet( Vector3( ((runif() - 0.5) * 2 * size_[0]) + mu_[0], 
-				      ((runif() - 0.5) * 2 * size_[1]) + mu_[1], 
-				      ((runif() - 0.5) * 2 * size_[2]) + mu_[2]));
+    one_sample.ValueSet( Vector3(rnorm(mu_[0], sigma_[0]), 
+				 rnorm(mu_[1], sigma_[1]),
+				 rnorm(mu_[2], sigma_[2])));
     return true;
   }
 
 
   Vector3
-  UniformVector::ExpectedValueGet (  ) const 
+  GaussianVector::ExpectedValueGet (  ) const 
   { 
     return mu_;
   }
 
   SymmetricMatrix
-  UniformVector::CovarianceGet () const
+  GaussianVector::CovarianceGet () const
   {
     SymmetricMatrix sigma(3); sigma = 0;
     for (unsigned int i=0; i<3; i++)
-      sigma(i+1,i+1) = pow(size_[i],2);
+      sigma(i+1,i+1) = pow(sigma_[i],2);
     return sigma;
+  }
+
+  GaussianVector* 
+  GaussianVector::Clone() const
+  {
+    return new GaussianVector(mu_, sigma_);
   }
 
 } // End namespace BFL

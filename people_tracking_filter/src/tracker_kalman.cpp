@@ -34,7 +34,7 @@
 
 /* Author: Wim Meeussen */
 
-#include "filter/tracker_kalman.h"
+#include "people_tracking_filter/tracker_kalman.h"
 
 using namespace MatrixWrapper;
 using namespace BFL;

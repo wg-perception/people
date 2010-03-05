@@ -31,7 +31,7 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
 
 #rosbuild_add_executable(people_tracker
-rosbuild_add_library(filter 
+rosbuild_add_library(people_tracking_filter 
                      src/uniform_vector.cpp 
                        src/gaussian_vector.cpp 
                        src/gaussian_pos_vel.cpp 

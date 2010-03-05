@@ -35,7 +35,7 @@
 /* Author: Wim Meeussen */
 
 
-#include "filter/sysmodel_vector.h"
+#include "people_tracking_filter/sysmodel_vector.h"
 
 
 using namespace std;

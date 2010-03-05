@@ -59,7 +59,7 @@
   <param name="people_tracker/sys_sigma_vel_y" value="0.5"/>
   <param name="people_tracker/sys_sigma_vel_z" value="0.5"/>
 
-  <node pkg="filter" type="people_tracker" output="screen">
+  <node pkg="people_tracker_filter" type="people_tracker" output="screen">
     <!--remap from="people_tracker_measurements" to="/face_detector/people_tracker_measurements"/-->
 
   </node>

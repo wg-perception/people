@@ -3,6 +3,6 @@
 <param name="people_tracker/follow_distance" value="1.0"/>
 <param name="people_tracker/publish_rate" value="2.0"/>
 
-<node pkg="people" type="people_follower" output="screen"/>
+<node pkg="person_follower" type="people_follower" output="screen"/>
 </launch>
 

@@ -34,11 +34,11 @@
 
 /* Author: Wim Meeussen */
 
-#include "filter/people_tracking_node.h"
-#include "filter/tracker_particle.h"
-#include "filter/tracker_kalman.h"
-#include "filter/state_pos_vel.h"
-#include "filter/rgb.h"
+#include "people_tracking_filter/people_tracking_node.h"
+#include "people_tracking_filter/tracker_particle.h"
+#include "people_tracking_filter/tracker_kalman.h"
+#include "people_tracking_filter/state_pos_vel.h"
+#include "people_tracking_filter/rgb.h"
 #include <people_msgs/PositionMeasurement.h>
 
 
