@@ -50,9 +50,9 @@
 #include "tf/message_filter.h"
 #include "message_filters/subscriber.h"
 
-#include "filter/tracker_kalman.h"
-#include "filter/state_pos_vel.h"
-#include "filter/rgb.h"
+#include "people_tracking_filter/tracker_kalman.h"
+#include "people_tracking_filter/state_pos_vel.h"
+#include "people_tracking_filter/rgb.h"
 
 #include <algorithm>
 

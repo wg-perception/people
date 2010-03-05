@@ -24,7 +24,7 @@
   <depend package="sensor_msgs" />
 
  <export>
- <cpp cflags="-I${prefix}/include" lflags="-Wl,-rpath,${prefix}/lib -L${prefix}/lib -lfilter `rosboost-cfg --lflags thread,signals`" />
+ <cpp cflags="-I${prefix}/include" lflags="-Wl,-rpath,${prefix}/lib -L${prefix}/lib -lpeople_tracking_filter `rosboost-cfg --lflags thread,signals`" />
  </export>
 
 
