@@ -9,13 +9,9 @@
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/filter</url>
   
-  <depend package="message_notifier"/>
   <depend package="roscpp"/>
   <depend package="std_msgs"/>
-  <depend package="deprecated_msgs"/>
   <depend package="geometry_msgs"/>
-  <depend package="topic_synchronizer"/>
-  <depend package="topic_synchronizer2"/>
   <depend package="tf"/>
   <depend package="bfl"/>
   <depend package="bullet"/>
