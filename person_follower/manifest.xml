@@ -12,7 +12,6 @@
   <depend package="pr2_machine"/>
   <depend package="roscpp"/>
   <depend package="std_msgs"/>
-  <depend package="deprecated_msgs"/>
   <depend package="geometry_msgs"/>
   <depend package="robot_actions"/>
   <depend package="pr2_robot_actions"/>
@@ -24,16 +23,12 @@
   <depend package="rospy"/>
   <depend package="sensor_msgs"/>
   <depend package="tf"/>
-  <depend package="bfl"/>
-  <depend package="bullet"/>
   <depend package="visualization_msgs" />
   <depend package="image_transport" />
-  <depend package="person_following_planner" />
   <depend package="message_notifier" />
   <depend package="people_package" />
   <depend package="people_msgs" />
-  <depend package="people_tracking_filter" />
- <rosdep name="python-numpy"/>
+  <rosdep name="python-numpy"/>
   <export>
     <cpp cflags="-I${prefix}/msg/cpp -I${prefix}/srv/cpp"/>
   </export>
