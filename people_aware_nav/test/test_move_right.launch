@@ -1,7 +1,0 @@
-<launch>
-  <master auto="start" />
-  <include file="$(find people_aware_nav)/launch/gazebo_hallway.launch" />
-  <include file="$(find people_aware_nav)/launch/nav_gazebo.xml" />
-  <node pkg="people_aware_nav" type="test_move_right" name="test_move_right" output="screen" /> 
-  <test test-name="hallway_test" time-limit="300" pkg="people_aware_nav" type="hallway_test" />
-</launch>

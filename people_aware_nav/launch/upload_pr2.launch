@@ -1,4 +1,0 @@
-<launch>
-    <!-- send pr2 urdf to param server -->
-    <param name="robot_description" command="$(find xacro)/xacro.py '$(find people_aware_nav)/robots/pr2_no_arms.urdf.xacro'" />
-</launch>

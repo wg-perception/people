@@ -1,1 +1,0 @@
-../src/people-aware-nav.asd
