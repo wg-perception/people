@@ -56,7 +56,7 @@
 #include "opencv/cv.h"
 #include "opencv/highgui.h"
 #include <boost/thread/mutex.hpp>
-#include "opencv/cvaux.hpp"
+#include "opencv2/features2d/features2d.hpp"
 
 //#include "people_package/utils.h"
 
