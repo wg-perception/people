@@ -21,9 +21,9 @@ TrajectoryPlannerROS:
   occdist_scale: 0.01
   heading_lookahead: 0.325
   oscillation_reset_dist: 0.05
-  acc_limit_th: 3.2
-  acc_limit_x: 2.5
-  acc_limit_y: 2.5
+  acc_lim_th: 3.2
+  acc_lim_x: 2.5
+  acc_lim_y: 2.5
   heading_scoring: false
   heading_scoring_timestep: 0.8
   holonomic_robot: true
