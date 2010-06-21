@@ -1,0 +1,38 @@
+<package>
+  <description brief="person_follower">
+
+     follower
+
+  </description>
+  <author>Caroline Pantofaru</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/follower</url>
+
+  <depend package="pr2_machine"/>
+  <depend package="roscpp"/>
+  <depend package="std_msgs"/>
+  <depend package="geometry_msgs"/>
+  <depend package="robot_actions"/>
+  <depend package="pr2_robot_actions"/>
+  <depend package="std_srvs"/>
+  <depend package="opencv2"/>
+  <depend package="cv_bridge"/>
+  <depend package="stereo_utils"/>
+  <depend package="stereo_msgs"/>
+  <depend package="rospy"/>
+  <depend package="sensor_msgs"/>
+  <depend package="tf"/>
+  <depend package="visualization_msgs" />
+  <depend package="image_transport" />
+  <depend package="message_notifier" />
+  <depend package="people_package" />
+  <depend package="people_msgs" />
+  <rosdep name="python-numpy"/>
+  <export>
+    <cpp cflags="-I${prefix}/msg/cpp -I${prefix}/srv/cpp"/>
+  </export>
+-->
+</package>
+
+

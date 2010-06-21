@@ -1,0 +1,4 @@
+<launch>
+<node name="map_server" pkg="map_server" type="map_server" args="$(find willow_maps)/willow-full-0.025.pgm 0.025" machine="three" />
+<!--<node pkg="map_server" type="map_server" args="$(find willow_maps)/willow-full-0.05.pgm 0.05" respawn="false" machine="three" />-->
+</launch>

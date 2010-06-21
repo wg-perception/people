@@ -1,0 +1,9 @@
+<launch>
+  <include file="$(find pr2_machine)/$(env ROBOT).machine" />
+  <include file="$(find 2dnav_pr2)/config/base_odom_teleop_pre.xml" />
+  <include file="$(find 2dnav_pr2)/config/lasers_and_filters.xml" />
+  <include file="$(find 2dnav_pr2)/config/ground_plane.xml" />
+
+  <!-- The naviagtion stack and associated parameters -->
+  <include file="$(find 2dnav_pr2)/move_base_carrot/move_base_local.xml" />
+</launch>

@@ -1,0 +1,33 @@
+<package>
+  <description brief="leg_detector">
+
+     leg_detector
+
+  </description>
+  <author>Caroline Pantofaru</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/leg_detector</url>
+<depend package="roscpp"/>
+<depend package="std_msgs"/>
+<depend package="geometry_msgs"/>
+<depend package="std_srvs"/>
+<depend package="sensor_msgs"/>
+<depend package="laser_geometry"/>
+<depend package="tf"/>
+<depend package="bfl"/>
+<depend package="bullet"/>
+<depend package="visualization_msgs" />
+<depend package="people_msgs" />
+<depend package="people_tracking_filter" />
+<depend package="opencv2"/>
+<rosdep name="python-numpy"/>
+<export>
+<cpp cflags="-I${prefix}/msg/cpp -I${prefix}/srv/cpp"/>
+</export>
+  <platform os="ubuntu" version="9.04"/>
+  <platform os="ubuntu" version="9.10"/>
+  <platform os="ubuntu" version="10.04"/>
+</package>
+
+

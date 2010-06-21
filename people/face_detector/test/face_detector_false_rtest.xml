@@ -1,0 +1,12 @@
+<launch>
+
+  <node pkg="rosrecord" type="rosplay" name="rosplay" args="-r 0.5 $(find face_detector)/face_detector_noface_test.bag"/>
+
+  <include file="$(find face_detector)/launch/face_detector.wide.launch"/> 
+
+  <param name="hztest1/topic" value="face_detector/people_tracker_measurements" />  
+  <param name="hztest1/hz" value="0.0" />
+  <param name="hztest1/test_duration" value="5.0" />    
+  <test test-name="hztest_test" pkg="rostest" type="hztest" name="hztest1" />
+
+</launch>

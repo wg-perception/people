@@ -1,0 +1,6 @@
+INRIA/stairvision integration
+Author/maintainer: Ian Goodfellow <goodfellow@willowgarage.com> (until Sep '09) <ia3n@cs.stanford.edu> (forever)
+
+This directory contains scripts and executables for integrating the INRIA classifier and dataset into the
+STAIR Vision Library.
+

@@ -1,0 +1,30 @@
+<package>
+  <description brief="pedestrian_detector_HOG">
+
+     pedestrian_detector_HOG
+
+  </description>
+  <author>Caroline Pantofaru</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/pedestrian_detector_HOG</url>
+
+  <depend package="roscpp"/>
+  <depend package="std_msgs"/>
+  <depend package="geometry_msgs"/>
+  <depend package="opencv2"/>
+  <depend package="cv_bridge"/>
+  <depend package="stereo_utils"/>
+  <depend package="stereo_msgs"/>
+  <depend package="sensor_msgs"/>
+  <depend package="tf"/>
+  <depend package="visualization_msgs" />
+  <depend package="image_transport" />
+  <depend package="people_msgs" />
+
+  <platform os="ubuntu" version="9.04"/>
+  <platform os="ubuntu" version="9.10"/>
+  <platform os="ubuntu" version="10.04"/>
+</package>
+
+

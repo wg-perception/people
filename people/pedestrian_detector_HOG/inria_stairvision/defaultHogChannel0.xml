@@ -1,0 +1,2 @@
+<svlFeatureExtractor id="HogWrapper"  version="1.0"  width="64"  height="128"  blockWidth="16"  blockHeight="16"  blockStrideX="8"  blockStrideY="8"  nBins="9"  derivAperture="1"  winSigma="-1"  histogramNormType="0"  L2HysThreshold="0.2"  gammaCorrection="1"  validChannel="0"  cellWidth="8"  cellHeight="8" > 
+</svlFeatureExtractor>

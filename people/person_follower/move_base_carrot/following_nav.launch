@@ -1,0 +1,14 @@
+<launch>
+  <include file="$(find pr2_machine)/$(env ROBOT).machine" />
+  <include file="$(find people)/config/base_odom_teleop_pre.xml" />
+  <include file="$(find people)/config/lasers_and_filters.xml" />
+  <include file="$(find people)/config/ground_plane.xml" />
+
+  <include file="$(find people)/config/map_server.xml" />
+  <include file="$(find people)/config/new_amcl_node.xml" />
+
+  <include file="$(find move_base)/launch/move_base_0.3_to_0.2.launch" />
+
+  <!-- The naviagtion stack and associated parameters -->
+  <include file="$(find people)/move_base_carrot/move_base_local.xml" />
+</launch>

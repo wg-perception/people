@@ -1,0 +1,28 @@
+<stack>
+  <description brief="people">people</description>
+  <author>Maintained by Caroline Pantofaru</author>
+  <license>BSD</license>  
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/people</url>
+  <depend stack="2dnav_pr2_app" /> <!-- 2dnav_pr2 -->
+  <depend stack="common" /> <!-- pluginlib, bfl -->
+  <depend stack="common_msgs" /> <!-- nav_msgs, sensor_msgs, geometry_msgs -->
+  <depend stack="geometry" /> <!-- tf, angles, bullet -->
+  <depend stack="image_common" /> <!-- image_transport -->
+  <depend stack="image_pipeline" /> <!-- stereo_msgs -->
+  <depend stack="laser_pipeline" /> <!-- laser_geometry -->
+  <depend stack="navigation" /> <!-- navfn, nav_core, base_local_planner, costmap_2d -->
+  <depend stack="point_cloud_perception_experimental" /> <!-- hallway_tracker -->
+  <depend stack="pr2_apps" /> <!-- pr2_teleop, pr2_tuckarm -->
+  <depend stack="pr2_common" /> <!-- pr2_description, pr2_machine -->
+  <depend stack="pr2_mechanism" /> <!-- pr2_controller_manager -->
+  <depend stack="robot_model" /> <!-- robot_state_publisher -->
+  <depend stack="ros" /> <!-- rosconsole, std_srvs, roscpp, message_filters, roslib, std_msgs, rospy, rosrecord -->
+  <depend stack="ros_experimental" /> <!-- roslisp -->
+  <depend stack="sandbox" /> <!-- color_calib, person_following_planner, pr2_robot_actions, topic_synchronizer2, message_notifier -->
+  <depend stack="simulator_gazebo" /> <!-- gazebo_tools, gazebo -->
+  <depend stack="stereo" /> <!-- stereo_utils -->
+  <depend stack="vision_opencv" /> <!-- opencv2, cv_bridge -->
+  <depend stack="visualization_common" /> <!-- visualization_msgs -->
+
+</stack>
