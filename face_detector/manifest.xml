@@ -15,7 +15,6 @@
 <depend package="std_srvs"/>
 <depend package="opencv2"/>
 <depend package="cv_bridge"/>
-<depend package="stereo_utils"/>
 <depend package="stereo_msgs"/>
 <depend package="sensor_msgs"/>
 <depend package="tf"/>
@@ -23,6 +22,7 @@
 <depend package="visualization_msgs" />
 <depend package="image_transport" />
 <depend package="people_msgs" />
+<depend package="image_geometry" />
 <export>
 <cpp cflags="-I${prefix}/msg/cpp -I${prefix}/srv/cpp"/>
 </export>

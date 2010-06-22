@@ -69,7 +69,7 @@
 #include "face_detector/people.h"
 #include "utils.h"
 
-#include "CvStereoCamModel.h"
+#include "image_geometry/stereo_camera_model.h"
 
 using namespace std;
 
@@ -127,8 +127,10 @@ public:
   IplImage *cv_image_disp_out_; /**< Display image. */
 
   bool use_depth_; /**< True/false use depth information. */
-  CvStereoCamModel *cam_model_; /**< ROS->OpenCV image_geometry conversion. */
- 
+  // CvStereoCamModel *cam_model_; /**< ROS->OpenCV image_geometry conversion. */
+  image_geometry::StereoCameraModel cam_model_; /**< ROS->OpenCV image_geometry conversion. */
+
+
   People *people_; /**< List of people and associated fcns. */
   int num_filenames_;
   vector<string> names_; /**< The name of each detector. Ie frontalface, profileface. These will be the names in the published face location msgs. */
@@ -161,7 +163,6 @@ public:
     cv_image_left_(NULL),
     cv_image_disp_(NULL),
     cv_image_disp_out_(NULL),
-    cam_model_(0),
     people_(0),
     quit_(false)
   {
@@ -249,8 +250,6 @@ public:
       cvDestroyWindow("Face detector: Disparity");
     }
 
-    if (cam_model_) {delete cam_model_; cam_model_ = 0;}
-
     if (people_) {delete people_; people_ = 0;}
   }
 
@@ -332,19 +331,21 @@ public:
     cv_image_disp_ = dbridge_.imgMsgToCv(boost_dimage);
 
     // Convert the stereo calibration into a camera model.
-    if (cam_model_) delete cam_model_;
+    /*    if (cam_model_) delete cam_model_;
     double Fx = rcinfo->P[0];  double Fy = rcinfo->P[5];
     double Clx = rcinfo->P[2]; double Crx = Clx;
     double Cy = rcinfo->P[6];
     double Tx = -rcinfo->P[3]/Fx;
     cam_model_ = new CvStereoCamModel(Fx,Fy,Tx,Clx,Crx,Cy,1.0);// /(double)dispinfo_->dpp);
+    */
+    cam_model_.fromCameraInfo(lcinfo,rcinfo);
  
     im_size = cvGetSize(cv_image_left_);
     struct timeval timeofday;
     gettimeofday(&timeofday,NULL);
     ros::Time starttdetect = ros::Time().fromNSec(1e9*timeofday.tv_sec + 1e3*timeofday.tv_usec);
 
-    vector<Box2D3D> faces_vector = people_->detectAllFaces(cv_image_left_, 1.0, cv_image_disp_, cam_model_);
+    vector<Box2D3D> faces_vector = people_->detectAllFaces(cv_image_left_, 1.0, cv_image_disp_, &cam_model_);
     gettimeofday(&timeofday,NULL);
     ros::Time endtdetect = ros::Time().fromNSec(1e9*timeofday.tv_sec + 1e3*timeofday.tv_usec);
     ros::Duration diffdetect = endtdetect - starttdetect;

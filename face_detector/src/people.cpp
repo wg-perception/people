@@ -89,6 +89,7 @@ People::~People() {
   //if (disparity_image_) {cvReleaseImage(&disparity_image_); disparity_image_ = 0;}
   disparity_image_ = 0;
   cam_model_ = 0;
+
   for (uint i=0; i<storages_.size(); i++) {
     if (storages_[i]) {cvReleaseMemStorage(&storages_[i]); storages_[i] = 0; }
     if (cascades_[i]) {cvReleaseHaarClassifierCascade(&cascades_[i]); cascades_[i] = 0; }
@@ -124,6 +125,8 @@ void People::freePerson(int iperson) {
 }
 
 /**************** HELPER FCNS *************************************/
+
+#if 0
 
 // Computes the histogram of values in the image weighted by an Epanechnikov kernel.
 static void calc_weighted_rg_hist_with_depth_2(IplImage* imager, IplImage* imageg, CvMat* center, IplImage *X, IplImage *Y, IplImage *Z, double band, CvHistogram* hist){
@@ -179,7 +182,7 @@ static void calc_weighted_rg_hist_with_depth_2(IplImage* imager, IplImage* image
   cvNormalizeHist(hist,1.0);
   
 }
-
+#endif
 
 /*****************************************************************/
 
@@ -341,8 +344,8 @@ void People::clearFaceColorHist(int iperson) {
  * image - The image in which to detect faces.
  * haar_classifier_filename - Path to the xml file containing the trained haar classifier cascade.
  * threshold - Detection threshold. Currently unused.
+ * cam_model - The camera model.
  * disparity_image - Image of disparities (from stereo). To avoid using depth information, set this to NULL.
- * cam_model - The camera model created by CvStereoCamModel.
  * do_draw - If true, draw a box on `image' around each face.
  * Output:
  * A vector of CvRects containing the bounding boxes around found faces.
@@ -381,7 +384,7 @@ void People::initFaceDetection(uint num_cascades, std::vector<string> haar_class
 
 /////
 
-vector<Box2D3D> People::detectAllFaces(IplImage *image, double threshold, IplImage *disparity_image, CvStereoCamModel *cam_model) {
+vector<Box2D3D> People::detectAllFaces(IplImage *image, double threshold, IplImage *disparity_image, image_geometry::StereoCameraModel *cam_model) {
 
   faces_.clear();
 
@@ -403,7 +406,7 @@ vector<Box2D3D> People::detectAllFaces(IplImage *image, double threshold, IplIma
   }
   disparity_image_ = disparity_image;
   cam_model_ = cam_model;
-
+  
   // Tell the face detection threads that they can run once.
   num_threads_to_wait_for_ = threads_.size();
   for (uint it=0; it<face_go_mutices_.size(); it++) {
@@ -441,7 +444,12 @@ void People::faceDetectionThread(uint i) {
     }
 
     // Find the faces using OpenCV's haar cascade object detector.
-    int this_min_face_size = (int)(floor(cam_model_->getDeltaU(FACE_SIZE_MIN_M, MAX_Z_M)));
+    cv::Point3d p3_1(0,0,MAX_Z_M);
+    cv::Point3d p3_2(FACE_SIZE_MIN_M,0,MAX_Z_M);
+    cv::Point2d p2_1, p2_2;
+    (cam_model_->left()).project3dToPixel(p3_1,p2_1);
+    (cam_model_->left()).project3dToPixel(p3_2,p2_2);
+    int this_min_face_size = (int)(floor(fabs(p2_2.x-p2_1.x)));
 
     CvSeq *face_seq = cvHaarDetectObjects(cv_image_gray_, cascades_[i], storages_[i], 1.2, 2, CV_HAAR_DO_CANNY_PRUNING, cvSize(this_min_face_size,this_min_face_size));
 
@@ -459,7 +467,7 @@ void People::faceDetectionThread(uint i) {
       one_face.box2d = *(CvRect *)cvGetSeqElem(face_seq,iface);
       one_face.id = i; // The cascade that computed this face.
 
-      if (disparity_image_ && cam_model_) {
+      if (disparity_image_) {
     
 	// Get the median disparity in the middle half of the bounding box.
 	avg_disp = cvMedianNonZeroElIn2DArr(disparity_image_,
@@ -472,12 +480,14 @@ void People::faceDetectionThread(uint i) {
 	one_face.radius2d = one_face.box2d.width/2.0;
 
 	if (avg_disp > 0) {
-	  one_face.radius3d = cam_model_->getDeltaX(one_face.box2d.width,avg_disp)/2.0;
-	  cvmSet(uvd,0,0,one_face.center2d.val[0]);
-	  cvmSet(uvd,0,1,one_face.center2d.val[1]);
-	  cvmSet(uvd,0,2,avg_disp);
-	  cam_model_->dispToCart(uvd,xyz);      
-	  one_face.center3d = cvScalar(cvmGet(xyz,0,0),cvmGet(xyz,0,1),cvmGet(xyz,0,2));
+	  p2_1.x = 0; p2_1.y = 0; p2_2.x = one_face.box2d.width; p2_2.y = 0;
+	  cam_model_->projectDisparityTo3d(p2_1,avg_disp,p3_1);
+	  cam_model_->projectDisparityTo3d(p2_2,avg_disp,p3_2);
+	  one_face.radius3d = fabs(p3_2.x-p3_1.x)/2.0;
+	  p2_1.x = one_face.center2d.val[0];
+	  p2_1.y = one_face.center2d.val[1];
+	  cam_model_->projectDisparityTo3d(p2_1, avg_disp, p3_1);
+	  one_face.center3d = cvScalar(p3_1.x,p3_1.y,p3_1.z);
 	  if (one_face.center3d.val[3] > MAX_Z_M || 2.0*one_face.radius3d < FACE_SIZE_MIN_M || 2.0*one_face.radius3d > FACE_SIZE_MAX_M) {
 	    one_face.status = "bad";
 	  }
@@ -508,6 +518,7 @@ void People::faceDetectionThread(uint i) {
   }
 }
 
+#if 0
 
 /*********************************************
  * Perform one frame of color-based tracking of the face blob.
@@ -1008,3 +1019,4 @@ bool People::track_color_3d_bhattacharya(const IplImage *image, IplImage *dispar
 
 
 
+#endif

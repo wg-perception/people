@@ -80,7 +80,7 @@ $ people/bin/track_starter_gui
 #include <opencv/cxcore.h>
 #include <opencv/cvaux.h>
 
-#include "CvStereoCamModel.h"
+#include "image_geometry/stereo_camera_model.h"
 #include "utils.h"
 #include "ros/time.h"
 #include <boost/thread/mutex.hpp>
@@ -246,19 +246,21 @@ class People
    * Output:
    * A vector of CvRects containing the bounding boxes around found faces.
    */ 
-  vector<Box2D3D> detectAllFaces(IplImage *image, double threshold, IplImage *disparity_image, CvStereoCamModel *cam_model);
+  vector<Box2D3D> detectAllFaces(IplImage *image, double threshold, IplImage *disparity_image, image_geometry::StereoCameraModel *cam_model);
   void initFaceDetection(uint num_cascades, std::vector<string> haar_classifier_filenames);
 
   // Detect only known faces in an image.
   void detectKnownFaces(){}
 
+
   // Track a face.
   void track(){}
-
+#if 0
   /*!
    * \brief Track a face based on the face colour histogram.
    */
-  bool track_color_3d_bhattacharya(const IplImage *image, IplImage *disparity_image, CvStereoCamModel *cam_model, double kernel_radius_m, int npeople,  int* which_people, CvMat* start_points, CvMat* end_points, bool* tracked_each);
+  bool track_color_3d_bhattacharya(const IplImage *image, IplImage *disparity_image, image_geometry::StereoCameraModel &cam_model, double kernel_radius_m, int npeople,  int* which_people, CvMat* start_points, CvMat* end_points, bool* tracked_each);
+#endif
 
  ////////////////////
  private:
@@ -270,8 +272,8 @@ class People
   /**< Grayscale image (to avoid reallocating an image each time an OpenCV function is run.) */
   IplImage *cv_image_gray_;
   IplImage *disparity_image_;
-  CvStereoCamModel *cam_model_;
-  
+  image_geometry::StereoCameraModel *cam_model_;
+
   boost::mutex face_mutex_,face_go_mutex_, face_done_mutex_, t_mutex_;
   vector<boost::mutex*> face_go_mutices_;
   boost::thread_group threads_;
