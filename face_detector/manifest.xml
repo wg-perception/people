@@ -23,6 +23,9 @@
 <depend package="image_transport" />
 <depend package="people_msgs" />
 <depend package="image_geometry" />
+<depend package="actionlib_msgs"/>
+<depend package="actionlib"/>
+
 <export>
 <cpp cflags="-I${prefix}/msg/cpp -I${prefix}/srv/cpp"/>
 </export>

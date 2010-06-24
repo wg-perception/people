@@ -9,6 +9,10 @@ include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
 #  MinSizeRel     : w/o debug symbols, w/ optimization, stripped binaries
 #set(ROS_BUILD_TYPE RelWithDebInfo)
 
+rosbuild_find_ros_package(actionlib)
+include(${actionlib_PACKAGE_PATH}/cmake/actionbuild.cmake)
+genaction()
+
 rosbuild_init()
 
 #set the default path for built executables to the "bin" directory
@@ -17,7 +21,7 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
 #uncomment if you have defined messages
-#rosbuild_genmsg()
+rosbuild_genmsg()
 #uncomment if you have defined services
 rosbuild_gensrv()
 
@@ -33,6 +37,13 @@ rosbuild_add_executable(face_detector
                        src/people.cpp 
                        src/utils.cpp)
 rosbuild_link_boost(face_detector thread)
+
+rosbuild_add_executable(face_detector_action
+                       src/face_detection_action.cpp 
+                       src/people.cpp 
+                       src/utils.cpp)
+rosbuild_link_boost(face_detector_action thread)
+
 
 
 rosbuild_download_test_data(http://pr.willowgarage.com/data/face_detector/face_detector_noface_test.bag face_detector_noface_test.bag 6dce1a1b06fd43c37fdb34f754d38632)
