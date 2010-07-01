@@ -1,5 +1,5 @@
 <launch>
-  <node pkg="face_detector" type="face_detector_action" name="face_detector_action" args="stereo:=wide_stereo image:=image_rect" output="screen">
+  <node pkg="face_detector" type="face_detector" name="face_detector_action" args="stereo:=wide_stereo image:=image_rect" output="screen">
   	 <param name="classifier_name" type="string" value="frontalface" />
 	 <param name="classifier_filename" type="string" value="$(find opencv2)/opencv/share/opencv/haarcascades/haarcascade_frontalface_alt.xml" />
 	 <param name="classifier_reliability" type="double" value="0.9"/>

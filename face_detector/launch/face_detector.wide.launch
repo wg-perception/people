@@ -11,6 +11,4 @@
   	 <param name="output" type="string" value="none" />
   </node>
 
-<!--node pkg="image_view" type="image_view" name="iv" args="image:=/wide_stereo/left/image_raw"/-->
-
 </launch>

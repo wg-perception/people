@@ -23,7 +23,7 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 #uncomment if you have defined messages
 rosbuild_genmsg()
 #uncomment if you have defined services
-rosbuild_gensrv()
+#rosbuild_gensrv()
 
 #common commands for building c++ executables and libraries
 #rosbuild_add_library(${PROJECT_NAME} src/example.cpp)
@@ -37,14 +37,6 @@ rosbuild_add_executable(face_detector
                        src/people.cpp 
                        src/utils.cpp)
 rosbuild_link_boost(face_detector thread)
-
-rosbuild_add_executable(face_detector_action
-                       src/face_detection_action.cpp 
-                       src/people.cpp 
-                       src/utils.cpp)
-rosbuild_link_boost(face_detector_action thread)
-
-
 
 rosbuild_download_test_data(http://pr.willowgarage.com/data/face_detector/face_detector_noface_test.bag face_detector_noface_test.bag 6dce1a1b06fd43c37fdb34f754d38632)
 rosbuild_download_test_data(http://pr.willowgarage.com/data/face_detector/face_detector_withface_test.bag face_detector_withface_test.bag e81af59b9f649c9615d2a83a7d12b784)
