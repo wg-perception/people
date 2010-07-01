@@ -52,8 +52,6 @@
 #include "sensor_msgs/Image.h"
 #include "stereo_msgs/DisparityImage.h"
 #include "cv_bridge/CvBridge.h"
-#include "people_msgs/ColoredLine.h"
-#include "people_msgs/ColoredLines.h"
 #include "tf/transform_listener.h"
 #include "visualization_msgs/Marker.h"
 #include "visualization_msgs/MarkerArray.h"
@@ -123,7 +121,7 @@ public:
   ros::ServiceServer service_server_start_;
   ros::ServiceServer service_server_stop_;
 
-  string do_display_; /**< Type of display, none/local/remote */
+  string do_display_; /**< Type of display, none/local */
   IplImage *cv_image_disp_out_; /**< Display image. */
 
   bool use_depth_; /**< True/false use depth information. */
@@ -220,11 +218,6 @@ public:
     //vis_pub_sub_ = nh_.advertise<visualization_msgs::MarkerArray>("visualization_marker_array",0);
     cloud_pub_ = nh_.advertise<sensor_msgs::PointCloud>("face_detector/people_cloud",0);
 
-    // Advertise the rectangles to draw if stereo_view is running.
-    if (do_display_ == "remote") {
-      clines_pub_ = nh_.advertise<people_msgs::ColoredLines>("lines_to_draw",1);
-      ROS_INFO_STREAM_NAMED("face_detector","Advertising colored lines to draw remotely.");
-    }
     // Subscribe to filter measurements.
     if (external_init_) {
       pos_sub_ = nh_.subscribe("people_tracker_filter",1,&FaceDetector::posCallback,this);
@@ -353,8 +346,6 @@ public:
 
     bool published = false;
 
-    people_msgs::ColoredLines all_cls;
-    vector<people_msgs::ColoredLine> lines;
     // Clear out the old visualization markers. 
     markers_sub_.markers.clear();
     markers_sub_.markers = markers_add_.markers;
@@ -467,10 +458,6 @@ public:
 
       // Draw an appropriately colored rectangle on the display image and in the visualizer.
 
-      if (do_display_ == "remote"){
-	lines.resize(4*faces_vector.size());
-      }
-
       cloud.channels.resize(1);
       cloud.channels[0].name = "intensity";
 
@@ -535,45 +522,7 @@ public:
 			cvPoint(one_face->box2d.x,one_face->box2d.y), 
 			cvPoint(one_face->box2d.x+one_face->box2d.width, one_face->box2d.y+one_face->box2d.height), color, 4);
 	  }
-	  else if (do_display_ == "remote") {
-	    
-	    lines[4*iface].r = color.val[2]; lines[4*iface+1].r = lines[4*iface].r; 
-	    lines[4*iface+2].r = lines[4*iface].r; lines[4*iface+3].r = lines[4*iface].r;
-	    lines[4*iface].g = color.val[1]; lines[4*iface+1].g = lines[4*iface].g; 
-	    lines[4*iface+2].g = lines[4*iface].g; lines[4*iface+3].g = lines[4*iface].g;
-	    lines[4*iface].b = color.val[0]; lines[4*iface+1].b = lines[4*iface].b; 
-	    lines[4*iface+2].b = lines[4*iface].b; lines[4*iface+3].b = lines[4*iface].b;
 
-	    lines[4*iface].x0 = one_face->box2d.x; 
-	    lines[4*iface].x1 = one_face->box2d.x + one_face->box2d.width;
-	    lines[4*iface].y0 = one_face->box2d.y; 
-	    lines[4*iface].y1 = one_face->box2d.y;
-
-	    lines[4*iface+1].x0 = one_face->box2d.x; 
-	    lines[4*iface+1].x1 = one_face->box2d.x;
-	    lines[4*iface+1].y0 = one_face->box2d.y; 
-	    lines[4*iface+1].y1 = one_face->box2d.y + one_face->box2d.height;
-
-	    lines[4*iface+2].x0 = one_face->box2d.x; 
-	    lines[4*iface+2].x1 = one_face->box2d.x + one_face->box2d.width;
-	    lines[4*iface+2].y0 = one_face->box2d.y + one_face->box2d.height; 
-	    lines[4*iface+2].y1 = one_face->box2d.y + one_face->box2d.height;
-
-	    lines[4*iface+3].x0 = one_face->box2d.x + one_face->box2d.width; 
-	    lines[4*iface+3].x1 = one_face->box2d.x + one_face->box2d.width;
-	    lines[4*iface+3].y0 = one_face->box2d.y; 
-	    lines[4*iface+3].y1 = one_face->box2d.y + one_face->box2d.height;
-
-	    lines[4*iface].header.stamp = limage->header.stamp;
-	    lines[4*iface+1].header.stamp = limage->header.stamp;
-	    lines[4*iface+2].header.stamp = limage->header.stamp;
-	    lines[4*iface+3].header.stamp = limage->header.stamp;
-	    lines[4*iface].header.frame_id = limage->header.frame_id;
-	    lines[4*iface+1].header.frame_id = limage->header.frame_id;
-	    lines[4*iface+2].header.frame_id = limage->header.frame_id;
-	    lines[4*iface+3].header.frame_id = limage->header.frame_id;
-	  
-	  }
 	} // End if do_display_
       } // End for iface
 
@@ -587,14 +536,7 @@ public:
       cloud_pub_.publish(cloud);
 
     // Display
-    if (do_display_ == "remote") {
-      all_cls.header.stamp = limage->header.stamp;
-      all_cls.label = "face_detection";
-      all_cls.header.frame_id = limage->header.frame_id;
-      all_cls.lines = lines;
-      clines_pub_.publish(all_cls);
-    }
-    else if (do_display_ == "local") {
+    if (do_display_ == "local") {
       if (!cv_image_disp_out_) {
 	cv_image_disp_out_ = cvCreateImage(im_size,IPL_DEPTH_8U,1);
       }
