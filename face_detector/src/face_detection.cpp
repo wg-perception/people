@@ -69,6 +69,9 @@
 
 #include "image_geometry/stereo_camera_model.h"
 
+#include <actionlib/server/simple_action_server.h>
+#include <face_detector/FaceDetectorAction.h>
+
 using namespace std;
 
 namespace people {
@@ -101,6 +104,12 @@ public:
   message_filters::TimeSynchronizer<sensor_msgs::Image, stereo_msgs::DisparityImage, sensor_msgs::CameraInfo, sensor_msgs::CameraInfo> sync_; /**< Stereo topic synchronizer. */
   
 
+  // Action
+  actionlib::SimpleActionServer<face_detector::FaceDetectorAction> as_;
+  face_detector::FaceDetectorFeedback feedback_;
+  face_detector::FaceDetectorResult result_;
+
+
   IplImage *cv_image_left_; /**< Left image. */
   IplImage *cv_image_disp_; /**< Disparity image. */
 
@@ -108,24 +117,17 @@ public:
 
 
   // Publishers
-  ros::Publisher pos_pub_;
   ros::Publisher vis_pub_add_;
   ros::Publisher vis_pub_sub_;
-  ros::Publisher clines_pub_;
   visualization_msgs::MarkerArray markers_add_;
   visualization_msgs::MarkerArray markers_sub_;
   ros::Publisher cloud_pub_;
 
 
-  // Service
-  ros::ServiceServer service_server_start_;
-  ros::ServiceServer service_server_stop_;
-
   string do_display_; /**< Type of display, none/local */
   IplImage *cv_image_disp_out_; /**< Display image. */
 
   bool use_depth_; /**< True/false use depth information. */
-  // CvStereoCamModel *cam_model_; /**< ROS->OpenCV image_geometry conversion. */
   image_geometry::StereoCameraModel cam_model_; /**< ROS->OpenCV image_geometry conversion. */
 
 
@@ -151,13 +153,13 @@ public:
   boost::mutex cv_mutex_, pos_mutex_, limage_mutex_, dimage_mutex_;
 
   bool do_continuous_;
-  bool run_detector_;
   bool do_publish_unknown_;
 
-  FaceDetector() : 
+  FaceDetector(std::string name) : 
     BIGDIST_M(1000000.0),
     it_(nh_),
     sync_(4),
+    as_(nh_,name),
     cv_image_left_(NULL),
     cv_image_disp_(NULL),
     cv_image_disp_out_(NULL),
@@ -173,6 +175,11 @@ public:
     }
 
 
+    // Action stuff
+    as_.registerGoalCallback(boost::bind(&FaceDetector::goalCB, this));
+    as_.registerPreemptCallback(boost::bind(&FaceDetector::preemptCB, this));
+    
+
     // Parameters
     ros::NodeHandle local_nh("~");
     num_filenames_ = 1;
@@ -187,7 +194,6 @@ public:
     local_nh.param("do_publish_faces_of_unknown_size",do_publish_unknown_,false);
     local_nh.param("use_depth",use_depth_,true);
     local_nh.param("use_external_init",external_init_,true);
-    run_detector_ = do_continuous_;
 
     people_ = new People();
     people_->initFaceDetection(num_filenames_, haar_filenames_);
@@ -207,15 +213,6 @@ public:
     sync_.connectInput(limage_sub_, dimage_sub_, lcinfo_sub_, rcinfo_sub_),
     sync_.registerCallback(boost::bind(&FaceDetector::imageCBAll, this, _1, _2, _3, _4));
 
-    ROS_INFO_STREAM_NAMED("face_detector","Subscribed to images");
-
-    // Advertise a position measure message.
-    pos_pub_ = nh_.advertise<people_msgs::PositionMeasurement>("face_detector/people_tracker_measurements",1);
-
-    ROS_INFO_STREAM_NAMED("face_detector","Advertised people_tracker_measurements");
-
-    //vis_pub_add_ = nh_.advertise<visualization_msgs::MarkerArray>("visualization_marker_array",0);
-    //vis_pub_sub_ = nh_.advertise<visualization_msgs::MarkerArray>("visualization_marker_array",0);
     cloud_pub_ = nh_.advertise<sensor_msgs::PointCloud>("face_detector/people_cloud",0);
 
     // Subscribe to filter measurements.
@@ -223,10 +220,6 @@ public:
       pos_sub_ = nh_.subscribe("people_tracker_filter",1,&FaceDetector::posCallback,this);
       ROS_INFO_STREAM_NAMED("face_detector","Subscribed to the person filter messages.");
     }
-
-    service_server_start_ = nh_.advertiseService("start_detection",&FaceDetector::startDetection,this);
-    service_server_stop_ = nh_.advertiseService("stop_detection",&FaceDetector::stopDetection,this);
-
 
     ros::MultiThreadedSpinner s(2);
     ros::spin(s);
@@ -246,22 +239,16 @@ public:
     if (people_) {delete people_; people_ = 0;}
   }
 
-
-  // Start the detector running. It will automatically stop running when at least one face is found.
-  bool startDetection(face_detector::StartDetection::Request &req, face_detector::StartDetection::Response &resp)
-  {
-    ROS_DEBUG_STREAM_NAMED("face_detector","In service call - start");
-    run_detector_ = true;
-    return true;
+  void goalCB() {
+    ROS_INFO("Face detector action started.");
+    as_.acceptNewGoal();
   }
 
-  // Stop the detector.
-  bool stopDetection(face_detector::StopDetection::Request &req, face_detector::StopDetection::Response &resp)
-  {
-    ROS_DEBUG_STREAM_NAMED("face_detector","In service call - stop");
-    run_detector_ = false;
-    return true;
+  void preemptCB() {
+    ROS_INFO("Face detector action preempted.");
+    as_.setPreempted();
   }
+
 
   /*!
    * \brief Position message callback. 
@@ -307,10 +294,8 @@ public:
   void imageCBAll(const sensor_msgs::Image::ConstPtr &limage, const stereo_msgs::DisparityImage::ConstPtr& dimage, const sensor_msgs::CameraInfo::ConstPtr& lcinfo, const sensor_msgs::CameraInfo::ConstPtr& rcinfo)
   {
 
-    ROS_DEBUG("In callback");
-
     // Only run the detector if in continuous mode or the detector was turned on through a service call.
-    if (!run_detector_) 
+    if (!do_continuous_ && !as_.isActive())
       return;
 
     if (do_display_ == "local") {
@@ -323,14 +308,6 @@ public:
     sensor_msgs::ImageConstPtr boost_dimage(const_cast<sensor_msgs::Image*>(&dimage->image), NullDeleter());
     cv_image_disp_ = dbridge_.imgMsgToCv(boost_dimage);
 
-    // Convert the stereo calibration into a camera model.
-    /*    if (cam_model_) delete cam_model_;
-    double Fx = rcinfo->P[0];  double Fy = rcinfo->P[5];
-    double Clx = rcinfo->P[2]; double Crx = Clx;
-    double Cy = rcinfo->P[6];
-    double Tx = -rcinfo->P[3]/Fx;
-    cam_model_ = new CvStereoCamModel(Fx,Fy,Tx,Clx,Crx,Cy,1.0);// /(double)dispinfo_->dpp);
-    */
     cam_model_.fromCameraInfo(lcinfo,rcinfo);
  
     im_size = cvGetSize(cv_image_left_);
@@ -344,7 +321,7 @@ public:
     ros::Duration diffdetect = endtdetect - starttdetect;
     ROS_DEBUG_STREAM_NAMED("face_detector","Detection duration = " << diffdetect.toSec() << "sec");   
 
-    bool published = false;
+    bool found_faces = false;
 
     // Clear out the old visualization markers. 
     markers_sub_.markers.clear();
@@ -436,8 +413,8 @@ public:
 	    pos.object_id = "";
 	  }
 	  ROS_INFO_STREAM_NAMED("face_detector","Closest person: " << pos.object_id);
-	  pos_pub_.publish(pos);
-	  published = true;
+	  result_.face_positions.push_back(pos);
+	  found_faces = true;
 
 	}
 
@@ -452,7 +429,9 @@ public:
 
 
       // If you don't want continuous processing and you've found at least one face, turn off the detector.
-      if (!do_continuous_ && published) run_detector_ = false;
+      if (!do_continuous_ && found_faces) {
+	as_.setSucceeded(result_);
+      }
 
       /******** Everything from here until the end of the function is for display *********/
 
@@ -522,7 +501,6 @@ public:
 			cvPoint(one_face->box2d.x,one_face->box2d.y), 
 			cvPoint(one_face->box2d.x+one_face->box2d.width, one_face->box2d.y+one_face->box2d.height), color, 4);
 	  }
-
 	} // End if do_display_
       } // End for iface
 
@@ -560,7 +538,7 @@ int main(int argc, char **argv)
 {
   ros::init(argc,argv,"face_detector");
 
-  people::FaceDetector fd;
+  people::FaceDetector fd(ros::this_node::getName());
 
   return 0;
 }
