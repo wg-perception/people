@@ -57,8 +57,6 @@
 #include "visualization_msgs/MarkerArray.h"
 #include "sensor_msgs/PointCloud.h"
 #include "geometry_msgs/Point32.h"
-#include "face_detector/StartDetection.h"
-#include "face_detector/StopDetection.h"
 
 #include "opencv/cxcore.h"
 #include "opencv/cv.h"
@@ -294,7 +292,7 @@ public:
   void imageCBAll(const sensor_msgs::Image::ConstPtr &limage, const stereo_msgs::DisparityImage::ConstPtr& dimage, const sensor_msgs::CameraInfo::ConstPtr& lcinfo, const sensor_msgs::CameraInfo::ConstPtr& rcinfo)
   {
 
-    // Only run the detector if in continuous mode or the detector was turned on through a service call.
+    // Only run the detector if in continuous mode or the detector was turned on through an action invocation.
     if (!do_continuous_ && !as_.isActive())
       return;
 
