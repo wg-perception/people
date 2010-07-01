@@ -1,8 +1,0 @@
-<launch>
-<param name="people_follower/fixed_frame" type="string" value="odom_combined"/>
-<param name="people_tracker/follow_distance" value="1.0"/>
-<param name="people_tracker/publish_rate" value="2.0"/>
-
-<node pkg="person_follower" type="people_follower" output="screen"/>
-</launch>
-
