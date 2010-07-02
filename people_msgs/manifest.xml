@@ -1,7 +1,7 @@
 <package>
   <description brief="people_msgs">
 
-     people_msgs
+     Messages used by nodes in the people stack.
 
   </description>
   <author>Caroline Pantofaru</author>

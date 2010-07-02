@@ -1,8 +1,6 @@
 <package>
   <description brief="face_detector">
-
-     face_detector
-
+    Face detection in images.
   </description>
   <author>Caroline Pantofaru</author>
   <license>BSD</license>

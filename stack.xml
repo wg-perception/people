@@ -1,5 +1,5 @@
 <stack>
-  <description brief="people">people</description>
+  <description brief="people">The people stack holds algorithms for perceiving people from a number of sensors.</description>
   <author>Maintained by Caroline Pantofaru</author>
   <license>BSD</license>  
   <review status="unreviewed" notes=""/>
