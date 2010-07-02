@@ -74,14 +74,7 @@ using namespace std;
 
 namespace people {
 
-/** FaceDetector - A wrapper around OpenCV's face detection, plus some usage of depth to restrict the search.
- *
- * This class provides a ROS node wrapper around OpenCV's face detection, plus some use of depth from stereo to restrict the
- * results presented to plausible face sizes. 
- * Displayed face detections are colored by:
- * red - not a plausible face size;
- * blue - no stereo information available;
- * green - plausible face size. 
+/** FaceDetector - A wrapper around OpenCV's face detection, plus some usage of depth from stereo to restrict the results based on plausible face size.
  */
 class FaceDetector {
 public:
@@ -107,11 +100,14 @@ public:
   face_detector::FaceDetectorFeedback feedback_;
   face_detector::FaceDetectorResult result_;
 
-
+  // OpenCV
   IplImage *cv_image_left_; /**< Left image. */
   IplImage *cv_image_disp_; /**< Disparity image. */
 
+  // If running the face detector as a component in part of a larger person tracker, this subscribes to the tracker's position measurements and whether it was initialized by some other node. 
+  // Todo: resurrect the person tracker.
   ros::Subscriber pos_sub_;
+  bool external_init_; 
 
 
   // Publishers
@@ -121,21 +117,19 @@ public:
   visualization_msgs::MarkerArray markers_sub_;
   ros::Publisher cloud_pub_;
 
-
+  // Display
   string do_display_; /**< Type of display, none/local */
   IplImage *cv_image_disp_out_; /**< Display image. */
 
+  // Stereo
   bool use_depth_; /**< True/false use depth information. */
   image_geometry::StereoCameraModel cam_model_; /**< ROS->OpenCV image_geometry conversion. */
 
-
+  // Face detector params and output
   People *people_; /**< List of people and associated fcns. */
-  int num_filenames_;
-  vector<string> names_; /**< The name of each detector. Ie frontalface, profileface. These will be the names in the published face location msgs. */
-  vector<string> haar_filenames_; /**< Training file for the haar cascade classifier. */
-  vector<double> reliabilities_; /**< Reliability of the predictions. This should depend on the training file used. */
-
-  bool external_init_; 
+  string name_; /**< Name of the detector. Ie frontalface, profileface. These will be the names in the published face location msgs. */
+  string haar_filename_; /**< Training file for the haar cascade classifier. */
+  double reliability_; /**< Reliability of the predictions. This should depend on the training file used. */
 
   struct RestampedPositionMeasurement {
     ros::Time restamp;
@@ -150,8 +144,9 @@ public:
 
   boost::mutex cv_mutex_, pos_mutex_, limage_mutex_, dimage_mutex_;
 
-  bool do_continuous_;
-  bool do_publish_unknown_;
+  bool do_continuous_; /**< True = run as a normal node, searching for faces continuously, False = run as an action, wait for action call to start detection. */
+  
+  bool do_publish_unknown_; /**< Publish faces even if they have unknown depth/size. Will just use the image x,y in the pos field of the published position_measurement. */
 
   FaceDetector(std::string name) : 
     BIGDIST_M(1000000.0),
@@ -180,13 +175,9 @@ public:
 
     // Parameters
     ros::NodeHandle local_nh("~");
-    num_filenames_ = 1;
-    names_.resize(1);
-    local_nh.param("classifier_name",names_[0],std::string(""));
-    haar_filenames_.resize(1);
-    local_nh.param("classifier_filename",haar_filenames_[0],std::string(""));
-    reliabilities_.resize(1);
-    local_nh.param("classifier_reliability",reliabilities_[0],0.0);
+    local_nh.param("classifier_name",name_,std::string(""));
+    local_nh.param("classifier_filename",haar_filename_,std::string(""));
+    local_nh.param("classifier_reliability",reliability_,0.0);
     local_nh.param("do_display",do_display_,std::string("none"));
     local_nh.param("do_continuous",do_continuous_,true);
     local_nh.param("do_publish_faces_of_unknown_size",do_publish_unknown_,false);
@@ -194,7 +185,7 @@ public:
     local_nh.param("use_external_init",external_init_,true);
 
     people_ = new People();
-    people_->initFaceDetection(num_filenames_, haar_filenames_);
+    people_->initFaceDetection(1, haar_filename_);
 
     // Subscribe to the images and camera parameters
     string stereo_namespace, image_topic;
@@ -376,12 +367,12 @@ public:
 
 	  // Convert the face format to a PositionMeasurement msg.
 	  pos.header.stamp = limage->header.stamp;
-	  pos.name = names_[0]; 
+	  pos.name = name_; 
 	  pos.pos.x = one_face->center3d.val[0]; 
 	  pos.pos.y = one_face->center3d.val[1];
 	  pos.pos.z = one_face->center3d.val[2]; 
 	  pos.header.frame_id = limage->header.frame_id;//"stereo_optical_frame";
-	  pos.reliability = reliabilities_[0];
+	  pos.reliability = reliability_;
 	  pos.initialization = 1;//0;
 	  pos.covariance[0] = 0.04; pos.covariance[1] = 0.0;  pos.covariance[2] = 0.0;
 	  pos.covariance[3] = 0.0;  pos.covariance[4] = 0.04; pos.covariance[5] = 0.0;

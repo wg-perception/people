@@ -41,7 +41,7 @@
 
 
 /**
- @mainpage
+@mainpage
 
 @htmlinclude manifest.html
 
@@ -50,24 +50,16 @@ This may include detection, tracking, recognition, activity recognition, etc.
 people.h and people.cpp provide the algorithms, while the other files provide wrapper ROS nodes.
 
 @section usage Usage
-@verbatim
-$ people/bin/face_detection [node_name] [cascade_file_path] [do_display]
-@endverbatim
+See launch/face_dector.wide.launch to launch in continuous detection mode, or
+launch/face_detector_action.wide.launch to launch as an action.
 
-@param node_name A name for the node and topic to publish. Necessary because multiple copies of this node may be run.
-@param casade_file_path Full path to the trained haar cascade. Currently useful cascades are people/cascades/haar_frontalface_alt.xml and people/cascades/haar_profileface.xml 
-@param do_display 0/1 whether to display the detections or just publish them.
+@param classifier_name A readable string for the classifier. Will be published with the result.
+@param classifier_filename Full path to the trained haar cascade. Currently useful cascades are haar_frontalface_alt.xml haar_profileface.xml in opencv2 
+@param classifier_reliability Double 0-1. Some notion of the classifier's reliability for use in a larger system.
+@param do_continuous true=run continuously, false=wait for action call
+@param do_publish_faces_of_unknown_size true-->If depth info is not available, just make pos.x and pos.y in the resulting PositionMeasurement messaging the 2D image center of the face. false-->Don't publish faces if stereo information isn't available.
+@param do_display none/local Don't display anything / display in an OpenCV window.
 
-@verbatim
-$ people/bin/stereo_face_color_tracker
-@endverbatim
-
-@verbatim
-$ people/bin/track_starter_gui
-@endverbatim
-
-@todo Incorporate color calibration into each node in a nicer way. Currently you have to turn it on in the code.
-@todo Correctly interact with the people tracking filter. 
  **/
 
 
@@ -94,10 +86,6 @@ $ people/bin/track_starter_gui
 #define FACE_SIZE_MAX_M 0.5
 #define MAX_Z_M 8
 #define FACE_DIST 1.0 //0.4
-// Thresholds for the face color tracking algorithm.
-#define FACE_SIZE_DEFAULT_M 0.08//0.1
-#define COLOR_TRACK_MAX_ITERS 10
-#define COLOR_TRACK_EPS_M 0.01
 // Timeouts
 #define TRACKING_FILTER_TIMEOUT_S 5.0
 
@@ -107,19 +95,8 @@ using namespace std;
    A structure containing the data related to one person.
  */
 struct Person {
-  CvHistogram *face_color_hist;
-  CvHistogram *shirt_color_hist;
-  double body_height_3d;
-  double body_width_3d;
-  CvRect body_bbox_2d;
-  IplImage *body_mask_2d;
-  double face_size_3d;
-  CvRect face_bbox_2d;
-  IplImage *face_mask_2d;
-  CvScalar face_center_3d;
   string id;
   string name;
-  ros::Time last_tracking_filter_update_time;
 };
 
 
@@ -137,101 +114,6 @@ class People
   // Destroy a list of people.
   ~People();
 
-  void freePerson(int iperson);
-
-  /*!
-   * \brief Add a person to the list of people.
-   */
-  void addPerson();
-
-  /*!
-   * \brief Return the number of people.
-   */
-  int getNumPeople();
-
-
-  /*!
-   * \brief Set the tracking filter update time for a given person.
-   */
-  void setTrackingFilterUpdateTime(ros::Time time, int iperson);
-
-  /*!
-   * \brief Return true if the time lapse between the last filter update for a given person and the given time is less than a set threshold.
-   */
-  bool isWithinTrackingFilterUpdateTimeThresh(ros::Time time, int iperson);
-
-  void killIfFilterUpdateTimeout(ros::Time time);
-
-  /*!
-   * \brief Return the face size in 3D
-   */
-  double getFaceSize3D(int iperson);
-
-  /*!
-   * \brief Set a person's 3D face size. For a size of <=0.0, use FACE_SIZE_DEFAULT_M.
-   */
-  void setFaceSize3D(double face_size, int iperson);
-
-  /*!
-   * \brief Set a person's face bbox.
-   */
-  void setFaceBbox2D(CvRect face_rect, int iperson );
-
-  /*!
-   * \brief Print a person's 3d face center position.
-   */
-  void printFaceCenter3D(int iperson);
-
-  /*!
-   * \brief Set a person's 3d face center position.
-   */
-  void setFaceCenter3D(double cx, double cy, double cz, int iperson);
-  
-  /*!
-   * \brief Find the closest person within a certain face distance in 3D.
-   */
-  int findPersonFaceLTDist3D(double dist, double cx, double cy, double cz);
-
-  /*!
-   * \brief Takes in a rectangle center and size and outputs the four corners in the order (TL; TR; BL; BR)
-   */
-  void centerSizeToFourCorners( CvMat *centers, CvMat *sizes, CvMat *four_corners);
-
-  /*!
-   * \brief Remove a person from the list of people.
-   */
-  void removePerson(){}
-
-  /*!
-   * \brief Use the list of people to recognize a face image.
-   */
-  void recognizePerson(){}
-
-  /*! 
-   * \brief Set a person's id
-   */
-  void setID(std::string id, int iperson);
-
-  /*!
-   * \brief Get a person's id
-   */
-  std::string getID(int iperson);
-  
-  /*!
-   * \brief Find the first person with a given id.
-   */
-  int findID(std::string id);
-
-  /*!
-   * \brief Make a histogram into an image.
-   */
-  IplImage* faceHist2Im(int iperson);
-
-  /*!
-   * \brief Clear the face color histogram of a given person.
-   */
-  void clearFaceColorHist(int iperson);
-
 
   /*!
    * \brief Detect all faces in an image.
@@ -247,20 +129,7 @@ class People
    * A vector of CvRects containing the bounding boxes around found faces.
    */ 
   vector<Box2D3D> detectAllFaces(IplImage *image, double threshold, IplImage *disparity_image, image_geometry::StereoCameraModel *cam_model);
-  void initFaceDetection(uint num_cascades, std::vector<string> haar_classifier_filenames);
-
-  // Detect only known faces in an image.
-  void detectKnownFaces(){}
-
-
-  // Track a face.
-  void track(){}
-#if 0
-  /*!
-   * \brief Track a face based on the face colour histogram.
-   */
-  bool track_color_3d_bhattacharya(const IplImage *image, IplImage *disparity_image, image_geometry::StereoCameraModel &cam_model, double kernel_radius_m, int npeople,  int* which_people, CvMat* start_points, CvMat* end_points, bool* tracked_each);
-#endif
+  void initFaceDetection(uint num_cascades, string haar_classifier_filename);
 
  ////////////////////
  private:
@@ -274,8 +143,8 @@ class People
   IplImage *disparity_image_;
   image_geometry::StereoCameraModel *cam_model_;
 
-  boost::mutex face_mutex_,face_go_mutex_, face_done_mutex_, t_mutex_;
-  vector<boost::mutex*> face_go_mutices_;
+  boost::mutex face_mutex_, face_done_mutex_, t_mutex_;
+  boost::mutex* face_go_mutex_;
   boost::thread_group threads_;
   vector<Box2D3D> faces_;
   boost::condition face_detection_ready_cond_, face_detection_done_cond_;
@@ -284,28 +153,9 @@ class People
 
   /* Structures for the face detector. */
   /**< Classifier cascade for face detection. */
-  vector<CvHaarClassifierCascade*>cascades_;
+  CvHaarClassifierCascade* cascade_;
   /**< Storage for OpenCV functions. */
-  vector<CvMemStorage*>storages_;
-
-  /* Structures for the color face tracker (cft).*/
-  /**< Color planes and normalized color planes. */
-  IplImage *cft_r_plane_;
-  IplImage *cft_g_plane_;
-  IplImage *cft_b_plane_;
-  IplImage *cft_r_plane_norm_;
-  IplImage *cft_g_plane_norm_;
-  IplImage *cft_b_plane_norm_;
-  CvMat *rbins_;
-  CvMat *gbins_;
-  /**< The 3d coords for each point. */
-  IplImage *cft_X_;
-  IplImage *cft_Y_;
-  IplImage *cft_Z_;
-  CvMat *cft_xyz_;
-  CvMat *cft_uvd_;
-  CvHistogram *cft_start_hist_;
-  CvHistogram *cft_ratio_hist_;
+  CvMemStorage* storage_;
 
   void faceDetectionThread(uint i);
 
