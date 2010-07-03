@@ -34,8 +34,8 @@
 *********************************************************************/
 
 
-#ifndef PEOPLE_UTILS_H
-#define PEOPLE_UTILS_H
+#ifndef FACES_UTILS_H
+#define FACES_UTILS_H
 
 #include <stdio.h>
 #include <iostream>
