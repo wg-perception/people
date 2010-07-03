@@ -1,5 +1,5 @@
 /*********************************************************************
- * People-specific computer vision algorithms.
+ * Faces-specific computer vision algorithms.
  *
  **********************************************************************
  *
@@ -36,21 +36,21 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-#include "face_detector/people.h"
+#include "face_detector/faces.h"
 #include <cfloat>
 
-#define __PEOPLE_DEBUG__ 0
-#define __PEOPLE_DISPLAY__ 0
+#define __FACES_DEBUG__ 0
+#define __FACES_DISPLAY__ 0
 
 
-People::People():
+Faces::Faces():
   list_(NULL),
   cv_image_gray_(0),
   disparity_image_(0),
   cam_model_(NULL) {
 }
 
-People::~People() {
+Faces::~Faces() {
   // Kill all the threads.
   threads_.interrupt_all();
   threads_.join_all();
@@ -87,7 +87,7 @@ People::~People() {
 
 
 
-void People::initFaceDetection(uint num_cascades, string haar_classifier_filename) {
+void Faces::initFaceDetection(uint num_cascades, string haar_classifier_filename) {
   images_ready_ = 0;
 
   face_go_mutex_ = new boost::mutex();
@@ -98,12 +98,12 @@ void People::initFaceDetection(uint num_cascades, string haar_classifier_filenam
     return;
   }
   storage_ = cvCreateMemStorage(0);
-  threads_.create_thread(boost::bind(&People::faceDetectionThread,this,0));
+  threads_.create_thread(boost::bind(&Faces::faceDetectionThread,this,0));
 }
 
 /////
 
-vector<Box2D3D> People::detectAllFaces(IplImage *image, double threshold, IplImage *disparity_image, image_geometry::StereoCameraModel *cam_model) {
+vector<Box2D3D> Faces::detectAllFaces(IplImage *image, double threshold, IplImage *disparity_image, image_geometry::StereoCameraModel *cam_model) {
 
   faces_.clear();
 
@@ -144,7 +144,7 @@ vector<Box2D3D> People::detectAllFaces(IplImage *image, double threshold, IplIma
 
 /////
 
-void People::faceDetectionThread(uint i) {
+void Faces::faceDetectionThread(uint i) {
 
   while (1) {
     boost::mutex::scoped_lock fgmlock(*(face_go_mutex_));

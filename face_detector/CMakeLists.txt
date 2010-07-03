@@ -9,8 +9,8 @@ include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
 #  MinSizeRel     : w/o debug symbols, w/ optimization, stripped binaries
 #set(ROS_BUILD_TYPE RelWithDebInfo)
 
-rosbuild_find_ros_package(actionlib)
-include(${actionlib_PACKAGE_PATH}/cmake/actionbuild.cmake)
+rosbuild_find_ros_package(actionlib_msgs)
+include(${actionlib_msgs_PACKAGE_PATH}/cmake/actionbuild.cmake)
 genaction()
 
 rosbuild_init()
@@ -34,7 +34,7 @@ rosbuild_genmsg()
 #target_link_libraries(example ${PROJECT_NAME})
 rosbuild_add_executable(face_detector
                        src/face_detection.cpp 
-                       src/people.cpp 
+                       src/faces.cpp 
                        src/utils.cpp)
 rosbuild_link_boost(face_detector thread)
 

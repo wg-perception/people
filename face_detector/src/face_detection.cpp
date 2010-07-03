@@ -53,8 +53,6 @@
 #include "stereo_msgs/DisparityImage.h"
 #include "cv_bridge/CvBridge.h"
 #include "tf/transform_listener.h"
-#include "visualization_msgs/Marker.h"
-#include "visualization_msgs/MarkerArray.h"
 #include "sensor_msgs/PointCloud.h"
 #include "geometry_msgs/Point32.h"
 
@@ -62,7 +60,7 @@
 #include "opencv/cv.h"
 #include "opencv/highgui.h"
 
-#include "face_detector/people.h"
+#include "face_detector/faces.h"
 #include "utils.h"
 
 #include "image_geometry/stereo_camera_model.h"
@@ -111,10 +109,9 @@ public:
 
 
   // Publishers
-  ros::Publisher vis_pub_add_;
-  ros::Publisher vis_pub_sub_;
-  visualization_msgs::MarkerArray markers_add_;
-  visualization_msgs::MarkerArray markers_sub_;
+  // A point cloud of the face positions, meant for visualization in rviz. 
+  // This could be replaced by visualization markers, but they can't be modified 
+  // in rviz at runtime (eg the alpha, display time, etc. can't be changed.)
   ros::Publisher cloud_pub_;
 
   // Display
@@ -126,7 +123,7 @@ public:
   image_geometry::StereoCameraModel cam_model_; /**< ROS->OpenCV image_geometry conversion. */
 
   // Face detector params and output
-  People *people_; /**< List of people and associated fcns. */
+  Faces *faces_; /**< List of faces and associated fcns. */
   string name_; /**< Name of the detector. Ie frontalface, profileface. These will be the names in the published face location msgs. */
   string haar_filename_; /**< Training file for the haar cascade classifier. */
   double reliability_; /**< Reliability of the predictions. This should depend on the training file used. */
@@ -136,7 +133,7 @@ public:
     people_msgs::PositionMeasurement pos;
     double dist;
   };
-  map<string, RestampedPositionMeasurement> pos_list_; /**< Queue of updated people positions from the filter. */
+  map<string, RestampedPositionMeasurement> pos_list_; /**< Queue of updated face positions from the filter. */
 
   bool quit_;
 
@@ -156,7 +153,7 @@ public:
     cv_image_left_(NULL),
     cv_image_disp_(NULL),
     cv_image_disp_out_(NULL),
-    people_(0),
+    faces_(0),
     quit_(false)
   {
     ROS_INFO_STREAM_NAMED("face_detector","Constructing FaceDetector.");
@@ -184,17 +181,17 @@ public:
     local_nh.param("use_depth",use_depth_,true);
     local_nh.param("use_external_init",external_init_,true);
 
-    people_ = new People();
-    people_->initFaceDetection(1, haar_filename_);
+    faces_ = new Faces();
+    faces_->initFaceDetection(1, haar_filename_);
 
     // Subscribe to the images and camera parameters
     string stereo_namespace, image_topic;
     stereo_namespace = nh_.resolveName("stereo");
     image_topic = nh_.resolveName("image");
-    string left_topic = stereo_namespace + "/left/" + image_topic;
-    string disparity_topic = stereo_namespace + "/disparity";
-    string left_camera_info_topic = stereo_namespace + "/left/camera_info";
-    string right_camera_info_topic = stereo_namespace + "/right/camera_info";
+    string left_topic = ros::names::clean(stereo_namespace + "/left/" + image_topic);
+    string disparity_topic = ros::names::clean(stereo_namespace + "/disparity");
+    string left_camera_info_topic = ros::names::clean(stereo_namespace + "/left/camera_info");
+    string right_camera_info_topic = ros::names::clean(stereo_namespace + "/right/camera_info");
     limage_sub_.subscribe(it_,left_topic,3);
     dimage_sub_.subscribe(nh_,disparity_topic,3);
     lcinfo_sub_.subscribe(nh_,left_camera_info_topic,3);
@@ -202,7 +199,7 @@ public:
     sync_.connectInput(limage_sub_, dimage_sub_, lcinfo_sub_, rcinfo_sub_),
     sync_.registerCallback(boost::bind(&FaceDetector::imageCBAll, this, _1, _2, _3, _4));
 
-    cloud_pub_ = nh_.advertise<sensor_msgs::PointCloud>("face_detector/people_cloud",0);
+    cloud_pub_ = nh_.advertise<sensor_msgs::PointCloud>("face_detector/faces_cloud",0);
 
     // Subscribe to filter measurements.
     if (external_init_) {
@@ -225,7 +222,7 @@ public:
       cvDestroyWindow("Face detector: Disparity");
     }
 
-    if (people_) {delete people_; people_ = 0;}
+    if (faces_) {delete faces_; faces_ = 0;}
   }
 
   void goalCB() {
@@ -304,22 +301,13 @@ public:
     gettimeofday(&timeofday,NULL);
     ros::Time starttdetect = ros::Time().fromNSec(1e9*timeofday.tv_sec + 1e3*timeofday.tv_usec);
 
-    vector<Box2D3D> faces_vector = people_->detectAllFaces(cv_image_left_, 1.0, cv_image_disp_, &cam_model_);
+    vector<Box2D3D> faces_vector = faces_->detectAllFaces(cv_image_left_, 1.0, cv_image_disp_, &cam_model_);
     gettimeofday(&timeofday,NULL);
     ros::Time endtdetect = ros::Time().fromNSec(1e9*timeofday.tv_sec + 1e3*timeofday.tv_usec);
     ros::Duration diffdetect = endtdetect - starttdetect;
     ROS_DEBUG_STREAM_NAMED("face_detector","Detection duration = " << diffdetect.toSec() << "sec");   
 
     bool found_faces = false;
-
-    // Clear out the old visualization markers. 
-    markers_sub_.markers.clear();
-    markers_sub_.markers = markers_add_.markers;
-    for (vector<visualization_msgs::Marker>::iterator im = markers_sub_.markers.begin(); im != markers_sub_.markers.end(); im++ ) {
-      im->action = visualization_msgs::Marker::DELETE;
-    }
-    markers_add_.markers.clear();
-
 
     int ngood = 0;
     sensor_msgs::PointCloud cloud;
@@ -371,7 +359,7 @@ public:
 	  pos.pos.x = one_face->center3d.val[0]; 
 	  pos.pos.y = one_face->center3d.val[1];
 	  pos.pos.z = one_face->center3d.val[2]; 
-	  pos.header.frame_id = limage->header.frame_id;//"stereo_optical_frame";
+	  pos.header.frame_id = limage->header.frame_id;//"*_stereo_optical_frame";
 	  pos.reliability = reliability_;
 	  pos.initialization = 1;//0;
 	  pos.covariance[0] = 0.04; pos.covariance[1] = 0.0;  pos.covariance[2] = 0.0;
@@ -401,13 +389,13 @@ public:
 	  else {
 	    pos.object_id = "";
 	  }
-	  ROS_INFO_STREAM_NAMED("face_detector","Closest person: " << pos.object_id);
+	  ROS_INFO_STREAM_NAMED("face_detector","Closest face: " << pos.object_id);
 	  result_.face_positions.push_back(pos);
 	  found_faces = true;
 
 	}
 
-      } // end for iface
+      } 
       pos_lock.unlock();
 
       // Clean out all of the distances in the pos_list_
@@ -415,12 +403,6 @@ public:
 	(*it).second.dist = BIGDIST_M;
       }
       // Done associating faces.
-
-
-      // If you don't want continuous processing and you've found at least one face, turn off the detector.
-      if (!do_continuous_ && found_faces) {
-	as_.setSucceeded(result_);
-      }
 
       /******** Everything from here until the end of the function is for display *********/
 
@@ -432,31 +414,8 @@ public:
       for (uint iface = 0; iface < faces_vector.size(); iface++) {
 	one_face = &faces_vector[iface];	
 	
-	// Visualization markers
+	// Visualization 
 	if (one_face->status == "good") {
-	  visualization_msgs::Marker m;
-	  m.header.frame_id = limage->header.frame_id;
-	  m.header.stamp = limage->header.stamp;
-	  m.ns = "people";
-	  m.id = 0;
-	  m.type = visualization_msgs::Marker::SPHERE;
-	  m.action = visualization_msgs::Marker::ADD;
-	  m.pose.position.x = one_face->center3d.val[0];
-	  m.pose.position.y = one_face->center3d.val[1];
-	  m.pose.position.z = one_face->center3d.val[2];
-	  m.pose.orientation.x = 0.0;
-	  m.pose.orientation.y = 0.0;
-	  m.pose.orientation.z = 0.0;
-	  m.pose.orientation.w = 1.0;
-	  m.scale.x = 0.2;
-	  m.scale.y = 0.2;
-	  m.scale.z = 0.2;
-	  m.color.a = 1.0;
-	  m.color.r = 0.0;
-	  m.color.g = 1.0;
-	  m.color.b = 0.0;
-	  markers_add_.markers.push_back(m);
-
 
 	  geometry_msgs::Point32 p;
 	  p.x = one_face->center3d.val[0];
@@ -490,17 +449,15 @@ public:
 			cvPoint(one_face->box2d.x,one_face->box2d.y), 
 			cvPoint(one_face->box2d.x+one_face->box2d.width, one_face->box2d.y+one_face->box2d.height), color, 4);
 	  }
-	} // End if do_display_
-      } // End for iface
+	} 
+      } 
 
-    } // End if faces_vector.size()>0
+    } 
 
     ROS_DEBUG_STREAM_NAMED("face_detector","Number of faces found: " << faces_vector.size() << ", number with good depth and size: " << ngood);
 
-    //vis_pub_sub_.publish(markers_sub_);
-    //vis_pub_add_.publish(markers_add_);
-    if (cloud.points.size() > 0) 
-      cloud_pub_.publish(cloud);
+    //if (cloud.points.size() > 0) 
+    cloud_pub_.publish(cloud);
 
     // Display
     if (do_display_ == "local") {
@@ -514,7 +471,14 @@ public:
  
       cv_mutex_.unlock();
     }
-    // Done display
+    /******** Done display ***************************************/
+
+
+    // If you don't want continuous processing and you've found at least one face, turn off the detector.
+    if (!do_continuous_ && found_faces) {
+      as_.setSucceeded(result_);
+    }
+
 
   }
 

@@ -1,5 +1,5 @@
 /*********************************************************************
-* People-specific computer vision algorithms.
+* Face-specific computer vision algorithms.
 *
 **********************************************************************
 *
@@ -36,8 +36,8 @@
 *  POSSIBILITY OF SUCH DAMAGE.
 *********************************************************************/
 
-#ifndef PEOPLE_H
-#define PEOPLE_H
+#ifndef FACES_H
+#define FACES_H
 
 
 /**
@@ -94,25 +94,25 @@ using namespace std;
 /**
    A structure containing the data related to one person.
  */
-struct Person {
+struct Face {
   string id;
   string name;
 };
 
 
 /**
-   Contains a list of people and functions that can be performed on that list.
+   Contains a list of faces and functions that can be performed on that list.
    This includes utility tasks such as set/get data, to more complicated tasks such as detection or tracking.
  */
-class People
+class Faces
 {
  public:
 
   // Create an empty list of people.
-  People();
+  Faces();
 
   // Destroy a list of people.
-  ~People();
+  ~Faces();
 
 
   /*!
@@ -136,7 +136,7 @@ class People
 
 
   /**< The list of people. */
-  vector<Person> list_;
+  vector<Face> list_;
 
   /**< Grayscale image (to avoid reallocating an image each time an OpenCV function is run.) */
   IplImage *cv_image_gray_;
