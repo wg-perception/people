@@ -56,12 +56,11 @@
 #include "sensor_msgs/PointCloud.h"
 #include "geometry_msgs/Point32.h"
 
-#include "opencv/cxcore.h"
-#include "opencv/cv.h"
+#include "opencv/cxcore.hpp"
+#include "opencv/cv.hpp"
 #include "opencv/highgui.h"
 
 #include "face_detector/faces.h"
-#include "utils.h"
 
 #include "image_geometry/stereo_camera_model.h"
 
@@ -98,10 +97,6 @@ public:
   face_detector::FaceDetectorFeedback feedback_;
   face_detector::FaceDetectorResult result_;
 
-  // OpenCV
-  IplImage *cv_image_left_; /**< Left image. */
-  IplImage *cv_image_disp_; /**< Disparity image. */
-
   // If running the face detector as a component in part of a larger person tracker, this subscribes to the tracker's position measurements and whether it was initialized by some other node. 
   // Todo: resurrect the person tracker.
   ros::Subscriber pos_sub_;
@@ -116,7 +111,7 @@ public:
 
   // Display
   string do_display_; /**< Type of display, none/local */
-  IplImage *cv_image_disp_out_; /**< Display image. */
+  cv::Mat cv_image_disp_out_; /**< Display image. */
 
   // Stereo
   bool use_depth_; /**< True/false use depth information. */
@@ -150,9 +145,6 @@ public:
     it_(nh_),
     sync_(4),
     as_(nh_,name),
-    cv_image_left_(NULL),
-    cv_image_disp_(NULL),
-    cv_image_disp_out_(NULL),
     faces_(0),
     quit_(false)
   {
@@ -160,8 +152,8 @@ public:
     
     if (do_display_ == "local") {
       // OpenCV: pop up an OpenCV highgui window
-      cvNamedWindow("Face detector: Disparity",CV_WINDOW_AUTOSIZE);
-      cvNamedWindow("Face detector: Face Detection", CV_WINDOW_AUTOSIZE);
+      cv::namedWindow("Face detector: Disparity",CV_WINDOW_AUTOSIZE);
+      cv::namedWindow("Face detector: Face Detection", CV_WINDOW_AUTOSIZE);
     }
 
 
@@ -215,11 +207,11 @@ public:
   ~FaceDetector()
   {
 
-    if (cv_image_disp_out_) {cvReleaseImage(&cv_image_disp_out_); cv_image_disp_out_ = 0;}
+    cv_image_disp_out_.release();
 
     if (do_display_ == "local") {
-      cvDestroyWindow("Face detector: Face Detection");
-      cvDestroyWindow("Face detector: Disparity");
+      cv::destroyWindow("Face detector: Face Detection");
+      cv::destroyWindow("Face detector: Disparity");
     }
 
     if (faces_) {delete faces_; faces_ = 0;}
@@ -288,15 +280,12 @@ public:
       cv_mutex_.lock();
     }
  
-    CvSize im_size;
-
-    cv_image_left_ = lbridge_.imgMsgToCv(limage,"bgr8");
+    cv::Mat cv_image_left_(lbridge_.imgMsgToCv(limage,"bgr8"));
     sensor_msgs::ImageConstPtr boost_dimage(const_cast<sensor_msgs::Image*>(&dimage->image), NullDeleter());
-    cv_image_disp_ = dbridge_.imgMsgToCv(boost_dimage);
+    cv::Mat cv_image_disp_(dbridge_.imgMsgToCv(boost_dimage));
 
     cam_model_.fromCameraInfo(lcinfo,rcinfo);
  
-    im_size = cvGetSize(cv_image_left_);
     struct timeval timeofday;
     gettimeofday(&timeofday,NULL);
     ros::Time starttdetect = ros::Time().fromNSec(1e9*timeofday.tv_sec + 1e3*timeofday.tv_usec);
@@ -306,6 +295,7 @@ public:
     ros::Time endtdetect = ros::Time().fromNSec(1e9*timeofday.tv_sec + 1e3*timeofday.tv_usec);
     ros::Duration diffdetect = endtdetect - starttdetect;
     ROS_DEBUG_STREAM_NAMED("face_detector","Detection duration = " << diffdetect.toSec() << "sec");   
+    //ROS_INFO_STREAM("Detection duration = " << diffdetect.toSec() << "sec");   
 
     bool found_faces = false;
 
@@ -356,9 +346,9 @@ public:
 	  // Convert the face format to a PositionMeasurement msg.
 	  pos.header.stamp = limage->header.stamp;
 	  pos.name = name_; 
-	  pos.pos.x = one_face->center3d.val[0]; 
-	  pos.pos.y = one_face->center3d.val[1];
-	  pos.pos.z = one_face->center3d.val[2]; 
+	  pos.pos.x = one_face->center3d.x; 
+	  pos.pos.y = one_face->center3d.y;
+	  pos.pos.z = one_face->center3d.z; 
 	  pos.header.frame_id = limage->header.frame_id;//"*_stereo_optical_frame";
 	  pos.reliability = reliability_;
 	  pos.initialization = 1;//0;
@@ -418,9 +408,9 @@ public:
 	if (one_face->status == "good") {
 
 	  geometry_msgs::Point32 p;
-	  p.x = one_face->center3d.val[0];
-	  p.y = one_face->center3d.val[1];
-	  p.z = one_face->center3d.val[2];
+	  p.x = one_face->center3d.x;
+	  p.y = one_face->center3d.y;
+	  p.z = one_face->center3d.z;
 	  cloud.points.push_back(p);
 	  cloud.channels[0].values.push_back(1.0f);
 
@@ -433,21 +423,21 @@ public:
 	// Image display 
 
 	if (do_display_ != "none") {
-	  CvScalar color;
+	  cv::Scalar color;
 	  if (one_face->status == "good") {
-	    color = cvScalar(0,255,0);
+	    color = cv::Scalar(0,255,0);
 	  }
 	  else if (one_face->status == "unknown") {
-	    color = cvScalar(255,0,0);
+	    color = cv::Scalar(255,0,0);
 	  }
 	  else {
-	    color = cvScalar(0,0,255);
+	    color = cv::Scalar(0,0,255);
 	  }
 
 	  if (do_display_ == "local") {
-	    cvRectangle(cv_image_left_, 
-			cvPoint(one_face->box2d.x,one_face->box2d.y), 
-			cvPoint(one_face->box2d.x+one_face->box2d.width, one_face->box2d.y+one_face->box2d.height), color, 4);
+	    cv::rectangle(cv_image_left_, 
+			  cv::Point(one_face->box2d.x,one_face->box2d.y), 
+			  cv::Point(one_face->box2d.x+one_face->box2d.width, one_face->box2d.y+one_face->box2d.height), color, 4);
 	  }
 	} 
       } 
@@ -461,13 +451,10 @@ public:
 
     // Display
     if (do_display_ == "local") {
-      if (!cv_image_disp_out_) {
-	cv_image_disp_out_ = cvCreateImage(im_size,IPL_DEPTH_8U,1);
-      }
-      cvCvtScale(cv_image_disp_,cv_image_disp_out_,4.0);
-      cvShowImage("Face detector: Face Detection",cv_image_left_);
+
+      cv::imshow("Face detector: Face Detection",cv_image_left_);
       //cvShowImage("Face detector: Disparity",cv_image_disp_out_);
-      cvWaitKey(2);
+      cv::waitKey(2);
  
       cv_mutex_.unlock();
     }

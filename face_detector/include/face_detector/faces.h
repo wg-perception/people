@@ -68,12 +68,11 @@ launch/face_detector_action.wide.launch to launch as an action.
 #include <iostream>
 #include <vector>
 
-#include <opencv/cv.h>
-#include <opencv/cxcore.h>
-#include <opencv/cvaux.h>
+#include <opencv/cv.hpp>
+#include <opencv/cxcore.hpp>
+#include <opencv/cvaux.hpp>
 
 #include "image_geometry/stereo_camera_model.h"
-#include "utils.h"
 #include "ros/time.h"
 #include <boost/thread/mutex.hpp>
 #include <boost/bind.hpp>
@@ -90,6 +89,20 @@ launch/face_detector_action.wide.launch to launch as an action.
 #define TRACKING_FILTER_TIMEOUT_S 5.0
 
 using namespace std;
+
+/** 
+    A structure for holding information about boxes in 2d and 3d.
+*/
+struct Box2D3D {
+  cv::Point2d center2d;
+  cv::Point3d center3d;
+  double radius2d;
+  double radius3d;
+  cv::Rect box2d;
+  string status;
+  int id;
+};
+
 
 /**
    A structure containing the data related to one person.
@@ -128,7 +141,7 @@ class Faces
    * Output:
    * A vector of CvRects containing the bounding boxes around found faces.
    */ 
-  vector<Box2D3D> detectAllFaces(IplImage *image, double threshold, IplImage *disparity_image, image_geometry::StereoCameraModel *cam_model);
+  vector<Box2D3D> detectAllFaces(cv::Mat &image, double threshold, cv::Mat &disparity_image, image_geometry::StereoCameraModel *cam_model);
   void initFaceDetection(uint num_cascades, string haar_classifier_filename);
 
  ////////////////////
@@ -139,8 +152,8 @@ class Faces
   vector<Face> list_;
 
   /**< Grayscale image (to avoid reallocating an image each time an OpenCV function is run.) */
-  IplImage *cv_image_gray_;
-  IplImage *disparity_image_;
+  cv::Mat cv_image_gray_;
+  cv::Mat *disparity_image_;
   image_geometry::StereoCameraModel *cam_model_;
 
   boost::mutex face_mutex_, face_done_mutex_, t_mutex_;
@@ -153,9 +166,7 @@ class Faces
 
   /* Structures for the face detector. */
   /**< Classifier cascade for face detection. */
-  CvHaarClassifierCascade* cascade_;
-  /**< Storage for OpenCV functions. */
-  CvMemStorage* storage_;
+  cv::CascadeClassifier cascade_;
 
   void faceDetectionThread(uint i);
 
