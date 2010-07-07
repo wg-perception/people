@@ -39,10 +39,7 @@
 #include "face_detector/faces.h"
 #include <cfloat>
 
-#define __FACES_DEBUG__ 0
-#define __FACES_DISPLAY__ 0
-
-
+namespace people {
 
 Faces::Faces():
   list_(NULL),
@@ -63,21 +60,6 @@ Faces::~Faces() {
   cam_model_ = 0;
 
 }
-
-
-
-/********
- * Detect all faces in an image.
- * Input:
- * image - The image in which to detect faces.
- * haar_classifier_filename - Path to the xml file containing the trained haar classifier cascade.
- * threshold - Detection threshold. Currently unused.
- * cam_model - The camera model.
- * disparity_image - Image of disparities (from stereo). To avoid using depth information, set this to NULL.
- * do_draw - If true, draw a box on `image' around each face.
- * Output:
- * A vector of Box2D3Ds containing the bounding boxes around found faces in 2D and 3D.
- *********/ 
 
 
 /* Note: The multi-threading in this file is left over from a previous incarnation that allowed multiple 
@@ -231,3 +213,4 @@ void Faces::faceDetectionThread(uint i) {
   }
 }
 
+};

@@ -2,11 +2,19 @@
 \mainpage
 \htmlinclude manifest.html
 
-\b face_detector is ... 
+\b face_detector is a package containing algorithms and nodes related to the detection of faces. 
 
-<!-- 
-Provide an overview of your package.
--->
+@section usage Usage
+See launch/face_dector.wide.launch to launch in continuous detection mode, or
+launch/face_detector_action.wide.launch to launch as an action.
+
+@param classifier_name A readable string name for the classifier. Will be published with the result.
+@param classifier_filename Full path to the trained haar cascade. Currently useful cascades are haar_frontalface_alt.xml and haar_profileface.xml in opencv2 
+@param classifier_reliability Double 0-1. Some notion of the classifier's reliability for use in a larger system.
+@param do_continuous true = Run continuously. false = Wait for action call
+@param do_publish_faces_of_unknown_size true = If depth info is not available, publish the resulting face with a position of (0,0,0). false = Don't publish faces if stereo information isn't available.
+@param do_display none = Don't display anything. local = Display in an OpenCV window.
+
 
 
 \section codeapi Code API

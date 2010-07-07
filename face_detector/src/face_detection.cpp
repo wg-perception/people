@@ -35,6 +35,8 @@
 
 /* Author: Caroline Pantofaru */
 
+
+
 #include <stdio.h>
 #include <iostream>
 #include <vector>
@@ -366,7 +368,7 @@ public:
 	  map<string, RestampedPositionMeasurement>::iterator close_it = pos_list_.end();
 	  for (it = pos_list_.begin(); it != pos_list_.end(); it++) {
 	    dist = pow((*it).second.pos.pos.x - pos.pos.x, 2.0) + pow((*it).second.pos.pos.y - pos.pos.y, 2.0) + pow((*it).second.pos.pos.z - pos.pos.z, 2.0);
-	    if (dist <= FACE_DIST && dist < mindist) {
+	    if (dist <= Faces::FACE_DIST_M && dist < mindist) {
 	      mindist = dist;
 	      close_it = it;
 	    }

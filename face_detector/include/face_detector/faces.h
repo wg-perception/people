@@ -40,29 +40,6 @@
 #define FACES_H
 
 
-/**
-@mainpage
-
-@htmlinclude manifest.html
-
-@b "people" is a package containing algorithms and nodes related to the perception of people. 
-This may include detection, tracking, recognition, activity recognition, etc. 
-people.h and people.cpp provide the algorithms, while the other files provide wrapper ROS nodes.
-
-@section usage Usage
-See launch/face_dector.wide.launch to launch in continuous detection mode, or
-launch/face_detector_action.wide.launch to launch as an action.
-
-@param classifier_name A readable string for the classifier. Will be published with the result.
-@param classifier_filename Full path to the trained haar cascade. Currently useful cascades are haar_frontalface_alt.xml haar_profileface.xml in opencv2 
-@param classifier_reliability Double 0-1. Some notion of the classifier's reliability for use in a larger system.
-@param do_continuous true=run continuously, false=wait for action call
-@param do_publish_faces_of_unknown_size true-->If depth info is not available, just make pos.x and pos.y in the resulting PositionMeasurement messaging the 2D image center of the face. false-->Don't publish faces if stereo information isn't available.
-@param do_display none/local Don't display anything / display in an OpenCV window.
-
- **/
-
-
 
 #include <stdio.h>
 #include <iostream>
@@ -80,19 +57,15 @@ launch/face_detector_action.wide.launch to launch as an action.
 #include <boost/thread/condition.hpp>
 
 
-// Thresholds for the face detection algorithm.
-#define FACE_SIZE_MIN_M 0.1
-#define FACE_SIZE_MAX_M 0.5
-#define MAX_Z_M 8
-#define FACE_DIST 1.0 //0.4
-// Timeouts
-#define TRACKING_FILTER_TIMEOUT_S 5.0
-
 using namespace std;
 
-/** 
-    A structure for holding information about boxes in 2d and 3d.
-*/
+
+namespace people {
+
+
+/*!
+ * \brief A structure for holding information about boxes in 2d and 3d.
+ */
 struct Box2D3D {
   cv::Point2d center2d;
   cv::Point3d center3d;
@@ -104,22 +77,29 @@ struct Box2D3D {
 };
 
 
-/**
-   A structure containing the data related to one person.
+/*!
+ * \brief A structure containing the person's identifying data.
  */
 struct Face {
   string id;
-  string name;
+  string name; 
 };
 
 
-/**
-   Contains a list of faces and functions that can be performed on that list.
-   This includes utility tasks such as set/get data, to more complicated tasks such as detection or tracking.
+/*!
+ * \brief Contains a list of faces and functions that can be performed on that list.
+ * This includes utility tasks such as set/get data, to more complicated tasks such as detection or tracking.
  */
 class Faces
 {
  public:
+
+  // Thresholds for the face detection algorithm.
+  static const float FACE_SIZE_MIN_M=0.1; /**< Minimum face size, in meters. */
+  static const float FACE_SIZE_MAX_M=0.5; /**< Maximum face size, in meters. */
+  static const float MAX_Z_M=8; /**< Maximum distance from the camera, in meters. */
+  // Thresholds for face tracking.
+  static const float FACE_DIST_M=1.0; /**< Separation distance for associating faces. */
 
   // Create an empty list of people.
   Faces();
@@ -132,43 +112,49 @@ class Faces
    * \brief Detect all faces in an image.
    * 
    * Input:
-   * \param image - The image in which to detect faces.
-   * \param haar_classifier_filename - Path to the xml file containing the trained haar classifier cascade.
-   * \param threshold - Detection threshold. Currently unused.
-   * \param disparity_image - Image of disparities (from stereo). To avoid using depth information, set this to NULL.
-   * \param cam_model - The camera model created by CvStereoCamModel.
-   * \param do_draw - If true, draw a box on `image' around each face.
+   * \param image The image in which to detect faces.
+   * \param haar_classifier_filename Path to the xml file containing the trained haar classifier cascade.
+   * \param threshold Detection threshold. Currently unused.
+   * \param disparity_image Image of disparities (from stereo).
+   * \param cam_model The camera model used to convert 2D points to 3D points.
    * Output:
-   * A vector of CvRects containing the bounding boxes around found faces.
+   * A vector of Box2D3Ds containing the bounding boxes around found faces in 2D and 3D.
    */ 
   vector<Box2D3D> detectAllFaces(cv::Mat &image, double threshold, cv::Mat &disparity_image, image_geometry::StereoCameraModel *cam_model);
+
+  /*! 
+   * \brief Initialize the face detector. 
+   *
+   * Initialize the face detector, including loading in the classifier cascade.
+   * Input:
+   * \param num_cascades Should always be 1 (may change in the future.)
+   * \param haar_classifier_filename Full path to the cascade file.
+   */
   void initFaceDetection(uint num_cascades, string haar_classifier_filename);
 
  ////////////////////
  private:
 
+  vector<Face> list_;  /**< The list of face ids. */
+  vector<Box2D3D> faces_; /**< The list of face positions. */
 
-  /**< The list of people. */
-  vector<Face> list_;
+  cv::Mat cv_image_gray_;  /**< Grayscale image */
+  cv::Mat *disparity_image_; /**< Disparity image */
+  image_geometry::StereoCameraModel *cam_model_; /**< The stereo camera model for 2D-->3D conversions. */
 
-  /**< Grayscale image (to avoid reallocating an image each time an OpenCV function is run.) */
-  cv::Mat cv_image_gray_;
-  cv::Mat *disparity_image_;
-  image_geometry::StereoCameraModel *cam_model_;
-
-  boost::mutex face_mutex_, face_done_mutex_, t_mutex_;
+  boost::mutex face_mutex_, face_done_mutex_, t_mutex_; 
   boost::mutex* face_go_mutex_;
   boost::thread_group threads_;
-  vector<Box2D3D> faces_;
-  boost::condition face_detection_ready_cond_, face_detection_done_cond_;
+  boost::condition face_detection_ready_cond_, face_detection_done_cond_; 
   int num_threads_to_wait_for_;
   int images_ready_;
 
   /* Structures for the face detector. */
-  /**< Classifier cascade for face detection. */
-  cv::CascadeClassifier cascade_;
+  cv::CascadeClassifier cascade_;  /**< Classifier cascade for face detection. */
 
   void faceDetectionThread(uint i);
+
+};
 
 };
 
