@@ -111,7 +111,7 @@ public:
 
   // Display
   string do_display_; /**< Type of display, none/local */
-  cv::Mat cv_image_disp_out_; /**< Display image. */
+  cv::Mat cv_image_out_; /**< Display image. */
 
   // Stereo
   bool use_depth_; /**< True/false use depth information. */
@@ -152,7 +152,6 @@ public:
     
     if (do_display_ == "local") {
       // OpenCV: pop up an OpenCV highgui window
-      cv::namedWindow("Face detector: Disparity",CV_WINDOW_AUTOSIZE);
       cv::namedWindow("Face detector: Face Detection", CV_WINDOW_AUTOSIZE);
     }
 
@@ -207,11 +206,10 @@ public:
   ~FaceDetector()
   {
 
-    cv_image_disp_out_.release();
+    cv_image_out_.release();
 
     if (do_display_ == "local") {
       cv::destroyWindow("Face detector: Face Detection");
-      cv::destroyWindow("Face detector: Disparity");
     }
 
     if (faces_) {delete faces_; faces_ = 0;}
@@ -280,11 +278,16 @@ public:
       cv_mutex_.lock();
     }
  
+    // ROS --> OpenCV
     cv::Mat cv_image_left_(lbridge_.imgMsgToCv(limage,"bgr8"));
     sensor_msgs::ImageConstPtr boost_dimage(const_cast<sensor_msgs::Image*>(&dimage->image), NullDeleter());
     cv::Mat cv_image_disp_(dbridge_.imgMsgToCv(boost_dimage));
-
     cam_model_.fromCameraInfo(lcinfo,rcinfo);
+
+    // For display, keep a copy of the image that we can draw on.
+    if (do_display_ == "local") {
+      cv_image_out_ = cv_image_left_.clone();
+    }
  
     struct timeval timeofday;
     gettimeofday(&timeofday,NULL);
@@ -386,7 +389,6 @@ public:
 	}
 
       }
-      ROS_INFO_STREAM_NAMED("face_detector","Found " << faces_vector.size() << " face(s)."); 
       pos_lock.unlock();
 
       // Clean out all of the distances in the pos_list_
@@ -395,7 +397,7 @@ public:
       }
       // Done associating faces.
 
-      /******** Everything from here until the end of the function is for display *********/
+      /******** Display **************************************************************/
 
       // Draw an appropriately colored rectangle on the display image and in the visualizer.
 
@@ -405,7 +407,7 @@ public:
       for (uint iface = 0; iface < faces_vector.size(); iface++) {
 	one_face = &faces_vector[iface];	
 	
-	// Visualization 
+	// Visualization of good faces as a point cloud
 	if (one_face->status == "good") {
 
 	  geometry_msgs::Point32 p;
@@ -421,9 +423,8 @@ public:
 	  ROS_DEBUG_STREAM_NAMED("face_detector","The detection didn't have a valid size, so it wasn't visualized.");
 	}
 
-	// Image display 
-
-	if (do_display_ != "none") {
+	// Visualization by image display.
+	if (do_display_ == "local") {
 	  cv::Scalar color;
 	  if (one_face->status == "good") {
 	    color = cv::Scalar(0,255,0);
@@ -436,7 +437,7 @@ public:
 	  }
 
 	  if (do_display_ == "local") {
-	    cv::rectangle(cv_image_left_, 
+	    cv::rectangle(cv_image_out_, 
 			  cv::Point(one_face->box2d.x,one_face->box2d.y), 
 			  cv::Point(one_face->box2d.x+one_face->box2d.width, one_face->box2d.y+one_face->box2d.height), color, 4);
 	  }
@@ -445,21 +446,19 @@ public:
 
     } 
 
-    ROS_DEBUG_STREAM_NAMED("face_detector","Number of faces found: " << faces_vector.size() << ", number with good depth and size: " << ngood);
-
-    //if (cloud.points.size() > 0) 
     cloud_pub_.publish(cloud);
 
     // Display
     if (do_display_ == "local") {
 
-      cv::imshow("Face detector: Face Detection",cv_image_left_);
-      //cvShowImage("Face detector: Disparity",cv_image_disp_out_);
+      cv::imshow("Face detector: Face Detection",cv_image_out_);
       cv::waitKey(2);
  
       cv_mutex_.unlock();
     }
-    /******** Done display ***************************************/
+    /******** Done display **********************************************************/
+
+    ROS_INFO_STREAM_NAMED("face_detector","Number of faces found: " << faces_vector.size() << ", number with good depth and size: " << ngood);
 
 
     // If you don't want continuous processing and you've found at least one face, turn off the detector.

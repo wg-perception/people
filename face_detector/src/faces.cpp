@@ -76,19 +76,25 @@ Faces::~Faces() {
  * disparity_image - Image of disparities (from stereo). To avoid using depth information, set this to NULL.
  * do_draw - If true, draw a box on `image' around each face.
  * Output:
- * A vector of CvRects containing the bounding boxes around found faces.
+ * A vector of Box2D3Ds containing the bounding boxes around found faces in 2D and 3D.
  *********/ 
 
+
+/* Note: The multi-threading in this file is left over from a previous incarnation that allowed multiple 
+ * cascades to be run at once. It hasn't been removed in case we want to return to that model, and since 
+ * there isn't much overhead. Right now, however, only one classifier is being run per instantiation 
+ * of the face_detector node.
+ */
 
 
 void Faces::initFaceDetection(uint num_cascades, string haar_classifier_filename) {
   images_ready_ = 0;
 
   face_go_mutex_ = new boost::mutex();
-  bool cascade_ok = cascade_.load(haar_classifier_filename);//.c_str());
+  bool cascade_ok = cascade_.load(haar_classifier_filename);
   
   if (!cascade_ok) {
-    std::cerr << "Cascade file " << haar_classifier_filename << " doesn't exist.\n" << std::endl;
+    ROS_ERROR_STREAM("Cascade file " << haar_classifier_filename << " doesn't exist.");
     return;
   }
   threads_.create_thread(boost::bind(&Faces::faceDetectionThread,this,0));
@@ -177,39 +183,38 @@ void Faces::faceDetectionThread(uint i) {
       one_face.box2d = faces_vec[iface];
       one_face.id = i; // The cascade that computed this face.
 
-      if (disparity_image_) {
-	// Get the median disparity in the middle half of the bounding box.
-	IplImage dimage_old = *disparity_image_;
+      // Get the median disparity in the middle half of the bounding box.
+      cv::Mat disp_roi_shallow(*disparity_image_,cv::Rect(floor(one_face.box2d.x+0.25*one_face.box2d.width),  
+							  floor(one_face.box2d.y+0.25*one_face.box2d.height),
+							  floor(one_face.box2d.x+0.75*one_face.box2d.width) - floor(one_face.box2d.x+0.25*one_face.box2d.width) + 1,
+							  floor(one_face.box2d.y+0.75*one_face.box2d.height) - floor(one_face.box2d.y+0.25*one_face.box2d.height) + 1));
+      cv::Mat disp_roi = disp_roi_shallow.clone();
+      cv::Mat tmat = disp_roi.reshape(1,disp_roi.rows*disp_roi.cols);
+      cv::Mat tmat_sorted;
+      cv::sort(tmat, tmat_sorted, CV_SORT_EVERY_COLUMN+CV_SORT_DESCENDING);
+      avg_disp = tmat_sorted.at<float>(floor(cv::countNonZero(tmat_sorted<0.0)/2.0)); // Get the middle valid disparity (-1 disparities are invalid)
 
-	cv::Mat disp_roi_shallow(*disparity_image_,cv::Rect(floor(one_face.box2d.x+0.25*one_face.box2d.width),  
-							    floor(one_face.box2d.y+0.25*one_face.box2d.height),
-							    floor(one_face.box2d.x+0.75*one_face.box2d.width) - floor(one_face.box2d.x+0.25*one_face.box2d.width) + 1,
-							    floor(one_face.box2d.y+0.75*one_face.box2d.height) - floor(one_face.box2d.y+0.25*one_face.box2d.height) + 1));
-	cv::Mat disp_roi = disp_roi_shallow.clone();
-	cv::Mat tmat = disp_roi.reshape(1,disp_roi.rows*disp_roi.cols);
-	cv::Mat tmat_sorted;
-	cv::sort(tmat, tmat_sorted, CV_SORT_EVERY_COLUMN+CV_SORT_DESCENDING);
-	avg_disp = tmat_sorted.at<float>(floor(cv::countNonZero(tmat_sorted<0.0)/2.0)); // Get the middle valid disparity (-1 disparities are invalid)
+      // Fill in the rest of the face data structure.
+      one_face.center2d = cv::Point2d(one_face.box2d.x+one_face.box2d.width/2.0,
+				      one_face.box2d.y+one_face.box2d.height/2.0);
+      one_face.radius2d = one_face.box2d.width/2.0;
 
-	// Fill in the rest of the face data structure.
-	one_face.center2d = cv::Point2d(one_face.box2d.x+one_face.box2d.width/2.0,
-					one_face.box2d.y+one_face.box2d.height/2.0);
-	one_face.radius2d = one_face.box2d.width/2.0;
-
-	if (avg_disp > 0) {
-	  cam_model_->projectDisparityTo3d(cv::Point2d(0.0,0.0),avg_disp,p3_1); 
-	  cam_model_->projectDisparityTo3d(cv::Point2d(one_face.box2d.width,0.0),avg_disp,p3_2);
-	  one_face.radius3d = fabs(p3_2.x-p3_1.x)/2.0;
-	  cam_model_->projectDisparityTo3d(one_face.center2d, avg_disp, one_face.center3d);
-	  if (one_face.center3d.z > MAX_Z_M || 2.0*one_face.radius3d < FACE_SIZE_MIN_M || 2.0*one_face.radius3d > FACE_SIZE_MAX_M) {
-	    one_face.status = "bad";
-	  }
+      // If the median disparity was valid and the face is a reasonable size, the face status is "good".
+      // If the median disparity was valid but the face isn't a reasonable size, the face status is "bad".
+      // Otherwise, the face status is "unknown".
+      if (avg_disp > 0) {
+	cam_model_->projectDisparityTo3d(cv::Point2d(0.0,0.0),avg_disp,p3_1); 
+	cam_model_->projectDisparityTo3d(cv::Point2d(one_face.box2d.width,0.0),avg_disp,p3_2);
+	one_face.radius3d = fabs(p3_2.x-p3_1.x)/2.0;
+	cam_model_->projectDisparityTo3d(one_face.center2d, avg_disp, one_face.center3d);
+	if (one_face.center3d.z > MAX_Z_M || 2.0*one_face.radius3d < FACE_SIZE_MIN_M || 2.0*one_face.radius3d > FACE_SIZE_MAX_M) {
+	  one_face.status = "bad";
 	}
-	else {
-	  one_face.radius3d = 0.0;     
-	  one_face.center3d = cv::Point3d(0.0,0.0,0.0);
-	  one_face.status = "unknown";
-	}
+      }
+      else {
+	one_face.radius3d = 0.0;     
+	one_face.center3d = cv::Point3d(0.0,0.0,0.0);
+	one_face.status = "unknown";
       }
 
       // Add faces to the output vector.
