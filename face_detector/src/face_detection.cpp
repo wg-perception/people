@@ -375,17 +375,18 @@ public:
 	      (*close_it).second.pos = pos;
 	    }
 	    pos.object_id = (*close_it).second.pos.object_id;
+	    ROS_INFO_STREAM_NAMED("face_detector","Found face " << pos.object_id);
 	  }
 	  else {
 	    pos.object_id = "";
 	  }
-	  ROS_INFO_STREAM_NAMED("face_detector","Closest face: " << pos.object_id);
 	  result_.face_positions.push_back(pos);
 	  found_faces = true;
 
 	}
 
-      } 
+      }
+      ROS_INFO_STREAM_NAMED("face_detector","Found " << faces_vector.size() << " face(s)."); 
       pos_lock.unlock();
 
       // Clean out all of the distances in the pos_list_
