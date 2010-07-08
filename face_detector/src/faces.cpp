@@ -36,6 +36,8 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
+/* Author: Caroline Pantofaru */
+
 #include "face_detector/faces.h"
 #include <cfloat>
 

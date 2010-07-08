@@ -110,6 +110,7 @@ public:
   // This could be replaced by visualization markers, but they can't be modified 
   // in rviz at runtime (eg the alpha, display time, etc. can't be changed.)
   ros::Publisher cloud_pub_;
+  ros::Publisher pos_pub_;
 
   // Display
   string do_display_; /**< Type of display, none/local */
@@ -191,6 +192,9 @@ public:
     rcinfo_sub_.subscribe(nh_,right_camera_info_topic,3);
     sync_.connectInput(limage_sub_, dimage_sub_, lcinfo_sub_, rcinfo_sub_),
     sync_.registerCallback(boost::bind(&FaceDetector::imageCBAll, this, _1, _2, _3, _4));
+
+    // Advertise a position measure message.
+    pos_pub_ = nh_.advertise<people_msgs::PositionMeasurement>("face_detector/people_tracker_measurements",1);
 
     cloud_pub_ = nh_.advertise<sensor_msgs::PointCloud>("face_detector/faces_cloud",0);
 
@@ -387,9 +391,10 @@ public:
 	  }
 	  result_.face_positions.push_back(pos);
 	  found_faces = true;
+	  pos_pub_.publish(pos);
 
 	}
-
+	
       }
       pos_lock.unlock();
 

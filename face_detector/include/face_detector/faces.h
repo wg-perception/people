@@ -36,6 +36,8 @@
 *  POSSIBILITY OF SUCH DAMAGE.
 *********************************************************************/
 
+/* Author: Caroline Pantofaru */
+
 #ifndef FACES_H
 #define FACES_H
 
