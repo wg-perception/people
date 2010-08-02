@@ -5,7 +5,7 @@
  *
  * Software License Agreement (BSD License)
  * 
- *  Copyright (c) 2008, Caroline Pantofaru
+ *  Copyright (c) 2008, Willow Garage, Inc.
  *  All rights reserved.
  * 
  *  Redistribution and use in source and binary forms, with or without
@@ -71,8 +71,13 @@ Faces::~Faces() {
  */
 
 
-void Faces::initFaceDetection(uint num_cascades, string haar_classifier_filename) {
+void Faces::initFaceDetection(uint num_cascades, string haar_classifier_filename, double face_size_min_m, double face_size_max_m, double max_face_z_m, double face_sep_dist_m) {
   images_ready_ = 0;
+
+  face_size_min_m_ = face_size_min_m;
+  face_size_max_m_ = face_size_max_m;
+  max_face_z_m_ = max_face_z_m;
+  face_sep_dist_m_ = face_sep_dist_m;
 
   face_go_mutex_ = new boost::mutex();
   bool cascade_ok = cascade_.load(haar_classifier_filename);
@@ -143,8 +148,8 @@ void Faces::faceDetectionThread(uint i) {
     }
 
     // Find the faces using OpenCV's haar cascade object detector.
-    cv::Point3d p3_1(0,0,MAX_Z_M);
-    cv::Point3d p3_2(FACE_SIZE_MIN_M,0,MAX_Z_M);
+    cv::Point3d p3_1(0,0,max_face_z_m_);
+    cv::Point3d p3_2(face_size_min_m_,0,max_face_z_m_);
     cv::Point2d p2_1, p2_2;
     (cam_model_->left()).project3dToPixel(p3_1,p2_1);
     (cam_model_->left()).project3dToPixel(p3_2,p2_2);
@@ -191,7 +196,7 @@ void Faces::faceDetectionThread(uint i) {
 	cam_model_->projectDisparityTo3d(cv::Point2d(one_face.box2d.width,0.0),avg_disp,p3_2);
 	one_face.radius3d = fabs(p3_2.x-p3_1.x)/2.0;
 	cam_model_->projectDisparityTo3d(one_face.center2d, avg_disp, one_face.center3d);
-	if (one_face.center3d.z > MAX_Z_M || 2.0*one_face.radius3d < FACE_SIZE_MIN_M || 2.0*one_face.radius3d > FACE_SIZE_MAX_M) {
+	if (one_face.center3d.z > max_face_z_m_ || 2.0*one_face.radius3d < face_size_min_m_ || 2.0*one_face.radius3d > face_size_max_m_) {
 	  one_face.status = "bad";
 	}
       }
