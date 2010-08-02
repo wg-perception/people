@@ -163,6 +163,8 @@ public:
     as_.registerGoalCallback(boost::bind(&FaceDetector::goalCB, this));
     as_.registerPreemptCallback(boost::bind(&FaceDetector::preemptCB, this));
     
+    faces_ = new Faces();
+    double face_size_min_m, face_size_max_m, max_face_z_m, face_sep_dist_m;
 
     // Parameters
     ros::NodeHandle local_nh("~");
@@ -174,9 +176,12 @@ public:
     local_nh.param("do_publish_faces_of_unknown_size",do_publish_unknown_,false);
     local_nh.param("use_depth",use_depth_,true);
     local_nh.param("use_external_init",external_init_,true);
-
-    faces_ = new Faces();
-    faces_->initFaceDetection(1, haar_filename_);
+    local_nh.param("face_size_min_m",face_size_min_m,Faces::FACE_SIZE_MIN_M);
+    local_nh.param("face_size_max_m",face_size_max_m,Faces::FACE_SIZE_MAX_M);
+    local_nh.param("max_face_z_m",max_face_z_m,Faces::MAX_FACE_Z_M);
+    local_nh.param("face_separation_dist_m",face_sep_dist_m,Faces::FACE_SEP_DIST_M);
+    
+    faces_->initFaceDetection(1, haar_filename_, face_size_min_m, face_size_max_m, max_face_z_m, face_sep_dist_m);
 
     // Subscribe to the images and camera parameters
     string stereo_namespace, image_topic;
@@ -372,7 +377,7 @@ public:
 	  map<string, RestampedPositionMeasurement>::iterator close_it = pos_list_.end();
 	  for (it = pos_list_.begin(); it != pos_list_.end(); it++) {
 	    dist = pow((*it).second.pos.pos.x - pos.pos.x, 2.0) + pow((*it).second.pos.pos.y - pos.pos.y, 2.0) + pow((*it).second.pos.pos.z - pos.pos.z, 2.0);
-	    if (dist <= Faces::FACE_DIST_M && dist < mindist) {
+	    if (dist <= faces_->face_sep_dist_m_ && dist < mindist) {
 	      mindist = dist;
 	      close_it = it;
 	    }

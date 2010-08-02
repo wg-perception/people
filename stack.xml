@@ -4,14 +4,12 @@
   <license>BSD</license>  
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/people</url>
-  <depend stack="common_msgs" /> <!-- nav_msgs, sensor_msgs, geometry_msgs -->
-  <depend stack="geometry" /> <!-- tf, angles, bullet -->
+  <depend stack="common" /> <!-- actionlib -->
+  <depend stack="common_msgs" /> <!-- sensor_msgs, actionlib_msgs, geometry_msgs -->
+  <depend stack="geometry" /> <!-- tf -->
   <depend stack="image_common" /> <!-- image_transport -->
   <depend stack="image_pipeline" /> <!-- stereo_msgs -->
-  <depend stack="laser_pipeline" /> <!-- laser_geometry -->
-  <depend stack="ros" /> <!-- rosconsole, std_srvs, roscpp, message_filters, roslib, std_msgs, rospy, rosrecord -->
-  <depend stack="ros_experimental" /> <!-- roslisp -->
-  <depend stack="vision_opencv" /> <!-- opencv2, cv_bridge -->
-  <depend stack="visualization_common" /> <!-- visualization_msgs -->
+  <depend stack="ros" /> <!-- std_srvs, std_msgs, roscpp, rosrecord -->
+  <depend stack="vision_opencv" /> <!-- opencv2, image_geometry, cv_bridge -->
 
 </stack>
