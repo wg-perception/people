@@ -5,7 +5,7 @@
 *
 * Software License Agreement (BSD License)
 * 
-*  Copyright (c) 2008, Caroline Pantofaru
+*  Copyright (c) 2008, Willow Garage, Inc.
 *  All rights reserved.
 * 
 *  Redistribution and use in source and binary forms, with or without
@@ -96,12 +96,21 @@ class Faces
 {
  public:
 
+  // Default thresholds for the face detection algorithm.
+  static const double FACE_SIZE_MIN_M=0.1; /**< Default minimum face size, in meters. Only use this for initialization. */
+  static const double FACE_SIZE_MAX_M=0.5; /**< Default maximum face size, in meters. Only use this for initialization. */
+  static const double MAX_FACE_Z_M=8.0; /**< Default maximum distance from the camera, in meters. Only use this for initialization. */
+  // Default thresholds for face tracking.
+  static const double FACE_SEP_DIST_M=1.0; /**< Default separation distance for associating faces. Only use this for initialization. */
+
   // Thresholds for the face detection algorithm.
-  static const float FACE_SIZE_MIN_M=0.1; /**< Minimum face size, in meters. */
-  static const float FACE_SIZE_MAX_M=0.5; /**< Maximum face size, in meters. */
-  static const float MAX_Z_M=8; /**< Maximum distance from the camera, in meters. */
+  double face_size_min_m_; /**< Minimum face size, in meters. */
+  double face_size_max_m_; /**< Maximum face size, in meters. */
+  double max_face_z_m_; /**< Maximum distance from the camera, in meters. */
   // Thresholds for face tracking.
-  static const float FACE_DIST_M=1.0; /**< Separation distance for associating faces. */
+  double face_sep_dist_m_; /**< Separation distance for associating faces. */
+
+
 
   // Create an empty list of people.
   Faces();
@@ -132,7 +141,7 @@ class Faces
    * \param num_cascades Should always be 1 (may change in the future.)
    * \param haar_classifier_filename Full path to the cascade file.
    */
-  void initFaceDetection(uint num_cascades, string haar_classifier_filename);
+  void initFaceDetection(uint num_cascades, string haar_classifier_filename, double face_size_min_m, double face_size_max_m, double max_face_z_m, double face_sep_dist_m);
 
  ////////////////////
  private:
