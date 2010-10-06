@@ -413,8 +413,9 @@ public:
 
       // Draw an appropriately colored rectangle on the display image and in the visualizer.
 
-      cloud.channels.resize(1);
+      cloud.channels.resize(2);
       cloud.channels[0].name = "intensity";
+      cloud.channels[1].name = "radius";
 
       for (uint iface = 0; iface < faces_vector.size(); iface++) {
 	one_face = &faces_vector[iface];	
@@ -428,6 +429,7 @@ public:
 	  p.z = one_face->center3d.z;
 	  cloud.points.push_back(p);
 	  cloud.channels[0].values.push_back(1.0f);
+	  cloud.channels[1].values.push_back(one_face->radius3d);
 
 	  ngood ++;
 	}
