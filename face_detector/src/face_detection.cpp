@@ -233,6 +233,8 @@ public:
 
   void goalCB() {
     ROS_INFO("Face detector action started.");
+    result_.face_positions.clear();
+    feedback_.face_positions.clear();
     frames_with_faces_count_ = 0;
     frames_with_faces_goal_ = as_.acceptNewGoal()->num_frames_with_faces;
   }
@@ -290,8 +292,8 @@ public:
     if (!do_continuous_ && !as_.isActive())
       return;
 
-    // Clear out the result vector.
-    result_.face_positions.clear();
+    // Clear out the feedback vector.
+    feedback_.face_positions.clear();
 
     if (do_display_ == "local") {
       cv_mutex_.lock();
@@ -400,7 +402,7 @@ public:
 	  else {
 	    pos.object_id = "";
 	  }
-	  result_.face_positions.push_back(pos);
+	  feedback_.face_positions.push_back(pos);
 	  frames_with_faces_count_++;
 	  pos_pub_.publish(pos);
 
@@ -480,10 +482,16 @@ public:
 
     ROS_INFO_STREAM_NAMED("face_detector","Number of faces found: " << faces_vector.size() << ", number with good depth and size: " << ngood);
 
+    // Action stuff
+    if (!do_continuous_) {
+      // Publish the detections in this frame
+      as_.publishFeedback(feedback_);
 
-    // If you don't want continuous processing and you've found the requested number of frames with faces in them, turn off the detector.
-    if (!do_continuous_ && frames_with_faces_goal_>0 && frames_with_faces_count_==frames_with_faces_goal_) {
-      as_.setSucceeded(result_);
+      // If you've found the requested number of frames with faces in them, turn off the detector.
+      if (frames_with_faces_goal_>0 && frames_with_faces_count_==frames_with_faces_goal_) {
+	result_.face_positions = feedback_.face_positions;
+	as_.setSucceeded(result_);
+      }
     }
 
 

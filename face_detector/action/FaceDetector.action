@@ -5,3 +5,4 @@ uint32 num_frames_with_faces
 people_msgs/PositionMeasurement[] face_positions
 ---
 #feedback
+people_msgs/PositionMeasurement[] face_positions
