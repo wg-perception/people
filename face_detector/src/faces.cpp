@@ -181,7 +181,7 @@ void Faces::faceDetectionThread(uint i) {
       cv::Mat tmat = disp_roi.reshape(1,disp_roi.rows*disp_roi.cols);
       cv::Mat tmat_sorted;
       cv::sort(tmat, tmat_sorted, CV_SORT_EVERY_COLUMN+CV_SORT_DESCENDING);
-      avg_disp = tmat_sorted.at<float>(floor(cv::countNonZero(tmat_sorted>=0.0)/2.0)); // Get the middle valid disparity (-1 disparities are invalid)
+      avg_disp = tmat_sorted.at<float>(floor(cv::countNonZero(tmat_sorted<0.0)/2.0)); // Get the middle valid disparity (-1 disparities are invalid)
 
       // Fill in the rest of the face data structure.
       one_face.center2d = cv::Point2d(one_face.box2d.x+one_face.box2d.width/2.0,

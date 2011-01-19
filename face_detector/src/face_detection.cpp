@@ -143,18 +143,13 @@ public:
   
   bool do_publish_unknown_; /**< Publish faces even if they have unknown depth/size. Will just use the image x,y in the pos field of the published position_measurement. */
 
-  int frames_with_faces_count_; /**< Number of frames containing faces. For the FaceDetector action. */
-  int frames_with_faces_goal_; /**< Number of frames containing faces requested by the FaceDetector action goal. 0=inf.*/
-
   FaceDetector(std::string name) : 
     BIGDIST_M(1000000.0),
     it_(nh_),
     sync_(4),
     as_(nh_,name),
     faces_(0),
-    quit_(false),
-    frames_with_faces_count_(0),
-    frames_with_faces_goal_(0)
+    quit_(false)
   {
     ROS_INFO_STREAM_NAMED("face_detector","Constructing FaceDetector.");
     
@@ -233,16 +228,14 @@ public:
 
   void goalCB() {
     ROS_INFO("Face detector action started.");
-    result_.face_positions.clear();
-    feedback_.face_positions.clear();
-    frames_with_faces_count_ = 0;
-    frames_with_faces_goal_ = as_.acceptNewGoal()->num_frames_with_faces;
+    as_.acceptNewGoal();
   }
 
   void preemptCB() {
     ROS_INFO("Face detector action preempted.");
     as_.setPreempted();
   }
+
 
   /*!
    * \brief Position message callback. 
@@ -292,9 +285,6 @@ public:
     if (!do_continuous_ && !as_.isActive())
       return;
 
-    // Clear out the feedback vector.
-    feedback_.face_positions.clear();
-
     if (do_display_ == "local") {
       cv_mutex_.lock();
     }
@@ -320,6 +310,8 @@ public:
     ros::Duration diffdetect = endtdetect - starttdetect;
     ROS_DEBUG_STREAM_NAMED("face_detector","Detection duration = " << diffdetect.toSec() << "sec");   
     //ROS_INFO_STREAM("Detection duration = " << diffdetect.toSec() << "sec");   
+
+    bool found_faces = false;
 
     int ngood = 0;
     sensor_msgs::PointCloud cloud;
@@ -402,8 +394,8 @@ public:
 	  else {
 	    pos.object_id = "";
 	  }
-	  feedback_.face_positions.push_back(pos);
-	  frames_with_faces_count_++;
+	  result_.face_positions.push_back(pos);
+	  found_faces = true;
 	  pos_pub_.publish(pos);
 
 	}
@@ -421,9 +413,8 @@ public:
 
       // Draw an appropriately colored rectangle on the display image and in the visualizer.
 
-      cloud.channels.resize(2);
+      cloud.channels.resize(1);
       cloud.channels[0].name = "intensity";
-      cloud.channels[1].name = "radius";
 
       for (uint iface = 0; iface < faces_vector.size(); iface++) {
 	one_face = &faces_vector[iface];	
@@ -437,7 +428,6 @@ public:
 	  p.z = one_face->center3d.z;
 	  cloud.points.push_back(p);
 	  cloud.channels[0].values.push_back(1.0f);
-	  cloud.channels[1].values.push_back(one_face->radius3d);
 
 	  ngood ++;
 	}
@@ -482,16 +472,10 @@ public:
 
     ROS_INFO_STREAM_NAMED("face_detector","Number of faces found: " << faces_vector.size() << ", number with good depth and size: " << ngood);
 
-    // Action stuff
-    if (!do_continuous_) {
-      // Publish the detections in this frame
-      as_.publishFeedback(feedback_);
 
-      // If you've found the requested number of frames with faces in them, turn off the detector.
-      if (frames_with_faces_goal_>0 && frames_with_faces_count_==frames_with_faces_goal_) {
-	result_.face_positions = feedback_.face_positions;
-	as_.setSucceeded(result_);
-      }
+    // If you don't want continuous processing and you've found at least one face, turn off the detector.
+    if (!do_continuous_ && found_faces) {
+      as_.setSucceeded(result_);
     }
 
 
