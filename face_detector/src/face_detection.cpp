@@ -285,6 +285,10 @@ public:
     if (!do_continuous_ && !as_.isActive())
       return;
 
+
+    // Clear out the result vector.
+    result_.face_positions.clear();
+
     if (do_display_ == "local") {
       cv_mutex_.lock();
     }
