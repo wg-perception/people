@@ -37,7 +37,7 @@ rosbuild_add_executable(face_detector
                        src/faces.cpp)
 rosbuild_link_boost(face_detector thread)
 
-rosbuild_download_test_data(http://pr.willowgarage.com/data/face_detector/face_detector_noface_test_diamondback.bag face_detector_noface_test.bag 45243baf951fe32c600bf1c379a3ee1e)
-rosbuild_download_test_data(http://pr.willowgarage.com/data/face_detector/face_detector_withface_test_diamondback.bag face_detector_withface_test.bag b37cdc75d922ab3689d989ebb70fa072)
+rosbuild_download_test_data(http://pr.willowgarage.com/data/face_detector/face_detector_noface_test_diamondback.bag face_detector_noface_test.bag 37f043be780a4511c853379defdd9855)
+rosbuild_download_test_data(http://pr.willowgarage.com/data/face_detector/face_detector_withface_test_diamondback.bag face_detector_withface_test.bag 59126117e049e69d577b7ee27251a6f8)
 rosbuild_add_rostest(test/face_detector_true_rtest.xml)
 rosbuild_add_rostest(test/face_detector_false_rtest.xml)

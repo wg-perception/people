@@ -294,21 +294,21 @@ public:
     }
  
     // ROS --> OpenCV
-    cv::Mat cv_image_left_(lbridge_.imgMsgToCv(limage,"bgr8"));
+    cv::Mat cv_image_left(lbridge_.imgMsgToCv(limage,"bgr8"));
     sensor_msgs::ImageConstPtr boost_dimage(const_cast<sensor_msgs::Image*>(&dimage->image), NullDeleter());
-    cv::Mat cv_image_disp_(dbridge_.imgMsgToCv(boost_dimage));
+    cv::Mat cv_image_disp(dbridge_.imgMsgToCv(boost_dimage));
     cam_model_.fromCameraInfo(lcinfo,rcinfo);
 
     // For display, keep a copy of the image that we can draw on.
     if (do_display_ == "local") {
-      cv_image_out_ = cv_image_left_.clone();
+      cv_image_out_ = cv_image_left.clone();
     }
  
     struct timeval timeofday;
     gettimeofday(&timeofday,NULL);
     ros::Time starttdetect = ros::Time().fromNSec(1e9*timeofday.tv_sec + 1e3*timeofday.tv_usec);
 
-    vector<Box2D3D> faces_vector = faces_->detectAllFaces(cv_image_left_, 1.0, cv_image_disp_, &cam_model_);
+    vector<Box2D3D> faces_vector = faces_->detectAllFaces(cv_image_left, 1.0, cv_image_disp, &cam_model_);
     gettimeofday(&timeofday,NULL);
     ros::Time endtdetect = ros::Time().fromNSec(1e9*timeofday.tv_sec + 1e3*timeofday.tv_usec);
     ros::Duration diffdetect = endtdetect - starttdetect;
