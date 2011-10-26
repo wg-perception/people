@@ -32,9 +32,11 @@ rosbuild_genmsg()
 #rosbuild_link_boost(${PROJECT_NAME} thread)
 #rosbuild_add_executable(example examples/example.cpp)
 #target_link_libraries(example ${PROJECT_NAME})
+find_package(OpenCV REQUIRED)
 rosbuild_add_executable(face_detector
                        src/face_detection.cpp 
                        src/faces.cpp)
+target_link_libraries(face_detector ${OpenCV_LIBS})
 rosbuild_link_boost(face_detector thread)
 
 rosbuild_download_test_data(http://pr.willowgarage.com/data/face_detector/face_detector_noface_test_diamondback.bag face_detector_noface_test.bag 37f043be780a4511c853379defdd9855)

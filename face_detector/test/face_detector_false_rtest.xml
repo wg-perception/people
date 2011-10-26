@@ -1,6 +1,6 @@
 <launch>
 
-  <node pkg="rosrecord" type="rosplay" name="rosplay" args="-r 0.5 $(find face_detector)/face_detector_noface_test.bag"/>
+  <node pkg="rosbag" type="rosbag" name="play" args="play -r 0.5 $(find face_detector)/face_detector_noface_test.bag"/>
 
   <include file="$(find face_detector)/launch/face_detector.wide.launch"/> 
 
