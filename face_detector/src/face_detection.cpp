@@ -401,6 +401,7 @@ public:
 	  else {
 	    pos.object_id = "";
 	  }
+	  ROS_INFO_STREAM_NAMED("face_detector","Returning face in frame " << pos.header.frame_id << " at location (x,y,z) " << pos.pos.x << " " << pos.pos.y << " " << pos.pos.z);
 	  result_.face_positions.push_back(pos);
 	  found_faces = true;
 	  pos_pub_.publish(pos);
