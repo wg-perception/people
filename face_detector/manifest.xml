@@ -12,7 +12,7 @@
 <depend package="geometry_msgs"/>
 <depend package="std_srvs"/>
 <depend package="cv_bridge"/>
-<rosdep name="opencv2.3"/>
+<rosdep name="opencv2"/>
 <depend package="stereo_msgs"/>
 <depend package="sensor_msgs"/>
 <depend package="tf"/>
