@@ -43,6 +43,7 @@
 #include <fstream>
 
 #include <ros/ros.h>
+#include <ros/console.h>
 #include <boost/filesystem.hpp>
 #include <boost/thread/mutex.hpp>
 
@@ -227,12 +228,12 @@ public:
   }
 
   void goalCB() {
-    ROS_INFO("Face detector action started.");
+    ROS_INFO_STREAM_NAMED("face_detector","Face detector action started.");
     as_.acceptNewGoal();
   }
 
   void preemptCB() {
-    ROS_INFO("Face detector action preempted.");
+    ROS_INFO_STREAM_NAMED("face_detector","Face detector action preempted.");
     as_.setPreempted();
   }
 
@@ -284,6 +285,8 @@ public:
     // Only run the detector if in continuous mode or the detector was turned on through an action invocation.
     if (!do_continuous_ && !as_.isActive())
       return;
+
+    ROS_INFO_STREAM_NAMED("face_detector","Face detector callback.");
 
 
     // Clear out the result vector.
