@@ -1,4 +1,5 @@
 <launch>
+
   <node pkg="face_detector" type="face_detector" name="face_detector" args="stereo:=wide_stereo image:=image_rect" output="screen">
   	 <param name="classifier_name" type="string" value="frontalface" />
 	 <param name="classifier_filename" type="string" value="$(env ROS_ROOT)/../OpenCV/haarcascades/haarcascade_frontalface_alt.xml" />
