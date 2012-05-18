@@ -1,9 +1,7 @@
 <launch>
-  <node ns="wide_stereo" pkg="stereo_image_proc" type="stereo_image_proc" args="" output="screen" name="stereoproc"/> 
-
   <node pkg="face_detector" type="face_detector" name="face_detector" args="stereo:=wide_stereo image:=image_rect" output="screen">
   	 <param name="classifier_name" type="string" value="frontalface" />
-	 <param name="classifier_filename" type="string" value="/usr/share/OpenCV-2.3.1/haarcascades/haarcascade_frontalface_alt.xml" />
+	 <param name="classifier_filename" type="string" value="$(env ROS_ROOT)/../OpenCV/haarcascades/haarcascade_frontalface_alt.xml" />
 	 <param name="classifier_reliability" type="double" value="0.9"/>
   	 <param name="do_continuous" type="bool" value="true" />
   	 <param name="do_publish_faces_of_unknown_size" type="bool" value="false" />	
