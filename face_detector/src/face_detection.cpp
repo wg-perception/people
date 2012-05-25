@@ -1,14 +1,14 @@
 /**********************************************************************
  *
  * Software License Agreement (BSD License)
- * 
+ *
  *  Copyright (c) 2008, Willow Garage, Inc.
  *  All rights reserved.
- * 
+ *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions
  *  are met:
- * 
+ *
  *   * Redistributions of source code must retain the above copyright
  *     notice, this list of conditions and the following disclaimer.
  *   * Redistributions in binary form must reproduce the above
@@ -18,7 +18,7 @@
  *   * Neither the name of the Willow Garage nor the names of its
  *     contributors may be used to endorse or promote products derived
  *     from this software without specific prior written permission.
- * 
+ *
  *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
@@ -50,6 +50,8 @@
 #include <people_msgs/PositionMeasurement.h>
 #include <message_filters/subscriber.h>
 #include <message_filters/time_synchronizer.h>
+#include <message_filters/sync_policies/exact_time.h>
+#include <message_filters/sync_policies/approximate_time.h>
 #include <image_transport/subscriber_filter.h>
 #include "sensor_msgs/CameraInfo.h"
 #include "sensor_msgs/Image.h"
@@ -92,23 +94,27 @@ public:
   message_filters::Subscriber<sensor_msgs::CameraInfo> rcinfo_sub_; /**< Right camera info msg. */
   sensor_msgs::CvBridge lbridge_; /**< ROS->OpenCV bridge for the left image. */
   sensor_msgs::CvBridge dbridge_; /**< ROS->OpenCV bridge for the disparity image. */
-  message_filters::TimeSynchronizer<sensor_msgs::Image, stereo_msgs::DisparityImage, sensor_msgs::CameraInfo, sensor_msgs::CameraInfo> sync_; /**< Stereo topic synchronizer. */
-  
+  typedef message_filters::sync_policies::ExactTime<sensor_msgs::Image, stereo_msgs::DisparityImage, sensor_msgs::CameraInfo, sensor_msgs::CameraInfo> ExactPolicy;
+  typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::Image, stereo_msgs::DisparityImage, sensor_msgs::CameraInfo, sensor_msgs::CameraInfo> ApproximatePolicy;
+  typedef message_filters::Synchronizer<ExactPolicy> ExactSync;
+  typedef message_filters::Synchronizer<ApproximatePolicy> ApproximateSync;
+  boost::shared_ptr<ExactSync> exact_sync_;
+  boost::shared_ptr<ApproximateSync> approximate_sync_;
 
   // Action
   actionlib::SimpleActionServer<face_detector::FaceDetectorAction> as_;
   face_detector::FaceDetectorFeedback feedback_;
   face_detector::FaceDetectorResult result_;
 
-  // If running the face detector as a component in part of a larger person tracker, this subscribes to the tracker's position measurements and whether it was initialized by some other node. 
+  // If running the face detector as a component in part of a larger person tracker, this subscribes to the tracker's position measurements and whether it was initialized by some other node.
   // Todo: resurrect the person tracker.
   ros::Subscriber pos_sub_;
-  bool external_init_; 
+  bool external_init_;
 
 
   // Publishers
-  // A point cloud of the face positions, meant for visualization in rviz. 
-  // This could be replaced by visualization markers, but they can't be modified 
+  // A point cloud of the face positions, meant for visualization in rviz.
+  // This could be replaced by visualization markers, but they can't be modified
   // in rviz at runtime (eg the alpha, display time, etc. can't be changed.)
   ros::Publisher cloud_pub_;
   ros::Publisher pos_pub_;
@@ -141,19 +147,18 @@ public:
   boost::mutex cv_mutex_, pos_mutex_, limage_mutex_, dimage_mutex_;
 
   bool do_continuous_; /**< True = run as a normal node, searching for faces continuously, False = run as an action, wait for action call to start detection. */
-  
+
   bool do_publish_unknown_; /**< Publish faces even if they have unknown depth/size. Will just use the image x,y in the pos field of the published position_measurement. */
 
-  FaceDetector(std::string name) : 
+  FaceDetector(std::string name) :
     BIGDIST_M(1000000.0),
     it_(nh_),
-    sync_(4),
     as_(nh_,name),
     faces_(0),
     quit_(false)
   {
     ROS_INFO_STREAM_NAMED("face_detector","Constructing FaceDetector.");
-    
+
     if (do_display_ == "local") {
       // OpenCV: pop up an OpenCV highgui window
       cv::namedWindow("Face detector: Face Detection", CV_WINDOW_AUTOSIZE);
@@ -163,7 +168,7 @@ public:
     // Action stuff
     as_.registerGoalCallback(boost::bind(&FaceDetector::goalCB, this));
     as_.registerPreemptCallback(boost::bind(&FaceDetector::preemptCB, this));
-    
+
     faces_ = new Faces();
     double face_size_min_m, face_size_max_m, max_face_z_m, face_sep_dist_m;
 
@@ -181,7 +186,7 @@ public:
     local_nh.param("face_size_max_m",face_size_max_m,Faces::FACE_SIZE_MAX_M);
     local_nh.param("max_face_z_m",max_face_z_m,Faces::MAX_FACE_Z_M);
     local_nh.param("face_separation_dist_m",face_sep_dist_m,Faces::FACE_SEP_DIST_M);
-    
+
     faces_->initFaceDetection(1, haar_filename_, face_size_min_m, face_size_max_m, max_face_z_m, face_sep_dist_m);
 
     // Subscribe to the images and camera parameters
@@ -196,8 +201,25 @@ public:
     dimage_sub_.subscribe(nh_,disparity_topic,3);
     lcinfo_sub_.subscribe(nh_,left_camera_info_topic,3);
     rcinfo_sub_.subscribe(nh_,right_camera_info_topic,3);
-    sync_.connectInput(limage_sub_, dimage_sub_, lcinfo_sub_, rcinfo_sub_),
-    sync_.registerCallback(boost::bind(&FaceDetector::imageCBAll, this, _1, _2, _3, _4));
+
+    int queue_size;
+    local_nh.param("queue_size", queue_size, 5);
+    bool approx;
+    local_nh.param("approximate_sync", approx, false);
+    if (approx)
+    {
+      approximate_sync_.reset( new ApproximateSync(ApproximatePolicy(queue_size),
+                             limage_sub_, dimage_sub_, lcinfo_sub_, rcinfo_sub_));
+      approximate_sync_->registerCallback(boost::bind(&FaceDetector::imageCBAll,
+                                                      this, _1, _2, _3, _4));
+    }
+    else
+    {
+      exact_sync_.reset( new ExactSync(ExactPolicy(queue_size),
+                             limage_sub_, dimage_sub_, lcinfo_sub_, rcinfo_sub_));
+      exact_sync_->registerCallback(boost::bind(&FaceDetector::imageCBAll,
+                                                this, _1, _2, _3, _4));
+    }
 
     // Advertise a position measure message.
     pos_pub_ = nh_.advertise<people_msgs::PositionMeasurement>("face_detector/people_tracker_measurements",1);
@@ -212,7 +234,7 @@ public:
 
     ros::MultiThreadedSpinner s(2);
     ros::spin(s);
-    
+
   }
 
   ~FaceDetector()
@@ -239,11 +261,11 @@ public:
 
 
   /*!
-   * \brief Position message callback. 
+   * \brief Position message callback.
    *
-   * When hooked into the person tracking filter, this callback will listen to messages 
+   * When hooked into the person tracking filter, this callback will listen to messages
    * from the filter with a person id and 3D position and adjust the person's face position accordingly.
-   */ 
+   */
   void posCallback(const people_msgs::PositionMeasurementConstPtr& pos_ptr) {
 
     // Put the incoming position into the position queue. It'll be processed in the next image callback.
@@ -271,8 +293,8 @@ public:
   };
 
 
-  /*! 
-   * \brief Image callback for synced messages. 
+  /*!
+   * \brief Image callback for synced messages.
    *
    * For each new image:
    * convert it to OpenCV format, perform face detection using OpenCV's haar filter cascade classifier, and
@@ -295,7 +317,7 @@ public:
     if (do_display_ == "local") {
       cv_mutex_.lock();
     }
- 
+
     // ROS --> OpenCV
     cv::Mat cv_image_left(lbridge_.imgMsgToCv(limage,"bgr8"));
     sensor_msgs::ImageConstPtr boost_dimage(const_cast<sensor_msgs::Image*>(&dimage->image), NullDeleter());
@@ -306,7 +328,7 @@ public:
     if (do_display_ == "local") {
       cv_image_out_ = cv_image_left.clone();
     }
- 
+
     struct timeval timeofday;
     gettimeofday(&timeofday,NULL);
     ros::Time starttdetect = ros::Time().fromNSec(1e9*timeofday.tv_sec + 1e3*timeofday.tv_usec);
@@ -315,8 +337,8 @@ public:
     gettimeofday(&timeofday,NULL);
     ros::Time endtdetect = ros::Time().fromNSec(1e9*timeofday.tv_sec + 1e3*timeofday.tv_usec);
     ros::Duration diffdetect = endtdetect - starttdetect;
-    ROS_DEBUG_STREAM_NAMED("face_detector","Detection duration = " << diffdetect.toSec() << "sec");   
-    //ROS_INFO_STREAM("Detection duration = " << diffdetect.toSec() << "sec");   
+    ROS_DEBUG_STREAM_NAMED("face_detector","Detection duration = " << diffdetect.toSec() << "sec");
+    //ROS_INFO_STREAM("Detection duration = " << diffdetect.toSec() << "sec");
 
     bool found_faces = false;
 
@@ -336,7 +358,7 @@ public:
 	  pos_list_.erase(it);
 	}
 	else {
-	  // Transform the person to this time. Note that the pos time is updated but not the restamp. 
+	  // Transform the person to this time. Note that the pos time is updated but not the restamp.
 	  tf::Point pt;
 	  tf::pointMsgToTF((*it).second.pos.pos, pt);
 	  tf::Stamped<tf::Point> loc(pt, (*it).second.pos.header.stamp, (*it).second.pos.header.frame_id);
@@ -346,30 +368,30 @@ public:
 	    (*it).second.pos.pos.x = loc[0];
             (*it).second.pos.pos.y = loc[1];
             (*it).second.pos.pos.z = loc[2];
-	  } 
+	  }
 	  catch (tf::TransformException& ex) {
 	  }
 	}
-      } 
+      }
       // End filter face position update
 
       // Associate the found faces with previously seen faces, and publish all good face centers.
       Box2D3D *one_face;
       people_msgs::PositionMeasurement pos;
-      
+
       for (uint iface = 0; iface < faces_vector.size(); iface++) {
 	one_face = &faces_vector[iface];
-	  
+
 	if (one_face->status=="good" || (one_face->status=="unknown" && do_publish_unknown_)) {
 
 	  std::string id = "";
 
 	  // Convert the face format to a PositionMeasurement msg.
 	  pos.header.stamp = limage->header.stamp;
-	  pos.name = name_; 
-	  pos.pos.x = one_face->center3d.x; 
+	  pos.name = name_;
+	  pos.pos.x = one_face->center3d.x;
 	  pos.pos.y = one_face->center3d.y;
-	  pos.pos.z = one_face->center3d.z; 
+	  pos.pos.z = one_face->center3d.z;
 	  pos.header.frame_id = limage->header.frame_id;//"*_stereo_optical_frame";
 	  pos.reliability = reliability_;
 	  pos.initialization = 1;//0;
@@ -407,7 +429,7 @@ public:
 	  pos_pub_.publish(pos);
 
 	}
-	
+
       }
       pos_lock.unlock();
 
@@ -425,8 +447,8 @@ public:
       cloud.channels[0].name = "intensity";
 
       for (uint iface = 0; iface < faces_vector.size(); iface++) {
-	one_face = &faces_vector[iface];	
-	
+	one_face = &faces_vector[iface];
+
 	// Visualization of good faces as a point cloud
 	if (one_face->status == "good") {
 
@@ -457,14 +479,14 @@ public:
 	  }
 
 	  if (do_display_ == "local") {
-	    cv::rectangle(cv_image_out_, 
-			  cv::Point(one_face->box2d.x,one_face->box2d.y), 
+	    cv::rectangle(cv_image_out_,
+			  cv::Point(one_face->box2d.x,one_face->box2d.y),
 			  cv::Point(one_face->box2d.x+one_face->box2d.width, one_face->box2d.y+one_face->box2d.height), color, 4);
 	  }
-	} 
-      } 
+	}
+      }
 
-    } 
+    }
 
     cloud_pub_.publish(cloud);
 
@@ -473,7 +495,7 @@ public:
 
       cv::imshow("Face detector: Face Detection",cv_image_out_);
       cv::waitKey(2);
- 
+
       cv_mutex_.unlock();
     }
     /******** Done display **********************************************************/
@@ -490,7 +512,7 @@ public:
   }
 
 }; // end class
- 
+
 }; // end namespace people
 
 // Main
