@@ -56,7 +56,8 @@
 #include "sensor_msgs/CameraInfo.h"
 #include "sensor_msgs/Image.h"
 #include "stereo_msgs/DisparityImage.h"
-#include "cv_bridge/CvBridge.h"
+#include "sensor_msgs/image_encodings.h"
+#include "cv_bridge/cv_bridge.h"
 #include "tf/transform_listener.h"
 #include "sensor_msgs/PointCloud.h"
 #include "geometry_msgs/Point32.h"
@@ -86,20 +87,29 @@ public:
   // Node handle
   ros::NodeHandle nh_;
 
-  // Images and conversion
+  // Images and conversion for both the stereo camera and rgb-d camera cases.
   image_transport::ImageTransport it_;
-  image_transport::SubscriberFilter limage_sub_; /**< Left image msg. */
-  message_filters::Subscriber<stereo_msgs::DisparityImage> dimage_sub_; /**< Disparity image msg. */
-  message_filters::Subscriber<sensor_msgs::CameraInfo> lcinfo_sub_; /**< Left camera info msg. */
-  message_filters::Subscriber<sensor_msgs::CameraInfo> rcinfo_sub_; /**< Right camera info msg. */
-  sensor_msgs::CvBridge lbridge_; /**< ROS->OpenCV bridge for the left image. */
-  sensor_msgs::CvBridge dbridge_; /**< ROS->OpenCV bridge for the disparity image. */
-  typedef message_filters::sync_policies::ExactTime<sensor_msgs::Image, stereo_msgs::DisparityImage, sensor_msgs::CameraInfo, sensor_msgs::CameraInfo> ExactPolicy;
-  typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::Image, stereo_msgs::DisparityImage, sensor_msgs::CameraInfo, sensor_msgs::CameraInfo> ApproximatePolicy;
-  typedef message_filters::Synchronizer<ExactPolicy> ExactSync;
-  typedef message_filters::Synchronizer<ApproximatePolicy> ApproximateSync;
-  boost::shared_ptr<ExactSync> exact_sync_;
-  boost::shared_ptr<ApproximateSync> approximate_sync_;
+  image_transport::SubscriberFilter image_sub_; /**< Left/rgb image msg. */
+  image_transport::SubscriberFilter depth_image_sub_; /** Depth image msg. */
+  message_filters::Subscriber<stereo_msgs::DisparityImage> disp_image_sub_; /**< Disparity image msg. */
+  message_filters::Subscriber<sensor_msgs::CameraInfo> c1_info_sub_; /**< Left/rgb camera info msg. */
+  message_filters::Subscriber<sensor_msgs::CameraInfo> c2_info_sub_; /**< Right/depth camera info msg. */
+
+  // Disparity:
+  typedef message_filters::sync_policies::ExactTime<sensor_msgs::Image, stereo_msgs::DisparityImage, sensor_msgs::CameraInfo, sensor_msgs::CameraInfo> ExactDispPolicy; /**< Sync policy for exact time with disparity. */
+  typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::Image, stereo_msgs::DisparityImage, sensor_msgs::CameraInfo, sensor_msgs::CameraInfo> ApproximateDispPolicy; /**< Sync policy for approx time with disparity. */
+  typedef message_filters::Synchronizer<ExactDispPolicy> ExactDispSync;
+  typedef message_filters::Synchronizer<ApproximateDispPolicy> ApproximateDispSync;
+  boost::shared_ptr<ExactDispSync> exact_disp_sync_;
+  boost::shared_ptr<ApproximateDispSync> approximate_disp_sync_;
+
+  // Depth:
+  typedef message_filters::sync_policies::ExactTime<sensor_msgs::Image, sensor_msgs::Image, sensor_msgs::CameraInfo, sensor_msgs::CameraInfo> ExactDepthPolicy; /**< Sync policy for exact time with depth. */
+  typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::Image, sensor_msgs::Image, sensor_msgs::CameraInfo, sensor_msgs::CameraInfo> ApproximateDepthPolicy; /**< Sync policy for approx time with depth. */
+  typedef message_filters::Synchronizer<ExactDepthPolicy> ExactDepthSync;
+  typedef message_filters::Synchronizer<ApproximateDepthPolicy> ApproximateDepthSync;
+  boost::shared_ptr<ExactDepthSync> exact_depth_sync_;
+  boost::shared_ptr<ApproximateDepthSync> approximate_depth_sync_;
 
   // Action
   actionlib::SimpleActionServer<face_detector::FaceDetectorAction> as_;
@@ -120,10 +130,10 @@ public:
   ros::Publisher pos_pub_;
 
   // Display
-  string do_display_; /**< Type of display, none/local */
+  bool do_display_; /**< True/false display images with bounding boxes locally. */
   cv::Mat cv_image_out_; /**< Display image. */
 
-  // Stereo
+  // Depth
   bool use_depth_; /**< True/false use depth information. */
   image_geometry::StereoCameraModel cam_model_; /**< ROS->OpenCV image_geometry conversion. */
 
@@ -153,13 +163,13 @@ public:
   FaceDetector(std::string name) :
     BIGDIST_M(1000000.0),
     it_(nh_),
-    as_(nh_,name),
+    as_(nh_, name, false),
     faces_(0),
     quit_(false)
   {
     ROS_INFO_STREAM_NAMED("face_detector","Constructing FaceDetector.");
 
-    if (do_display_ == "local") {
+    if (do_display_) {
       // OpenCV: pop up an OpenCV highgui window
       cv::namedWindow("Face detector: Face Detection", CV_WINDOW_AUTOSIZE);
     }
@@ -168,16 +178,20 @@ public:
     // Action stuff
     as_.registerGoalCallback(boost::bind(&FaceDetector::goalCB, this));
     as_.registerPreemptCallback(boost::bind(&FaceDetector::preemptCB, this));
+    as_.start();
 
     faces_ = new Faces();
     double face_size_min_m, face_size_max_m, max_face_z_m, face_sep_dist_m;
+    bool use_rgbd;
+    int queue_size;
+    bool approx;
 
     // Parameters
     ros::NodeHandle local_nh("~");
     local_nh.param("classifier_name",name_,std::string(""));
     local_nh.param("classifier_filename",haar_filename_,std::string(""));
     local_nh.param("classifier_reliability",reliability_,0.0);
-    local_nh.param("do_display",do_display_,std::string("none"));
+    local_nh.param("do_display",do_display_,false);
     local_nh.param("do_continuous",do_continuous_,true);
     local_nh.param("do_publish_faces_of_unknown_size",do_publish_unknown_,false);
     local_nh.param("use_depth",use_depth_,true);
@@ -186,40 +200,72 @@ public:
     local_nh.param("face_size_max_m",face_size_max_m,Faces::FACE_SIZE_MAX_M);
     local_nh.param("max_face_z_m",max_face_z_m,Faces::MAX_FACE_Z_M);
     local_nh.param("face_separation_dist_m",face_sep_dist_m,Faces::FACE_SEP_DIST_M);
-
-    faces_->initFaceDetection(1, haar_filename_, face_size_min_m, face_size_max_m, max_face_z_m, face_sep_dist_m);
-
-    // Subscribe to the images and camera parameters
-    string stereo_namespace, image_topic;
-    stereo_namespace = nh_.resolveName("stereo");
-    image_topic = nh_.resolveName("image");
-    string left_topic = ros::names::clean(stereo_namespace + "/left/" + image_topic);
-    string disparity_topic = ros::names::clean(stereo_namespace + "/disparity");
-    string left_camera_info_topic = ros::names::clean(stereo_namespace + "/left/camera_info");
-    string right_camera_info_topic = ros::names::clean(stereo_namespace + "/right/camera_info");
-    limage_sub_.subscribe(it_,left_topic,3);
-    dimage_sub_.subscribe(nh_,disparity_topic,3);
-    lcinfo_sub_.subscribe(nh_,left_camera_info_topic,3);
-    rcinfo_sub_.subscribe(nh_,right_camera_info_topic,3);
-
-    int queue_size;
+    local_nh.param("use_rgbd",use_rgbd,false);
     local_nh.param("queue_size", queue_size, 5);
-    bool approx;
     local_nh.param("approximate_sync", approx, false);
-    if (approx)
-    {
-      approximate_sync_.reset( new ApproximateSync(ApproximatePolicy(queue_size),
-                             limage_sub_, dimage_sub_, lcinfo_sub_, rcinfo_sub_));
-      approximate_sync_->registerCallback(boost::bind(&FaceDetector::imageCBAll,
-                                                      this, _1, _2, _3, _4));
+
+    // Init the detector and subscribe to the images and camera parameters. One case for rgbd, one for stereo.
+    if (use_rgbd) {
+      faces_->initFaceDetectionDepth(1, haar_filename_, face_size_min_m, face_size_max_m, max_face_z_m, face_sep_dist_m);
+
+      string camera, image_topic;
+      camera = nh_.resolveName("camera");
+      image_topic = nh_.resolveName("image");
+      string camera_topic = ros::names::clean(camera + "/rgb/" + image_topic);
+      string depth_topic = ros::names::clean(camera + "/depth_registered/" + image_topic);
+      string camera_info_topic = ros::names::clean(camera + "/rgb/camera_info");
+      string depth_info_topic = ros::names::clean(camera + "/depth_registered/camera_info");
+      image_sub_.subscribe(it_,camera_topic,3);
+      depth_image_sub_.subscribe(it_,depth_topic,3);
+      c1_info_sub_.subscribe(nh_,camera_info_topic,3);
+      c2_info_sub_.subscribe(nh_,depth_info_topic,3);
+
+      if (approx)
+      {
+	approximate_depth_sync_.reset( new ApproximateDepthSync(ApproximateDepthPolicy(queue_size),
+								image_sub_, depth_image_sub_, c1_info_sub_, c2_info_sub_));
+	approximate_depth_sync_->registerCallback(boost::bind(&FaceDetector::imageCBAllDepth,
+							      this, _1, _2, _3, _4));
+      }
+      else
+      {
+	exact_depth_sync_.reset( new ExactDepthSync(ExactDepthPolicy(queue_size),
+						    image_sub_, depth_image_sub_, c1_info_sub_, c2_info_sub_));
+	exact_depth_sync_->registerCallback(boost::bind(&FaceDetector::imageCBAllDepth,
+							this, _1, _2, _3, _4));
+      }
     }
-    else
-    {
-      exact_sync_.reset( new ExactSync(ExactPolicy(queue_size),
-                             limage_sub_, dimage_sub_, lcinfo_sub_, rcinfo_sub_));
-      exact_sync_->registerCallback(boost::bind(&FaceDetector::imageCBAll,
-                                                this, _1, _2, _3, _4));
+    else { 
+      faces_->initFaceDetectionDisparity(1, haar_filename_, face_size_min_m, face_size_max_m, max_face_z_m, face_sep_dist_m);
+
+      string stereo_namespace, image_topic;
+      stereo_namespace = nh_.resolveName("camera");
+      image_topic = nh_.resolveName("image");
+      string left_topic = ros::names::clean(stereo_namespace + "/left/" + image_topic);
+      string disparity_topic = ros::names::clean(stereo_namespace + "/disparity");
+      string left_camera_info_topic = ros::names::clean(stereo_namespace + "/left/camera_info");
+      string right_camera_info_topic = ros::names::clean(stereo_namespace + "/right/camera_info");
+      image_sub_.subscribe(it_,left_topic,3);
+      disp_image_sub_.subscribe(nh_,disparity_topic,3);
+      c1_info_sub_.subscribe(nh_,left_camera_info_topic,3);
+      c2_info_sub_.subscribe(nh_,right_camera_info_topic,3);
+
+      if (approx)
+      {
+	approximate_disp_sync_.reset( new ApproximateDispSync(ApproximateDispPolicy(queue_size),
+							      image_sub_, disp_image_sub_, c1_info_sub_, c2_info_sub_));
+	approximate_disp_sync_->registerCallback(boost::bind(&FaceDetector::imageCBAllDisp,
+							     this, _1, _2, _3, _4));
+      }
+      else
+      {
+	exact_disp_sync_.reset( new ExactDispSync(ExactDispPolicy(queue_size),
+						  image_sub_, disp_image_sub_, c1_info_sub_, c2_info_sub_));
+	exact_disp_sync_->registerCallback(boost::bind(&FaceDetector::imageCBAllDisp,
+						       this, _1, _2, _3, _4));
+      }
     }
+      
 
     // Advertise a position measure message.
     pos_pub_ = nh_.advertise<people_msgs::PositionMeasurement>("face_detector/people_tracker_measurements",1);
@@ -229,7 +275,6 @@ public:
     // Subscribe to filter measurements.
     if (external_init_) {
       pos_sub_ = nh_.subscribe("people_tracker_filter",1,&FaceDetector::posCallback,this);
-      ROS_INFO_STREAM_NAMED("face_detector","Subscribed to the person filter messages.");
     }
 
     ros::MultiThreadedSpinner s(2);
@@ -242,7 +287,7 @@ public:
 
     cv_image_out_.release();
 
-    if (do_display_ == "local") {
+    if (do_display_) {
       cv::destroyWindow("Face detector: Face Detection");
     }
 
@@ -250,12 +295,10 @@ public:
   }
 
   void goalCB() {
-    ROS_INFO_STREAM_NAMED("face_detector","Face detector action started.");
     as_.acceptNewGoal();
   }
 
   void preemptCB() {
-    ROS_INFO_STREAM_NAMED("face_detector","Face detector action preempted.");
     as_.setPreempted();
   }
 
@@ -292,6 +335,50 @@ public:
     void operator()(void const *) const {}
   };
 
+  /*!
+   * \brief Image callback for synced messages.
+   *
+   * For each new image:
+   * convert it to OpenCV format, perform face detection using OpenCV's haar filter cascade classifier, and
+   * (if requested) draw rectangles around the found faces.
+   * Can also compute which faces are associated (by proximity, currently) with faces it already has in its list of people.
+   */
+  void imageCBAllDepth(const sensor_msgs::Image::ConstPtr &image, const sensor_msgs::Image::ConstPtr& depth_image, const sensor_msgs::CameraInfo::ConstPtr& c1_info, const sensor_msgs::CameraInfo::ConstPtr& c2_info)
+  {
+
+    // Only run the detector if in continuous mode or the detector was turned on through an action invocation.
+    if (!do_continuous_ && !as_.isActive())
+      return; 
+
+    // Clear out the result vector.
+    result_.face_positions.clear();
+
+    if (do_display_) {
+      cv_mutex_.lock();
+    }
+
+    // ROS --> OpenCV
+    cv_bridge::CvImageConstPtr cv_image_ptr = cv_bridge::toCvShare(image,"bgr8");
+    cv_bridge::CvImageConstPtr cv_depth_ptr = cv_bridge::toCvShare(depth_image);
+    cam_model_.fromCameraInfo(c1_info,c2_info);
+
+    // For display, keep a copy of the image that we can draw on.
+    if (do_display_) {
+      cv_image_out_ = (cv_image_ptr->image).clone();
+    }
+
+    struct timeval timeofday;
+    gettimeofday(&timeofday,NULL);
+    ros::Time starttdetect = ros::Time().fromNSec(1e9*timeofday.tv_sec + 1e3*timeofday.tv_usec);
+
+    vector<Box2D3D> faces_vector = faces_->detectAllFacesDepth(cv_image_ptr->image, 1.0, cv_depth_ptr->image, &cam_model_);
+    gettimeofday(&timeofday,NULL);
+    ros::Time endtdetect = ros::Time().fromNSec(1e9*timeofday.tv_sec + 1e3*timeofday.tv_usec);
+    ros::Duration diffdetect = endtdetect - starttdetect;
+    ROS_INFO_STREAM_NAMED("face_detector","Detection duration = " << diffdetect.toSec() << "sec");
+
+    matchAndDisplay(faces_vector, image->header);
+  }
 
   /*!
    * \brief Image callback for synced messages.
@@ -301,51 +388,55 @@ public:
    * (if requested) draw rectangles around the found faces.
    * Can also compute which faces are associated (by proximity, currently) with faces it already has in its list of people.
    */
-  void imageCBAll(const sensor_msgs::Image::ConstPtr &limage, const stereo_msgs::DisparityImage::ConstPtr& dimage, const sensor_msgs::CameraInfo::ConstPtr& lcinfo, const sensor_msgs::CameraInfo::ConstPtr& rcinfo)
+  void imageCBAllDisp(const sensor_msgs::Image::ConstPtr &image, const stereo_msgs::DisparityImage::ConstPtr& disp_image, const sensor_msgs::CameraInfo::ConstPtr& c1_info, const sensor_msgs::CameraInfo::ConstPtr& c2_info)
   {
 
     // Only run the detector if in continuous mode or the detector was turned on through an action invocation.
     if (!do_continuous_ && !as_.isActive())
       return;
 
-    ROS_INFO_STREAM_NAMED("face_detector","Face detector callback.");
-
-
     // Clear out the result vector.
     result_.face_positions.clear();
 
-    if (do_display_ == "local") {
+    if (do_display_) {
       cv_mutex_.lock();
     }
 
+
     // ROS --> OpenCV
-    cv::Mat cv_image_left(lbridge_.imgMsgToCv(limage,"bgr8"));
-    sensor_msgs::ImageConstPtr boost_dimage(const_cast<sensor_msgs::Image*>(&dimage->image), NullDeleter());
-    cv::Mat cv_image_disp(dbridge_.imgMsgToCv(boost_dimage));
-    cam_model_.fromCameraInfo(lcinfo,rcinfo);
+    cv_bridge::CvImageConstPtr cv_image_ptr = cv_bridge::toCvShare(image,sensor_msgs::image_encodings::BGR8);
+    cv_bridge::CvImageConstPtr cv_disp_ptr = cv_bridge::toCvShare(disp_image->image, disp_image);
+    cam_model_.fromCameraInfo(c1_info,c2_info);
 
     // For display, keep a copy of the image that we can draw on.
-    if (do_display_ == "local") {
-      cv_image_out_ = cv_image_left.clone();
+    if (do_display_) {
+      cv_image_out_ = (cv_image_ptr->image).clone();
     }
 
     struct timeval timeofday;
     gettimeofday(&timeofday,NULL);
     ros::Time starttdetect = ros::Time().fromNSec(1e9*timeofday.tv_sec + 1e3*timeofday.tv_usec);
 
-    vector<Box2D3D> faces_vector = faces_->detectAllFaces(cv_image_left, 1.0, cv_image_disp, &cam_model_);
+    vector<Box2D3D> faces_vector = faces_->detectAllFacesDisparity(cv_image_ptr->image, 1.0, cv_disp_ptr->image, &cam_model_);
     gettimeofday(&timeofday,NULL);
     ros::Time endtdetect = ros::Time().fromNSec(1e9*timeofday.tv_sec + 1e3*timeofday.tv_usec);
     ros::Duration diffdetect = endtdetect - starttdetect;
-    ROS_DEBUG_STREAM_NAMED("face_detector","Detection duration = " << diffdetect.toSec() << "sec");
-    //ROS_INFO_STREAM("Detection duration = " << diffdetect.toSec() << "sec");
+    ROS_INFO_STREAM_NAMED("face_detector","Detection duration = " << diffdetect.toSec() << "sec");
 
+    matchAndDisplay(faces_vector, image->header);
+  }
+
+
+private:
+
+  void matchAndDisplay( vector<Box2D3D> faces_vector, std_msgs::Header header ) 
+  {
     bool found_faces = false;
 
     int ngood = 0;
     sensor_msgs::PointCloud cloud;
-    cloud.header.stamp = limage->header.stamp;
-    cloud.header.frame_id = limage->header.frame_id;
+    cloud.header.stamp = header.stamp;
+    cloud.header.frame_id = header.frame_id;
 
     if (faces_vector.size() > 0 ) {
 
@@ -353,8 +444,8 @@ public:
       boost::mutex::scoped_lock pos_lock(pos_mutex_);
       map<string, RestampedPositionMeasurement>::iterator it;
       for (it = pos_list_.begin(); it != pos_list_.end(); it++) {
-	if ((limage->header.stamp - (*it).second.restamp) > ros::Duration().fromSec(5.0)) {
-	  // Position is too old, kill the person.
+	if ((header.stamp - (*it).second.restamp) > ros::Duration().fromSec(5.0)) {
+	  // Position is too old, remove the person.
 	  pos_list_.erase(it);
 	}
 	else {
@@ -363,8 +454,8 @@ public:
 	  tf::pointMsgToTF((*it).second.pos.pos, pt);
 	  tf::Stamped<tf::Point> loc(pt, (*it).second.pos.header.stamp, (*it).second.pos.header.frame_id);
 	  try {
-     	    tf_.transformPoint(limage->header.frame_id, limage->header.stamp, loc, "odom_combined", loc);
-	    (*it).second.pos.header.stamp = limage->header.stamp;
+     	    tf_.transformPoint(header.frame_id, header.stamp, loc, "odom_combined", loc);
+	    (*it).second.pos.header.stamp = header.stamp;
 	    (*it).second.pos.pos.x = loc[0];
             (*it).second.pos.pos.y = loc[1];
             (*it).second.pos.pos.z = loc[2];
@@ -387,12 +478,12 @@ public:
 	  std::string id = "";
 
 	  // Convert the face format to a PositionMeasurement msg.
-	  pos.header.stamp = limage->header.stamp;
+	  pos.header.stamp = header.stamp;
 	  pos.name = name_;
 	  pos.pos.x = one_face->center3d.x;
 	  pos.pos.y = one_face->center3d.y;
 	  pos.pos.z = one_face->center3d.z;
-	  pos.header.frame_id = limage->header.frame_id;//"*_stereo_optical_frame";
+	  pos.header.frame_id = header.frame_id;//"*_stereo_optical_frame";
 	  pos.reliability = reliability_;
 	  pos.initialization = 1;//0;
 	  pos.covariance[0] = 0.04; pos.covariance[1] = 0.0;  pos.covariance[2] = 0.0;
@@ -413,7 +504,7 @@ public:
 	  }
 	  if (close_it != pos_list_.end()) {
 	    if (mindist < (*close_it).second.dist) {
-	      (*close_it).second.restamp = limage->header.stamp;
+	      (*close_it).second.restamp = header.stamp;
 	      (*close_it).second.dist = mindist;
 	      (*close_it).second.pos = pos;
 	    }
@@ -423,7 +514,6 @@ public:
 	  else {
 	    pos.object_id = "";
 	  }
-	  ROS_INFO_STREAM_NAMED("face_detector","Returning face in frame " << pos.header.frame_id << " at location (x,y,z) " << pos.pos.x << " " << pos.pos.y << " " << pos.pos.z);
 	  result_.face_positions.push_back(pos);
 	  found_faces = true;
 	  pos_pub_.publish(pos);
@@ -437,11 +527,11 @@ public:
       for (it = pos_list_.begin(); it != pos_list_.end(); it++) {
 	(*it).second.dist = BIGDIST_M;
       }
-      // Done associating faces.
+      // Done associating faces
 
       /******** Display **************************************************************/
 
-      // Draw an appropriately colored rectangle on the display image and in the visualizer.
+      // Publish a point cloud of face centers.
 
       cloud.channels.resize(1);
       cloud.channels[0].name = "intensity";
@@ -461,55 +551,63 @@ public:
 
 	  ngood ++;
 	}
-	else {
-	  ROS_DEBUG_STREAM_NAMED("face_detector","The detection didn't have a valid size, so it wasn't visualized.");
-	}
-
-	// Visualization by image display.
-	if (do_display_ == "local") {
-	  cv::Scalar color;
-	  if (one_face->status == "good") {
-	    color = cv::Scalar(0,255,0);
-	  }
-	  else if (one_face->status == "unknown") {
-	    color = cv::Scalar(255,0,0);
-	  }
-	  else {
-	    color = cv::Scalar(0,0,255);
-	  }
-
-	  if (do_display_ == "local") {
-	    cv::rectangle(cv_image_out_,
-			  cv::Point(one_face->box2d.x,one_face->box2d.y),
-			  cv::Point(one_face->box2d.x+one_face->box2d.width, one_face->box2d.y+one_face->box2d.height), color, 4);
-	  }
-	}
       }
 
-    }
+      cloud_pub_.publish(cloud);
+      // Done publishing the point cloud.
 
-    cloud_pub_.publish(cloud);
+    } // Done if faces_vector.size() > 0
+    
 
-    // Display
-    if (do_display_ == "local") {
-
-      cv::imshow("Face detector: Face Detection",cv_image_out_);
-      cv::waitKey(2);
-
+    // Draw an appropriately colored rectangle on the display image and in the visualizer.
+    if (do_display_) {
+      displayFacesOnImage(faces_vector);
       cv_mutex_.unlock();
     }
+    // Done drawing.
+
     /******** Done display **********************************************************/
 
     ROS_INFO_STREAM_NAMED("face_detector","Number of faces found: " << faces_vector.size() << ", number with good depth and size: " << ngood);
-
 
     // If you don't want continuous processing and you've found at least one face, turn off the detector.
     if (!do_continuous_ && found_faces) {
       as_.setSucceeded(result_);
     }
-
-
   }
+
+  // Draw bounding boxes around detected faces on the cv_image_out_ and show the image. 
+  void displayFacesOnImage(vector<Box2D3D>  faces_vector) 
+  {
+
+    Box2D3D *one_face;
+    
+    for (uint iface = 0; iface < faces_vector.size(); iface++) {
+      one_face = &faces_vector[iface];
+      // Visualization by image display.
+      if (do_display_) {
+	cv::Scalar color;
+	if (one_face->status == "good") {
+	  color = cv::Scalar(0,255,0);
+	}
+	else if (one_face->status == "unknown") {
+	  color = cv::Scalar(255,0,0);
+	}
+	else {
+	  color = cv::Scalar(0,0,255);
+	}
+	
+	cv::rectangle(cv_image_out_, 
+		      cv::Point(one_face->box2d.x,one_face->box2d.y), 
+		      cv::Point(one_face->box2d.x+one_face->box2d.width, one_face->box2d.y+one_face->box2d.height), color, 4);
+      }
+    }
+
+    cv::imshow("Face detector: Face Detection",cv_image_out_);
+    cv::waitKey(2);
+    
+  }
+
 
 }; // end class
 

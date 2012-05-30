@@ -72,8 +72,8 @@ namespace people {
 struct Box2D3D {
   cv::Point2d center2d;
   cv::Point3d center3d;
-  double radius2d;
-  double radius3d;
+  double width2d;
+  double width3d;
   cv::Rect box2d;
   string status;
   int id;
@@ -121,7 +121,7 @@ class Faces
 
 
   /*!
-   * \brief Detect all faces in an image.
+   * \brief Detect all faces in an image and disparity image.
    * 
    * Input:
    * \param image The image in which to detect faces.
@@ -132,17 +132,42 @@ class Faces
    * Output:
    * A vector of Box2D3Ds containing the bounding boxes around found faces in 2D and 3D.
    */ 
-  vector<Box2D3D> detectAllFaces(cv::Mat &image, double threshold, cv::Mat &disparity_image, image_geometry::StereoCameraModel *cam_model);
+  vector<Box2D3D> detectAllFacesDisparity(const cv::Mat &image, double threshold, const cv::Mat &disparity_image, image_geometry::StereoCameraModel *cam_model);
+
+  /*!
+   * \brief Detect all faces in an image and depth image.
+   * 
+   * Input:
+   * \param image The image in which to detect faces.
+   * \param haar_classifier_filename Path to the xml file containing the trained haar classifier cascade.
+   * \param threshold Detection threshold. Currently unused.
+   * \param depth_image Image of depth (e.g. from an RGBD camera).
+   * \param cam_model The camera model used to convert 2D points to 3D points.
+   * Output:
+   * A vector of Box2D3Ds containing the bounding boxes around found faces in 2D and 3D.
+   */ 
+  vector<Box2D3D> detectAllFacesDepth(const cv::Mat &image, double threshold, const cv::Mat &depth_image, image_geometry::StereoCameraModel *cam_model);
 
   /*! 
-   * \brief Initialize the face detector. 
+   * \brief Initialize the face detector with images and disparities. 
    *
    * Initialize the face detector, including loading in the classifier cascade.
    * Input:
    * \param num_cascades Should always be 1 (may change in the future.)
    * \param haar_classifier_filename Full path to the cascade file.
    */
-  void initFaceDetection(uint num_cascades, string haar_classifier_filename, double face_size_min_m, double face_size_max_m, double max_face_z_m, double face_sep_dist_m);
+  void initFaceDetectionDisparity(uint num_cascades, string haar_classifier_filename, double face_size_min_m, double face_size_max_m, double max_face_z_m, double face_sep_dist_m);
+
+
+  /*! 
+   * \brief Initialize the face detector with images and depth. 
+   *
+   * Initialize the face detector, including loading in the classifier cascade.
+   * Input:
+   * \param num_cascades Should always be 1 (may change in the future.)
+   * \param haar_classifier_filename Full path to the cascade file.
+   */
+  void initFaceDetectionDepth(uint num_cascades, string haar_classifier_filename, double face_size_min_m, double face_size_max_m, double max_face_z_m, double face_sep_dist_m);
 
  ////////////////////
  private:
@@ -151,7 +176,8 @@ class Faces
   vector<Box2D3D> faces_; /**< The list of face positions. */
 
   cv::Mat cv_image_gray_;  /**< Grayscale image */
-  cv::Mat *disparity_image_; /**< Disparity image */
+  cv::Mat const* disparity_image_; /**< Disparity image */
+  cv::Mat const* depth_image_; /**< Depth image */
   image_geometry::StereoCameraModel *cam_model_; /**< The stereo camera model for 2D-->3D conversions. */
 
   boost::mutex face_mutex_, face_done_mutex_, t_mutex_; 
@@ -164,7 +190,8 @@ class Faces
   /* Structures for the face detector. */
   cv::CascadeClassifier cascade_;  /**< Classifier cascade for face detection. */
 
-  void faceDetectionThread(uint i);
+  void faceDetectionThreadDisparity(uint i);
+  void faceDetectionThreadDepth(uint i);
 
 };
 
