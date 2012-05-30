@@ -1,0 +1,38 @@
+/**
+\mainpage
+\htmlinclude manifest.html
+
+\b face_detector is a package containing algorithms and nodes related to the detection of faces. 
+
+@section usage Usage
+See launch/face_dector.wide.launch to launch in continuous detection mode, or
+launch/face_detector_action.wide.launch to launch as an action.
+
+@param classifier_name A readable string name for the classifier. Will be published with the result.
+@param classifier_filename Full path to the trained haar cascade. Currently useful cascades are haar_frontalface_alt.xml and haar_profileface.xml in opencv2 
+@param classifier_reliability Double 0-1. Some notion of the classifier's reliability for use in a larger system.
+@param do_continuous true = Run continuously. false = Wait for action call
+@param do_publish_faces_of_unknown_size true = If depth info is not available, publish the resulting face with a position of (0,0,0). false = Don't publish faces if stereo information isn't available.
+@param do_display none = Don't display anything. local = Display in an OpenCV window.
+@param face_size_min_m Double. The minimum width of a face, in meters. Defaults to 0.1m.
+@param face_size_max_m Double. The maximum width of a face, in meters. Defaults to 0.5m.
+@param max_face_z_m Double. The maximum distance of a face from the camera, in meters. (In the camera frame, depth is along the z-axis.) Defaults to 8.0m.
+@param face_separation_dist_m Double. Only used for tracking. The maximum distance between two face detections before they are considered different faces. Defaults to 1.0m. 
+
+
+
+\section codeapi Code API
+
+<!--
+Provide links to specific auto-generated API documentation within your
+package that is of particular interest to a reader. Doxygen will
+document pretty much every part of your code, so do your best here to
+point the reader to the actual API.
+
+If your codebase is fairly large or has different sets of APIs, you
+should use the doxygen 'group' tag to keep these APIs together. For
+example, the roscpp documentation has 'libros' group.
+-->
+
+
+*/

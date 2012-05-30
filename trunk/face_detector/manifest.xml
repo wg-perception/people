@@ -1,0 +1,35 @@
+<package>
+  <description brief="face_detector">
+    Face detection in images.
+  </description>
+  <author>Caroline Pantofaru</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/face_detector</url>
+
+<depend package="roscpp"/>
+<depend package="std_msgs"/>
+<depend package="geometry_msgs"/>
+<depend package="std_srvs"/>
+<depend package="cv_bridge"/>
+<rosdep name="opencv2"/>
+<depend package="stereo_msgs"/>
+<depend package="sensor_msgs"/>
+<depend package="tf"/>
+<depend package="rosbag" />
+<depend package="image_transport" />
+<depend package="people_msgs" />
+<depend package="image_geometry" />
+<depend package="actionlib_msgs"/>
+<depend package="actionlib"/>
+
+<export>
+<cpp cflags="-I${prefix}/msg/cpp -I${prefix}/srv/cpp"/>
+</export>
+
+  <platform os="ubuntu" version="9.04"/>
+  <platform os="ubuntu" version="9.10"/>
+  <platform os="ubuntu" version="10.04"/>
+</package>
+
+
