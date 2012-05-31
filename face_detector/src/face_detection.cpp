@@ -169,12 +169,6 @@ public:
   {
     ROS_INFO_STREAM_NAMED("face_detector","Constructing FaceDetector.");
 
-    if (do_display_) {
-      // OpenCV: pop up an OpenCV highgui window
-      cv::namedWindow("Face detector: Face Detection", CV_WINDOW_AUTOSIZE);
-    }
-
-
     // Action stuff
     as_.registerGoalCallback(boost::bind(&FaceDetector::goalCB, this));
     as_.registerPreemptCallback(boost::bind(&FaceDetector::preemptCB, this));
@@ -203,6 +197,11 @@ public:
     local_nh.param("use_rgbd",use_rgbd,false);
     local_nh.param("queue_size", queue_size, 5);
     local_nh.param("approximate_sync", approx, false);
+
+    if (do_display_) {
+      // OpenCV: pop up an OpenCV highgui window
+      cv::namedWindow("Face detector: Face Detection", CV_WINDOW_AUTOSIZE);
+    }
 
     // Init the detector and subscribe to the images and camera parameters. One case for rgbd, one for stereo.
     if (use_rgbd) {
