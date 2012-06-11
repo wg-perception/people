@@ -11,5 +11,5 @@
   <depend stack="image_pipeline" /> <!-- stereo_msgs -->
   <depend stack="ros" /> <!-- std_srvs, std_msgs, roscpp, rosrecord -->
   <depend stack="vision_opencv" /> <!-- opencv2, image_geometry, cv_bridge -->
-
+  <depend stack="ros_comm" /> 
 </stack>

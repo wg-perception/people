@@ -1,6 +1,7 @@
 <launch>
 
-  <node pkg="rosrecord" type="rosplay" name="rosplay" args="-r 0.5 $(find face_detector)/face_detector_noface_test.bag"/>
+  <node pkg="rosbag" type="play" name="play" args="-r 0.5 $(find face_detector)/face_detector_noface_test.bag"/>
+  <node ns="wide_stereo" pkg="stereo_image_proc" type="stereo_image_proc" name="stereo" />
 
   <include file="$(find face_detector)/launch/face_detector.wide.launch"/> 
 

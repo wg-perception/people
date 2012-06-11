@@ -32,12 +32,16 @@ rosbuild_genmsg()
 #rosbuild_link_boost(${PROJECT_NAME} thread)
 #rosbuild_add_executable(example examples/example.cpp)
 #target_link_libraries(example ${PROJECT_NAME})
+find_package(OpenCV REQUIRED)
 rosbuild_add_executable(face_detector
                        src/face_detection.cpp 
                        src/faces.cpp)
-rosbuild_link_boost(face_detector thread)
 
-#rosbuild_download_test_data(http://pr.willowgarage.com/data/face_detector/face_detector_noface_test.bag face_detector_noface_test.bag 6dce1a1b06fd43c37fdb34f754d38632)
-#rosbuild_download_test_data(http://pr.willowgarage.com/data/face_detector/face_detector_withface_test.bag face_detector_withface_test.bag e81af59b9f649c9615d2a83a7d12b784)
-#rosbuild_add_rostest(test/face_detector_true_rtest.xml)
-#rosbuild_add_rostest(test/face_detector_false_rtest.xml)
+target_link_libraries(face_detector ${OpenCV_LIBS})
+rosbuild_link_boost(face_detector signals system thread)
+
+
+rosbuild_download_test_data(http://pr.willowgarage.com/data/face_detector/face_detector_noface_test_diamondback.bag face_detector_noface_test.bag 37f043be780a4511c853379defdd9855)
+rosbuild_download_test_data(http://pr.willowgarage.com/data/face_detector/face_detector_withface_test_diamondback.bag face_detector_withface_test.bag 59126117e049e69d577b7ee27251a6f8)
+rosbuild_add_rostest(test/face_detector_true_rtest.xml)
+rosbuild_add_rostest(test/face_detector_false_rtest.xml)

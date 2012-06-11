@@ -11,12 +11,12 @@
 <depend package="std_msgs"/>
 <depend package="geometry_msgs"/>
 <depend package="std_srvs"/>
-<depend package="opencv2"/>
 <depend package="cv_bridge"/>
+<rosdep name="opencv2"/>
 <depend package="stereo_msgs"/>
 <depend package="sensor_msgs"/>
 <depend package="tf"/>
-<depend package="rosrecord"/>
+<depend package="rosbag" />
 <depend package="image_transport" />
 <depend package="people_msgs" />
 <depend package="image_geometry" />

@@ -1,8 +1,6 @@
 #goal
-uint32 num_frames_with_faces
 ---
 #result
 people_msgs/PositionMeasurement[] face_positions
 ---
 #feedback
-people_msgs/PositionMeasurement[] face_positions
