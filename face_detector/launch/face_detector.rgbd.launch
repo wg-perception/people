@@ -1,6 +1,6 @@
 <launch>
 
-  <!--include file="$(find openni_launch)/launch/openni.launch"/-->
+  <include file="$(find openni_launch)/launch/openni.launch"/>
   <param name="/camera/depth_registration" type="bool" value="true" />
 
   <node pkg="face_detector" type="face_detector" name="face_detector" args="camera:=camera image:=image_rect" output="screen">

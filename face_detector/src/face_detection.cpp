@@ -150,6 +150,8 @@ public:
   };
   map<string, RestampedPositionMeasurement> pos_list_; /**< Queue of updated face positions from the filter. */
 
+  int max_id_;
+
   bool quit_;
 
   tf::TransformListener tf_;
@@ -165,6 +167,7 @@ public:
     it_(nh_),
     as_(nh_, name, false),
     faces_(0),
+    max_id_(-1),
     quit_(false)
   {
     ROS_INFO_STREAM_NAMED("face_detector","Constructing FaceDetector.");
@@ -273,7 +276,8 @@ public:
 
     // Subscribe to filter measurements.
     if (external_init_) {
-      pos_sub_ = nh_.subscribe("people_tracker_filter",1,&FaceDetector::posCallback,this);
+      //pos_sub_ = nh_.subscribe("people_tracker_filter",1,&FaceDetector::posCallback,this);
+      pos_sub_ = nh_.subscribe("/face_detector/people_tracker_measurements",1,&FaceDetector::posCallback,this);
     }
 
     ros::MultiThreadedSpinner s(2);
@@ -442,10 +446,11 @@ private:
       // Transform the positions of the known faces and remove anyone who hasn't had an update in a long time.
       boost::mutex::scoped_lock pos_lock(pos_mutex_);
       map<string, RestampedPositionMeasurement>::iterator it;
-      for (it = pos_list_.begin(); it != pos_list_.end(); it++) {
+      it = pos_list_.begin();
+      while (it != pos_list_.end()) {
 	if ((header.stamp - (*it).second.restamp) > ros::Duration().fromSec(5.0)) {
 	  // Position is too old, remove the person.
-	  pos_list_.erase(it);
+	  pos_list_.erase(it++);
 	}
 	else {
 	  // Transform the person to this time. Note that the pos time is updated but not the restamp.
@@ -461,6 +466,7 @@ private:
 	  }
 	  catch (tf::TransformException& ex) {
 	  }
+	  it++;
 	}
       }
       // End filter face position update
@@ -474,7 +480,7 @@ private:
 
 	if (one_face->status=="good" || (one_face->status=="unknown" && do_publish_unknown_)) {
 
-	  std::string id = "";
+	  //std::string id = "";
 
 	  // Convert the face format to a PositionMeasurement msg.
 	  pos.header.stamp = header.stamp;
@@ -490,7 +496,7 @@ private:
 	  pos.covariance[6] = 0.0;  pos.covariance[7] = 0.0;  pos.covariance[8] = 0.04;
 
 	  // Check if this person's face is close enough to one of the previously known faces and associate it with the closest one.
-	  // Otherwise publish it with an empty id.
+	  // Otherwise publish it with a new id.
 	  // Note that multiple face positions can be published with the same id, but ids in the pos_list_ are unique. The position of a face in the list is updated with the closest found face.
 	  double dist, mindist = BIGDIST_M;
 	  map<string, RestampedPositionMeasurement>::iterator close_it = pos_list_.end();
@@ -508,10 +514,14 @@ private:
 	      (*close_it).second.pos = pos;
 	    }
 	    pos.object_id = (*close_it).second.pos.object_id;
-	    ROS_INFO_STREAM_NAMED("face_detector","Found face " << pos.object_id);
+	    ROS_INFO_STREAM_NAMED("face_detector","Found face to match with id " << pos.object_id);
 	  }
 	  else {
-	    pos.object_id = "";
+	    max_id_++;
+	    pos.object_id = static_cast<ostringstream*>( &(ostringstream() << max_id_) )->str();
+	    ROS_INFO_STREAM_NAMED("face_detector","Didn't find face to match starting new id " << pos.object_id);
+
+	    //	    pos.object_id = "";
 	  }
 	  result_.face_positions.push_back(pos);
 	  found_faces = true;
