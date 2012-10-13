@@ -14,7 +14,6 @@
     <param name="do_display" type="bool" value="false" />
     <param name="use_rgbd" type="bool" value="false" />
     <param name="approximate_sync" type="bool" value="false" />
-	 
   </node>
 
 </launch>
