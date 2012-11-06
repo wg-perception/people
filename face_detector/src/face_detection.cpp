@@ -87,6 +87,24 @@ public:
   // Node handle
   ros::NodeHandle nh_;
 
+  boost::mutex connect_mutex_;
+  bool use_rgbd_;
+
+  // Subscription topics
+  string image_topic_;
+  // Stereo
+  string stereo_namespace_;
+  string left_topic_;
+  string disparity_topic_;
+  string left_camera_info_topic_;
+  string right_camera_info_topic_;
+  // RGB-D
+  string camera_;
+  string camera_topic_;
+  string depth_topic_;
+  string camera_info_topic_;
+  string depth_info_topic_;
+
   // Images and conversion for both the stereo camera and rgb-d camera cases.
   image_transport::ImageTransport it_;
   image_transport::SubscriberFilter image_sub_; /**< Left/rgb image msg. */
@@ -176,7 +194,6 @@ public:
 
     faces_ = new Faces();
     double face_size_min_m, face_size_max_m, max_face_z_m, face_sep_dist_m;
-    bool use_rgbd;
     int queue_size;
     bool approx;
 
@@ -194,7 +211,7 @@ public:
     local_nh.param("face_size_max_m",face_size_max_m,Faces::FACE_SIZE_MAX_M);
     local_nh.param("max_face_z_m",max_face_z_m,Faces::MAX_FACE_Z_M);
     local_nh.param("face_separation_dist_m",face_sep_dist_m,Faces::FACE_SEP_DIST_M);
-    local_nh.param("use_rgbd",use_rgbd,false);
+    local_nh.param("use_rgbd",use_rgbd_,false);
     local_nh.param("queue_size", queue_size, 5);
     local_nh.param("approximate_sync", approx, false);
 
@@ -204,20 +221,15 @@ public:
     }
 
     // Init the detector and subscribe to the images and camera parameters. One case for rgbd, one for stereo.
-    if (use_rgbd) {
+    if (use_rgbd_) {
       faces_->initFaceDetectionDepth(1, haar_filename_, face_size_min_m, face_size_max_m, max_face_z_m, face_sep_dist_m);
 
-      string camera, image_topic;
-      camera = nh_.resolveName("camera");
-      image_topic = nh_.resolveName("image");
-      string camera_topic = ros::names::clean(camera + "/rgb/" + image_topic);
-      string depth_topic = ros::names::clean(camera + "/depth_registered/" + image_topic);
-      string camera_info_topic = ros::names::clean(camera + "/rgb/camera_info");
-      string depth_info_topic = ros::names::clean(camera + "/depth_registered/camera_info");
-      image_sub_.subscribe(it_,camera_topic,3);
-      depth_image_sub_.subscribe(it_,depth_topic,3);
-      c1_info_sub_.subscribe(nh_,camera_info_topic,3);
-      c2_info_sub_.subscribe(nh_,depth_info_topic,3);
+      camera_ = nh_.resolveName("camera");
+      image_topic_ = nh_.resolveName("image");
+      camera_topic_ = ros::names::clean(camera_ + "/rgb/" + image_topic_);
+      depth_topic_ = ros::names::clean(camera_ + "/depth_registered/" + image_topic_);
+      camera_info_topic_ = ros::names::clean(camera_ + "/rgb/camera_info");
+      depth_info_topic_ = ros::names::clean(camera_ + "/depth_registered/camera_info");
 
       if (approx)
       {
@@ -233,21 +245,17 @@ public:
 	exact_depth_sync_->registerCallback(boost::bind(&FaceDetector::imageCBAllDepth,
 							this, _1, _2, _3, _4));
       }
+
     }
     else { 
       faces_->initFaceDetectionDisparity(1, haar_filename_, face_size_min_m, face_size_max_m, max_face_z_m, face_sep_dist_m);
 
-      string stereo_namespace, image_topic;
-      stereo_namespace = nh_.resolveName("camera");
-      image_topic = nh_.resolveName("image");
-      string left_topic = ros::names::clean(stereo_namespace + "/left/" + image_topic);
-      string disparity_topic = ros::names::clean(stereo_namespace + "/disparity");
-      string left_camera_info_topic = ros::names::clean(stereo_namespace + "/left/camera_info");
-      string right_camera_info_topic = ros::names::clean(stereo_namespace + "/right/camera_info");
-      image_sub_.subscribe(it_,left_topic,3);
-      disp_image_sub_.subscribe(nh_,disparity_topic,3);
-      c1_info_sub_.subscribe(nh_,left_camera_info_topic,3);
-      c2_info_sub_.subscribe(nh_,right_camera_info_topic,3);
+      stereo_namespace_ = nh_.resolveName("camera");
+      image_topic_ = nh_.resolveName("image");
+      left_topic_ = ros::names::clean(stereo_namespace_ + "/left/" + image_topic_);
+      disparity_topic_ = ros::names::clean(stereo_namespace_ + "/disparity");
+      left_camera_info_topic_ = ros::names::clean(stereo_namespace_ + "/left/camera_info");
+      right_camera_info_topic_ = ros::names::clean(stereo_namespace_ + "/right/camera_info");
 
       if (approx)
       {
@@ -264,17 +272,29 @@ public:
 						       this, _1, _2, _3, _4));
       }
     }
-      
-
-    // Advertise a position measure message.
-    pos_pub_ = nh_.advertise<people_msgs::PositionMeasurement>("face_detector/people_tracker_measurements",1);
-
-    cloud_pub_ = nh_.advertise<sensor_msgs::PointCloud>("face_detector/faces_cloud",0);
 
     // Subscribe to filter measurements.
     if (external_init_) {
       pos_sub_ = nh_.subscribe("people_tracker_filter",1,&FaceDetector::posCallback,this);
     }
+
+      
+    // Connection callbacks and advertise
+    ros::SubscriberStatusCallback pos_pub_connect_cb = boost::bind(&FaceDetector::connectCb, this);
+    ros::SubscriberStatusCallback cloud_pub_connect_cb = boost::bind(&FaceDetector::connectCb, this);
+
+    {
+      boost::mutex::scoped_lock lock(connect_mutex_);
+
+      // Advertise a position measure message.
+      pos_pub_ = nh_.advertise<people_msgs::PositionMeasurement>("face_detector/people_tracker_measurements",1, pos_pub_connect_cb, pos_pub_connect_cb);
+
+      cloud_pub_ = nh_.advertise<sensor_msgs::PointCloud>("face_detector/faces_cloud",0, cloud_pub_connect_cb, cloud_pub_connect_cb);
+    }
+
+
+    // If running as an action server, just stay connected so that action calls are fast.
+    if (!do_continuous_) connectCb();
 
     ros::MultiThreadedSpinner s(2);
     ros::spin(s);
@@ -292,6 +312,47 @@ public:
 
     if (faces_) {delete faces_; faces_ = 0;}
   }
+
+  // Handles (un)subscribing when clients (un)subscribe
+  void connectCb()
+  {
+    boost::mutex::scoped_lock lock(connect_mutex_);
+    if (use_rgbd_) 
+    {
+      if (do_continuous_ && cloud_pub_.getNumSubscribers() == 0 && pos_pub_.getNumSubscribers() == 0)
+      {
+	image_sub_.unsubscribe();
+	depth_image_sub_.unsubscribe();
+	c1_info_sub_.unsubscribe();
+	c2_info_sub_.unsubscribe();
+      }
+      else if (!do_continuous_ || !image_sub_.getSubscriber())
+      {
+	image_sub_.subscribe(it_, camera_topic_, 3);
+	depth_image_sub_.subscribe(it_, depth_topic_, 3);
+	c1_info_sub_.subscribe(nh_, camera_info_topic_, 3);
+	c2_info_sub_.subscribe(nh_, depth_info_topic_,3);
+      }
+    } 
+    else
+    {
+      if (do_continuous_ && cloud_pub_.getNumSubscribers() == 0 && pos_pub_.getNumSubscribers() == 0)
+      {
+	image_sub_.unsubscribe();
+	disp_image_sub_.unsubscribe();
+	c1_info_sub_.unsubscribe();
+	c2_info_sub_.unsubscribe();
+      }
+      else if (!do_continuous_ || !image_sub_.getSubscriber())
+      {
+	image_sub_.subscribe(it_, left_topic_, 3);
+	disp_image_sub_.subscribe(nh_, disparity_topic_, 3);
+	c1_info_sub_.subscribe(nh_, left_camera_info_topic_, 3);
+	c2_info_sub_.subscribe(nh_, right_camera_info_topic_, 3);
+      }
+    }
+  }
+
 
   void goalCB() {
     as_.acceptNewGoal();

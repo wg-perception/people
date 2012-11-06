@@ -6,7 +6,7 @@
   <!--include file="$(find openni_launch)/launch/openni.launch"/-->
   <param name="/$(arg camera)/depth_registration" type="bool" value="true" />
 
- <node pkg="face_detector" type="face_detector" name="face_detector_action" output="screen">
+ <node pkg="face_detector" type="face_detector" name="face_detector" output="screen">
     <remap from="camera" to="$(arg camera)" />
     <remap from="image" to="$(arg image_topic)" />
     <param name="classifier_name" type="string" value="frontalface" />
