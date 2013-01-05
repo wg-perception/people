@@ -2,13 +2,17 @@
 
   <arg name="camera" default="camera" />
   <arg name="image_topic" default="image_rect" />
+  <arg name="fixed_frame" default="camera_rgb_optical_frame" />
 
   <!--include file="$(find openni_launch)/launch/openni.launch"/-->
-  <param name="/$(arg camera)/depth_registration" type="bool" value="true" />
+  <node name="$(anon dynparam)" pkg="dynamic_reconfigure" type="dynparam" args="set_from_parameters camera_driver">
+    <param name="depth_registration" type="bool" value="true" />
+  </node>
 
   <node pkg="face_detector" type="face_detector" name="face_detector_action" output="screen">
     <remap from="camera" to="$(arg camera)" />
     <remap from="image" to="$(arg image_topic)" />
+    <param name="fixed_frame" type="string" value="$(arg fixed_frame)" />
     <param name="classifier_name" type="string" value="frontalface" />
     <param name="classifier_filename" type="string" value="$(env ROS_ROOT)/../OpenCV/haarcascades/haarcascade_frontalface_alt.xml" />
     <param name="classifier_reliability" type="double" value="0.9"/>
