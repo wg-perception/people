@@ -5,7 +5,7 @@
   <arg name="fixed_frame" default="camera_rgb_optical_frame" />
 
   <!--include file="$(find openni_launch)/launch/openni.launch"/-->
-  <node name="$(anon dynparam)" pkg="dynamic_reconfigure" type="dynparam" args="set_from_parameters camera_driver">
+  <node name="$(anon dynparam)" pkg="dynamic_reconfigure" type="dynparam" args="set_from_parameters $(arg camera)/driver">
     <param name="depth_registration" type="bool" value="true" />
   </node>
 
