@@ -92,7 +92,7 @@ namespace people {
     bool use_rgbd_;
 
     // Subscription topics
-    string image_topic_;
+    string image_image_;
     // Stereo
     string stereo_namespace_;
     string left_topic_;
@@ -102,9 +102,11 @@ namespace people {
     // RGB-D
     string camera_;
     string camera_topic_;
+    string depth_image_;
     string depth_topic_;
     string camera_info_topic_;
     string depth_info_topic_;
+    string depth_ns_;
 
     // Images and conversion for both the stereo camera and rgb-d camera cases.
     image_transport::ImageTransport it_;
@@ -213,10 +215,10 @@ namespace people {
       local_nh.param("do_publish_faces_of_unknown_size",do_publish_unknown_,false);
       local_nh.param("use_depth",use_depth_,true);
       local_nh.param("use_external_init",external_init_,false);
-      local_nh.param("face_size_min_m",face_size_min_m,Faces::FACE_SIZE_MIN_M);
-      local_nh.param("face_size_max_m",face_size_max_m,Faces::FACE_SIZE_MAX_M);
-      local_nh.param("max_face_z_m",max_face_z_m,Faces::MAX_FACE_Z_M);
-      local_nh.param("face_separation_dist_m",face_sep_dist_m,Faces::FACE_SEP_DIST_M);
+      local_nh.param("face_size_min_m",face_size_min_m,FACE_SIZE_MIN_M);
+      local_nh.param("face_size_max_m",face_size_max_m,FACE_SIZE_MAX_M);
+      local_nh.param("max_face_z_m",max_face_z_m,MAX_FACE_Z_M);
+      local_nh.param("face_separation_dist_m",face_sep_dist_m,FACE_SEP_DIST_M);
       local_nh.param("use_rgbd",use_rgbd_,false);
       local_nh.param("queue_size", queue_size, 5);
       local_nh.param("approximate_sync", approx, false);
@@ -232,9 +234,11 @@ namespace people {
 	faces_->initFaceDetectionDepth(1, haar_filename_, face_size_min_m, face_size_max_m, max_face_z_m, face_sep_dist_m);
 
 	camera_ = nh_.resolveName("camera");
-	image_topic_ = nh_.resolveName("image");
-	camera_topic_ = ros::names::clean(camera_ + "/rgb/" + image_topic_);
-	depth_topic_ = ros::names::clean(camera_ + "/depth_registered/" + image_topic_);
+  image_image_ = nh_.resolveName("image_topic");
+	depth_image_ = nh_.resolveName("depth_topic");
+  depth_ns_ = nh_.resolveName("depth_ns");
+	camera_topic_ = ros::names::clean(camera_ + "/rgb/" + image_image_);
+	depth_topic_ = ros::names::clean(camera_ + "/" + depth_ns_ + "/" + depth_image_);
 	camera_info_topic_ = ros::names::clean(camera_ + "/rgb/camera_info");
 	depth_info_topic_ = ros::names::clean(camera_ + "/depth_registered/camera_info");
 
@@ -260,8 +264,8 @@ namespace people {
 	faces_->initFaceDetectionDisparity(1, haar_filename_, face_size_min_m, face_size_max_m, max_face_z_m, face_sep_dist_m);
 
 	stereo_namespace_ = nh_.resolveName("camera");
-	image_topic_ = nh_.resolveName("image");
-	left_topic_ = ros::names::clean(stereo_namespace_ + "/left/" + image_topic_);
+	image_image_ = nh_.resolveName("image");
+	left_topic_ = ros::names::clean(stereo_namespace_ + "/left/" + image_image_);
 	disparity_topic_ = ros::names::clean(stereo_namespace_ + "/disparity");
 	left_camera_info_topic_ = ros::names::clean(stereo_namespace_ + "/left/camera_info");
 	right_camera_info_topic_ = ros::names::clean(stereo_namespace_ + "/right/camera_info");
@@ -440,6 +444,13 @@ namespace people {
       // ROS --> OpenCV
       cv_bridge::CvImageConstPtr cv_image_ptr = cv_bridge::toCvShare(image,"bgr8");
       cv_bridge::CvImageConstPtr cv_depth_ptr = cv_bridge::toCvShare(depth_image);
+      cv::Mat depth_32fc1 = cv_depth_ptr->image;
+      if(depth_image->encoding != "32FC1") {
+        cv_depth_ptr->image.convertTo(depth_32fc1, CV_32FC1, 0.001);
+      }
+
+
+
       cam_model_.fromCameraInfo(c1_info,c2_info);
 
       // For display, keep a copy of the image that we can draw on.
@@ -451,7 +462,7 @@ namespace people {
       gettimeofday(&timeofday,NULL);
       ros::Time starttdetect = ros::Time().fromNSec(1e9*timeofday.tv_sec + 1e3*timeofday.tv_usec);
 
-      vector<Box2D3D> faces_vector = faces_->detectAllFacesDepth(cv_image_ptr->image, 1.0, cv_depth_ptr->image, &cam_model_);
+      vector<Box2D3D> faces_vector = faces_->detectAllFacesDepth(cv_image_ptr->image, 1.0, depth_32fc1, &cam_model_);
       gettimeofday(&timeofday,NULL);
       ros::Time endtdetect = ros::Time().fromNSec(1e9*timeofday.tv_sec + 1e3*timeofday.tv_usec);
       ros::Duration diffdetect = endtdetect - starttdetect;
