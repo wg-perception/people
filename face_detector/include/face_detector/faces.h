@@ -62,6 +62,11 @@
 
 using namespace std;
 
+#define FACE_SIZE_MIN_M 0.1 /**< Default minimum face size, in meters. Only use this for initialization. */
+#define FACE_SIZE_MAX_M 0.5 /**< Default maximum face size, in meters. Only use this for initialization. */
+#define MAX_FACE_Z_M    8.0 /**< Default maximum distance from the camera, in meters. Only use this for initialization. */
+// Default thresholds for face tracking.
+#define FACE_SEP_DIST_M 1.0 /**< Default separation distance for associating faces. Only use this for initialization. */
 
 namespace people {
 
@@ -93,16 +98,12 @@ struct Face {
  * \brief Contains a list of faces and functions that can be performed on that list.
  * This includes utility tasks such as set/get data, to more complicated tasks such as detection or tracking.
  */
+
 class Faces
 {
  public:
 
   // Default thresholds for the face detection algorithm.
-  static const double FACE_SIZE_MIN_M=0.1; /**< Default minimum face size, in meters. Only use this for initialization. */
-  static const double FACE_SIZE_MAX_M=0.5; /**< Default maximum face size, in meters. Only use this for initialization. */
-  static const double MAX_FACE_Z_M=8.0; /**< Default maximum distance from the camera, in meters. Only use this for initialization. */
-  // Default thresholds for face tracking.
-  static const double FACE_SEP_DIST_M=1.0; /**< Default separation distance for associating faces. Only use this for initialization. */
 
   // Thresholds for the face detection algorithm.
   double face_size_min_m_; /**< Minimum face size, in meters. */
