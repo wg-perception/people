@@ -14,7 +14,6 @@ find_package(catkin REQUIRED COMPONENTS
   image_transport
   people_msgs
   image_geometry
-  genmsg
   actionlib_msgs
   message_generation)
 
