@@ -29,6 +29,7 @@
   <build_depend>image_geometry</build_depend>
   <build_depend>actionlib_msgs</build_depend>
   <build_depend>actionlib</build_depend>
+  <build_depend>message_generation</build_depend>
 
   <!-- Dependencies needed after this package is compiled. -->
   <run_depend>roscpp</run_depend>
