@@ -2,6 +2,11 @@
 Changelog for package face_detector
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.0.2 (2014-02-28)
+------------------
+* update to properly generate messages
+* Contributors: Dan Lazewatsky
+
 1.0.1 (2014-02-27)
 ------------------
 * update some remappings to deal with the changed openni message api
