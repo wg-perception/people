@@ -45,6 +45,7 @@
   <run_depend>image_geometry</run_depend>
   <run_depend>actionlib_msgs</run_depend>
   <run_depend>actionlib</run_depend>
+  <run_depend>message_runtime</run_depend>
 
   <!-- Dependencies needed only for running tests. -->
   <!-- <test_depend>roscpp</test_depend> -->

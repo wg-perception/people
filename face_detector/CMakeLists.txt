@@ -15,7 +15,8 @@ find_package(catkin REQUIRED COMPONENTS
   people_msgs
   image_geometry
   genmsg
-  actionlib_msgs)
+  actionlib_msgs
+  message_generation)
 
 find_package(Boost REQUIRED COMPONENTS signals system thread)
 find_package(OpenCV)
@@ -44,7 +45,7 @@ target_link_libraries(${PROJECT_NAME}
   ${OpenCV_LIBRARIES})
 
 catkin_package(INCLUDE_DIRS include
-  CATKIN_DEPENDS people_msgs geometry_msgs)
+  CATKIN_DEPENDS people_msgs geometry_msgs message_runtime)
 
 install(TARGETS
   face_detector
