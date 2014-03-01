@@ -2,6 +2,11 @@
 Changelog for package face_detector
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.0.3 (2014-03-01)
+------------------
+* fix message generation
+* Contributors: Dan Lazewatsky
+
 1.0.2 (2014-02-28)
 ------------------
 * update to properly generate messages
