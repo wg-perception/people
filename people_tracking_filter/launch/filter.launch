@@ -1,0 +1,27 @@
+<launch>
+<param name="people_tracker/fixed_frame" type="string" value="odom_combined"/>
+<param name="people_tracker/freq" value="10.0"/>
+<param name="people_tracker/start_distance_min" value="0.5"/>
+<param name="people_tracker/reliability_threshold" value="0.75"/>
+<param name="people_tracker/follow_one_person" type="bool" value="true"/>
+
+<!-- Particle without velocity model covariances -->
+<!--param name="people_tracker/sys_sigma_pos_x" value="0.2"/>
+<param name="people_tracker/sys_sigma_pos_y" value="0.2"/>
+<param name="people_tracker/sys_sigma_pos_z" value="0.0001"/>
+<param name="people_tracker/sys_sigma_vel_x" value="0.00000001"/>
+<param name="people_tracker/sys_sigma_vel_y" value="0.00000001"/>
+<param name="people_tracker/sys_sigma_vel_z" value="0.00000001"/-->
+
+
+<!-- Kalman with velocity model covariances -->
+<param name="people_tracker/sys_sigma_pos_x" value="0.8"/>
+<param name="people_tracker/sys_sigma_pos_y" value="0.8"/>
+<param name="people_tracker/sys_sigma_pos_z" value="0.3"/>
+<param name="people_tracker/sys_sigma_vel_x" value="0.5"/>
+<param name="people_tracker/sys_sigma_vel_y" value="0.5"/>
+<param name="people_tracker/sys_sigma_vel_z" value="0.5"/>
+
+<node pkg="people_tracking_filter" type="people_tracker" name="people_tracker" output="screen"/>
+</launch>
+
