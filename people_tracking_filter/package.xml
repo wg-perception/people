@@ -1,0 +1,34 @@
+<package>
+  <name>people_tracking_filter</name>
+  <version>0.0.0</version>
+  <description>
+  people_tracking_filter
+  </description>
+  <author>Caroline Pantofaru</author>
+  <maintainer email="davidlu@wustl.edu">David Lu</maintainer>
+  <license>BSD</license>
+  <url>http://ros.org/wiki/filter</url>  
+
+  <buildtool_depend>catkin</buildtool_depend>
+  
+  <build_depend>roscpp</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>tf</build_depend>
+  <build_depend>bfl</build_depend>
+  <build_depend>message_filters</build_depend>
+  <build_depend>people_msgs</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+
+  <run_depend>roscpp</run_depend>
+  <run_depend>std_msgs</run_depend>
+  <run_depend>geometry_msgs</run_depend>
+  <run_depend>tf</run_depend>
+  <run_depend>bfl</run_depend>
+  <run_depend>message_filters</run_depend>
+  <run_depend>people_msgs</run_depend>
+  <run_depend>sensor_msgs</run_depend>
+
+</package>
+
+
