@@ -1,0 +1,8 @@
+<launch>
+ <node pkg="laser_filters" type="scan_to_scan_filter_chain" respawn="true"
+      name="laser_filter">
+    <rosparam command="load" file="$(find map_laser)/filters.yaml" />
+    <remap from="scan" to="base_scan" />
+  </node>
+  <node pkg="leg_detector" type="leg_detector" name="leg_detector" args="scan:=scan_filtered $(find leg_detector)/config/trained_leg_detector.yaml"/>
+</launch>

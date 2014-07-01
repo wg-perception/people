@@ -1,0 +1,44 @@
+<package>
+  <name>leg_detector</name>
+  <version>0.0.0</version>
+  <description>
+  leg_detector
+  </description>
+  <author>Caroline Pantofaru</author>
+  <maintainer email="davidvlu@gmail.com">David V. Lu!!</maintainer>
+  <license>BSD</license>
+  <url>http://ros.org/wiki/leg_detector</url>  
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>roscpp</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>std_srvs</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>laser_geometry</build_depend>
+  <build_depend>tf</build_depend>
+  <build_depend>bfl</build_depend>
+  <build_depend>visualization_msgs</build_depend>
+  <build_depend>people_msgs</build_depend>
+  <build_depend>people_tracking_filter</build_depend>
+  <build_depend>image_geometry</build_depend>
+  <build_depend>dynamic_reconfigure</build_depend>
+
+  <run_depend>roscpp</run_depend>
+  <run_depend>std_msgs</run_depend>
+  <run_depend>geometry_msgs</run_depend>
+  <run_depend>std_srvs</run_depend>
+  <run_depend>sensor_msgs</run_depend>
+  <run_depend>laser_geometry</run_depend>
+  <run_depend>tf</run_depend>
+  <run_depend>bfl</run_depend>
+  <run_depend>visualization_msgs</run_depend>
+  <run_depend>people_msgs</run_depend>
+  <run_depend>people_tracking_filter</run_depend>
+  <run_depend>image_geometry</run_depend>
+  <run_depend>dynamic_reconfigure</run_depend>
+
+</package>
+
+
