@@ -2,14 +2,13 @@ cmake_minimum_required(VERSION 2.8.3)
 project(leg_detector)
 
 # look for bfl (Bayesian Filtering Library)
-find_package(PkgConfig)
+find_package(PkgConfig REQUIRED)
 pkg_check_modules(BFL REQUIRED orocos-bfl)
 
 include_directories(${BFL_INCLUDE_DIRS})
 link_directories(${BFL_LIBRARY_DIRS})
 
 # Look for Bullet
-find_package(PkgConfig REQUIRED)
 pkg_check_modules(BULLET bullet)
 include_directories(${BULLET_INCLUDE_DIRS})
 
@@ -38,6 +37,9 @@ generate_dynamic_reconfigure_options(
 include_directories(
   include ${catkin_INCLUDE_DIRS}
 )
+
+catkin_package(INCLUDE_DIRS include
+  CATKIN_DEPENDS people_msgs sensor_msgs std_msgs geometry_msgs visualization_msgs)
 
 ## Declare a cpp executable
 add_executable(leg_detector 
