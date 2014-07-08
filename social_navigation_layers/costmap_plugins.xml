@@ -1,0 +1,9 @@
+<library path="lib/libsocial_layers">
+  <class type="social_navigation_layers::ProxemicLayer" base_class_type="costmap_2d::Layer">
+    <description>Uses people information to change the costmap</description>
+  </class>
+  <class type="social_navigation_layers::PassingLayer" base_class_type="costmap_2d::Layer">
+    <description>Uses people information to change the costmap</description>
+  </class>
+</library>
+

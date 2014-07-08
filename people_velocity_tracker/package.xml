@@ -1,0 +1,22 @@
+<package>
+  <name>people_velocity_tracker</name>
+  <version>0.0.0</version>
+  <description>Track the output of the leg_detector to indicate the velocity of person.</description>
+  <author email="davidvlu@gmail.com">David V. Lu!!</author>
+  <maintainer email="davidvlu@gmail.com">David V. Lu!!</maintainer>
+  <license>BSD</license>
+  <url>http://ros.org/wiki/people_velocity_tracker</url>  
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>people_msgs</build_depend>
+  
+  <run_depend>geometry_msgs</run_depend>
+  <run_depend>people_msgs</run_depend>
+  <run_depend>rospy</run_depend>
+  <run_depend>easy_markers</run_depend>
+
+</package>
+
+
