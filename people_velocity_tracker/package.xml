@@ -1,9 +1,7 @@
 <package>
   <name>people_velocity_tracker</name>
   <version>0.0.0</version>
-  <description>
-  people_velocity_tracker
-  </description>
+  <description>Track the output of the leg_detector to indicate the velocity of person.</description>
   <author email="davidvlu@gmail.com">David V. Lu!!</author>
   <maintainer email="davidvlu@gmail.com">David V. Lu!!</maintainer>
   <license>BSD</license>

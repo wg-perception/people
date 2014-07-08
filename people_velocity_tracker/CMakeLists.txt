@@ -6,4 +6,6 @@ find_package(catkin REQUIRED COMPONENTS
   people_msgs
 )
 
-
+catkin_package(
+    CATKIN_DEPENDS geometry_msgs people_msgs
+)
