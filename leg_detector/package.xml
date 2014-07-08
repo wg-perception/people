@@ -36,7 +36,7 @@
   <run_depend>people_tracking_filter</run_depend>
   <run_depend>image_geometry</run_depend>
   <run_depend>dynamic_reconfigure</run_depend>
+  <run_depend>laser_filters</run_depend>
+  <run_depend>map_laser</run_depend>
 
 </package>
-
-
