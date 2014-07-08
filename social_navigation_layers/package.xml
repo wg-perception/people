@@ -2,7 +2,8 @@
   <name>social_navigation_layers</name>
   <version>0.0.0</version>
   <description>
-  social_navigation_layers
+  Plugin-based layers for the navigation stack that 
+  implement various social navigation contraints, like proxemic distance. 
   </description>
   <author email="davidvlu@gmail.com">David V. Lu!!</author>
   <maintainer email="davidvlu@gmail.com">David V. Lu!!</maintainer>
