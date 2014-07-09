@@ -1,6 +1,6 @@
 <package>
   <name>people_velocity_tracker</name>
-  <version>1.0.3</version>
+  <version>1.0.4</version>
   <description>Track the output of the leg_detector to indicate the velocity of person.</description>
   <author email="davidvlu@gmail.com">David V. Lu!!</author>
   <maintainer email="davidvlu@gmail.com">David V. Lu!!</maintainer>

@@ -2,8 +2,8 @@
 Changelog for package leg_detector
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.4 (2014-07-09)
+------------------
 * Merging leg_detector into people
 * Contributors: David Lu!!
 

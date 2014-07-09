@@ -2,8 +2,8 @@
 Changelog for package people_tracking_filter
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.4 (2014-07-09)
+------------------
 * merging people_tracking_filter into people
 * Contributors: David Lu!!
 
