@@ -11,11 +11,17 @@
 
   <build_depend>geometry_msgs</build_depend>
   <build_depend>people_msgs</build_depend>
+  <build_depend>easy_markers</build_depend>
+  <build_depend>kalman_filter</build_depend>
+  <build_depend>roslib</build_depend>
+  <build_depend>rospy</build_depend>
   
   <run_depend>geometry_msgs</run_depend>
   <run_depend>people_msgs</run_depend>
   <run_depend>rospy</run_depend>
   <run_depend>easy_markers</run_depend>
   <run_depend>leg_detector</run_depend>
+  <run_depend>kalman_filter</run_depend>
+  <run_depend>roslib</run_depend>
 
 </package>

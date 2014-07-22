@@ -16,7 +16,9 @@ find_package(catkin REQUIRED COMPONENTS
   image_geometry
   actionlib
   actionlib_msgs
-  message_generation)
+  message_generation
+  rospy
+  roslib)
 
 find_package(Boost REQUIRED COMPONENTS signals system thread)
 find_package(OpenCV)

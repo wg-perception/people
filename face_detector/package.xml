@@ -30,6 +30,8 @@
   <build_depend>actionlib_msgs</build_depend>
   <build_depend>actionlib</build_depend>
   <build_depend>message_generation</build_depend>
+  <build_depend>roslib</build_depend>
+  <build_depend>rospy</build_depend>
 
   <!-- Dependencies needed after this package is compiled. -->
   <run_depend>roscpp</run_depend>
@@ -49,6 +51,8 @@
   <run_depend>message_runtime</run_depend>
   <run_depend>dynamic_reconfigure</run_depend>
   <run_depend>openni_launch</run_depend>
+  <run_depend>roslib</run_depend>
+  <run_depend>rospy</run_depend>
 
   <!-- Dependencies needed only for running tests. -->
   <!-- <test_depend>roscpp</test_depend> -->
