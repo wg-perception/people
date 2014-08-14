@@ -291,6 +291,8 @@ namespace people {
       // Connection callbacks and advertise
       ros::SubscriberStatusCallback pos_pub_connect_cb = boost::bind(&FaceDetector::connectCb, this);
       ros::SubscriberStatusCallback cloud_pub_connect_cb = boost::bind(&FaceDetector::connectCb, this);
+      if (do_continuous_)
+	ROS_INFO_STREAM_NAMED("face_detector","You must subscribe to one of FaceDetector's outbound topics or else it will not publish anything.");
 
       {
 	boost::mutex::scoped_lock lock(connect_mutex_);
@@ -330,6 +332,7 @@ namespace people {
       {
 	if (do_continuous_ && cloud_pub_.getNumSubscribers() == 0 && pos_array_pub_.getNumSubscribers() == 0)
 	{
+	  ROS_INFO_STREAM_NAMED("face_detector","You have unsubscribed to FaceDetector's outbound topics, so it will no longer publish anything.");
 	  image_sub_.unsubscribe();
 	  depth_image_sub_.unsubscribe();
 	  c1_info_sub_.unsubscribe();
@@ -353,6 +356,7 @@ namespace people {
       {
 	if (do_continuous_ && cloud_pub_.getNumSubscribers() == 0 && pos_array_pub_.getNumSubscribers() == 0)
 	{
+	  ROS_INFO_STREAM_NAMED("face_detector","You have unsubscribed to FaceDetector's outbound topics, so it will no longer publish anything.");
 	  image_sub_.unsubscribe();
 	  disp_image_sub_.unsubscribe();
 	  c1_info_sub_.unsubscribe();
