@@ -1,6 +1,6 @@
 <package>
   <name>people_tracking_filter</name>
-  <version>1.0.5</version>
+  <version>1.0.6</version>
   <description>
   A collection of filtering tools for tracking people's locations
   </description>
