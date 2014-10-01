@@ -13,6 +13,7 @@ namespace social_navigation_layers
     {
         ros::NodeHandle nh("~/" + name_), g_nh;
         current_ = true;
+        first_time_ = true;
         people_sub_ = nh.subscribe("/people", 1, &SocialLayer::peopleCallback, this);
     }
     
@@ -69,5 +70,24 @@ namespace social_navigation_layers
             }
         }
         updateBoundsFromPeople(min_x, min_y, max_x, max_y);
+        if(first_time_){
+            last_min_x_ = *min_x;
+            last_min_y_ = *min_y;    
+            last_max_x_ = *max_x;
+            last_max_y_ = *max_y;    
+            first_time_ = false;
+        }else{
+            double a = *min_x, b = *min_y, c = *max_x, d = *max_y;
+            *min_x = std::min(last_min_x_, *min_x);
+            *min_y = std::min(last_min_y_, *min_y);
+            *max_x = std::max(last_max_x_, *max_x);
+            *max_y = std::max(last_max_y_, *max_y);
+            last_min_x_ = a;
+            last_min_y_ = b;
+            last_max_x_ = c;
+            last_max_y_ = d;
+        
+        }
+        
     }
 };
