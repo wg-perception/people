@@ -18,7 +18,7 @@
     <remap from="depth_ns" to="$(arg depth_ns)" />
     <param name="fixed_frame" type="string" value="$(arg fixed_frame)" />
     <param name="classifier_name" type="string" value="frontalface" />
-    <param name="classifier_filename" type="string" value="$(env ROS_ROOT)/../OpenCV/haarcascades/haarcascade_frontalface_alt.xml" />
+    <rosparam command="load" file="$(find face_detector)/param/classifier.yaml"/>
     <param name="classifier_reliability" type="double" value="0.9"/>
     <param name="do_continuous" type="bool" value="true" />
     <param name="do_publish_faces_of_unknown_size" type="bool" value="false" />	
