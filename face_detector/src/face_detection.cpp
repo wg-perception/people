@@ -224,83 +224,81 @@ namespace people {
       local_nh.param("approximate_sync", approx, false);
 
       if (do_display_) {
-	// OpenCV: pop up an OpenCV highgui window
-	cv::namedWindow("Face detector: Face Detection", CV_WINDOW_AUTOSIZE);
+        // OpenCV: pop up an OpenCV highgui window
+        cv::namedWindow("Face detector: Face Detection", CV_WINDOW_AUTOSIZE);
       }
 
       // Init the detector and subscribe to the images and camera parameters. One case for rgbd, one for stereo.
       if (use_rgbd_) {
+        faces_->initFaceDetectionDepth(1, haar_filename_, face_size_min_m, face_size_max_m, max_face_z_m, face_sep_dist_m);
 
-	faces_->initFaceDetectionDepth(1, haar_filename_, face_size_min_m, face_size_max_m, max_face_z_m, face_sep_dist_m);
+        camera_ = nh_.resolveName("camera");
+        image_image_ = nh_.resolveName("image_topic");
+        depth_image_ = nh_.resolveName("depth_topic");
+        depth_ns_ = nh_.resolveName("depth_ns");
+        camera_topic_ = ros::names::clean(camera_ + "/rgb/" + image_image_);
+        depth_topic_ = ros::names::clean(camera_ + "/" + depth_ns_ + "/" + depth_image_);
+        camera_info_topic_ = ros::names::clean(camera_ + "/rgb/camera_info");
+        depth_info_topic_ = ros::names::clean(camera_ + "/" + depth_ns_ + "/camera_info");
 
-	camera_ = nh_.resolveName("camera");
-  image_image_ = nh_.resolveName("image_topic");
-	depth_image_ = nh_.resolveName("depth_topic");
-  depth_ns_ = nh_.resolveName("depth_ns");
-	camera_topic_ = ros::names::clean(camera_ + "/rgb/" + image_image_);
-	depth_topic_ = ros::names::clean(camera_ + "/" + depth_ns_ + "/" + depth_image_);
-	camera_info_topic_ = ros::names::clean(camera_ + "/rgb/camera_info");
-	depth_info_topic_ = ros::names::clean(camera_ + "/" + depth_ns_ + "/camera_info");
+        local_nh.param("fixed_frame", fixed_frame_, std::string("camera_rgb_optical_frame"));
 
-	local_nh.param("fixed_frame", fixed_frame_, std::string("camera_rgb_optical_frame"));
+        if (approx)
+        {
+          approximate_depth_sync_.reset( new ApproximateDepthSync(ApproximateDepthPolicy(queue_size),
+                        image_sub_, depth_image_sub_, c1_info_sub_, c2_info_sub_));
+          approximate_depth_sync_->registerCallback(boost::bind(&FaceDetector::imageCBAllDepth,
+                      this, _1, _2, _3, _4));
+        }
+        else
+        {
+          exact_depth_sync_.reset( new ExactDepthSync(ExactDepthPolicy(queue_size),
+                        image_sub_, depth_image_sub_, c1_info_sub_, c2_info_sub_));
+          exact_depth_sync_->registerCallback(boost::bind(&FaceDetector::imageCBAllDepth,
+                      this, _1, _2, _3, _4));
+        }
+      } else { 
+        faces_->initFaceDetectionDisparity(1, haar_filename_, face_size_min_m, face_size_max_m, max_face_z_m, face_sep_dist_m);
 
-	if (approx)
-	{
-	  approximate_depth_sync_.reset( new ApproximateDepthSync(ApproximateDepthPolicy(queue_size),
-								  image_sub_, depth_image_sub_, c1_info_sub_, c2_info_sub_));
-	  approximate_depth_sync_->registerCallback(boost::bind(&FaceDetector::imageCBAllDepth,
-								this, _1, _2, _3, _4));
-	}
-	else
-	{
-	  exact_depth_sync_.reset( new ExactDepthSync(ExactDepthPolicy(queue_size),
-						      image_sub_, depth_image_sub_, c1_info_sub_, c2_info_sub_));
-	  exact_depth_sync_->registerCallback(boost::bind(&FaceDetector::imageCBAllDepth,
-							  this, _1, _2, _3, _4));
-	}
+        stereo_namespace_ = nh_.resolveName("camera");
+        image_image_ = nh_.resolveName("image");
+        left_topic_ = ros::names::clean(stereo_namespace_ + "/left/" + image_image_);
+        disparity_topic_ = ros::names::clean(stereo_namespace_ + "/disparity");
+        left_camera_info_topic_ = ros::names::clean(stereo_namespace_ + "/left/camera_info");
+        right_camera_info_topic_ = ros::names::clean(stereo_namespace_ + "/right/camera_info");
 
-      }
-      else { 
-	faces_->initFaceDetectionDisparity(1, haar_filename_, face_size_min_m, face_size_max_m, max_face_z_m, face_sep_dist_m);
+        local_nh.param("fixed_frame", fixed_frame_, stereo_namespace_.append("_optical_frame"));
 
-	stereo_namespace_ = nh_.resolveName("camera");
-	image_image_ = nh_.resolveName("image");
-	left_topic_ = ros::names::clean(stereo_namespace_ + "/left/" + image_image_);
-	disparity_topic_ = ros::names::clean(stereo_namespace_ + "/disparity");
-	left_camera_info_topic_ = ros::names::clean(stereo_namespace_ + "/left/camera_info");
-	right_camera_info_topic_ = ros::names::clean(stereo_namespace_ + "/right/camera_info");
-
-	local_nh.param("fixed_frame", fixed_frame_, stereo_namespace_.append("_optical_frame"));
-
-	if (approx)
-	{
-	  approximate_disp_sync_.reset( new ApproximateDispSync(ApproximateDispPolicy(queue_size),
-								image_sub_, disp_image_sub_, c1_info_sub_, c2_info_sub_));
-	  approximate_disp_sync_->registerCallback(boost::bind(&FaceDetector::imageCBAllDisp,
-							       this, _1, _2, _3, _4));
-	}
-	else
-	{
-	  exact_disp_sync_.reset( new ExactDispSync(ExactDispPolicy(queue_size),
-						    image_sub_, disp_image_sub_, c1_info_sub_, c2_info_sub_));
-	  exact_disp_sync_->registerCallback(boost::bind(&FaceDetector::imageCBAllDisp,
-							 this, _1, _2, _3, _4));
-	}
+        if (approx)
+        {
+          approximate_disp_sync_.reset( new ApproximateDispSync(ApproximateDispPolicy(queue_size),
+                      image_sub_, disp_image_sub_, c1_info_sub_, c2_info_sub_));
+          approximate_disp_sync_->registerCallback(boost::bind(&FaceDetector::imageCBAllDisp,
+                           this, _1, _2, _3, _4));
+        }
+        else
+        {
+          exact_disp_sync_.reset( new ExactDispSync(ExactDispPolicy(queue_size),
+                      image_sub_, disp_image_sub_, c1_info_sub_, c2_info_sub_));
+          exact_disp_sync_->registerCallback(boost::bind(&FaceDetector::imageCBAllDisp,
+                     this, _1, _2, _3, _4));
+        }
       }
       
       // Connection callbacks and advertise
       ros::SubscriberStatusCallback pos_pub_connect_cb = boost::bind(&FaceDetector::connectCb, this);
       ros::SubscriberStatusCallback cloud_pub_connect_cb = boost::bind(&FaceDetector::connectCb, this);
-      if (do_continuous_)
-	ROS_INFO_STREAM_NAMED("face_detector","You must subscribe to one of FaceDetector's outbound topics or else it will not publish anything.");
+      if (do_continuous_) {
+        ROS_INFO_STREAM_NAMED("face_detector","You must subscribe to one of FaceDetector's outbound topics or else it will not publish anything.");
+      }
 
       {
-	boost::mutex::scoped_lock lock(connect_mutex_);
+        boost::mutex::scoped_lock lock(connect_mutex_);
 
-	// Advertise a position measure message.
-	pos_array_pub_ = nh_.advertise<people_msgs::PositionMeasurementArray>("face_detector/people_tracker_measurements_array",1, pos_pub_connect_cb, pos_pub_connect_cb);
+        // Advertise a position measure message.
+        pos_array_pub_ = nh_.advertise<people_msgs::PositionMeasurementArray>("face_detector/people_tracker_measurements_array",1, pos_pub_connect_cb, pos_pub_connect_cb);
 
-	cloud_pub_ = nh_.advertise<sensor_msgs::PointCloud>("face_detector/faces_cloud",0, cloud_pub_connect_cb, cloud_pub_connect_cb);
+        cloud_pub_ = nh_.advertise<sensor_msgs::PointCloud>("face_detector/faces_cloud",0, cloud_pub_connect_cb, cloud_pub_connect_cb);
       }
 
 
@@ -314,67 +312,60 @@ namespace people {
 
     ~FaceDetector()
     {
-
       cv_image_out_.release();
 
       if (do_display_) {
-	cv::destroyWindow("Face detector: Face Detection");
+        cv::destroyWindow("Face detector: Face Detection");
       }
 
-      if (faces_) {delete faces_; faces_ = 0;}
+      if (faces_) {
+        delete faces_; faces_ = 0;
+      }
     }
 
     // Handles (un)subscribing when clients (un)subscribe
-    void connectCb()
-    {
+    void connectCb() {
       boost::mutex::scoped_lock lock(connect_mutex_);
-      if (use_rgbd_) 
-      {
-	if (do_continuous_ && cloud_pub_.getNumSubscribers() == 0 && pos_array_pub_.getNumSubscribers() == 0)
-	{
-	  ROS_INFO_STREAM_NAMED("face_detector","You have unsubscribed to FaceDetector's outbound topics, so it will no longer publish anything.");
-	  image_sub_.unsubscribe();
-	  depth_image_sub_.unsubscribe();
-	  c1_info_sub_.unsubscribe();
-	  c2_info_sub_.unsubscribe();
-	  pos_sub_.shutdown();
-	}
-	else if (!do_continuous_ || !image_sub_.getSubscriber())
-	{
-	  image_sub_.subscribe(it_, camera_topic_, 3);
-	  depth_image_sub_.subscribe(it_, depth_topic_, 3);
-	  c1_info_sub_.subscribe(nh_, camera_info_topic_, 3);
-	  c2_info_sub_.subscribe(nh_, depth_info_topic_,3);   
-	  // // Subscribe to filter measurements.
-	  // if (external_init_) {
-	  //   //pos_sub_ = nh_.subscribe("people_tracker_filter",1,&FaceDetector::posCallback,this);
-	  //   pos_sub_ = nh_.subscribe("/face_detector/people_tracker_measurements_array",1,&FaceDetector::posCallback,this);
-	  // }
-	}
-      } 
-      else
-      {
-	if (do_continuous_ && cloud_pub_.getNumSubscribers() == 0 && pos_array_pub_.getNumSubscribers() == 0)
-	{
-	  ROS_INFO_STREAM_NAMED("face_detector","You have unsubscribed to FaceDetector's outbound topics, so it will no longer publish anything.");
-	  image_sub_.unsubscribe();
-	  disp_image_sub_.unsubscribe();
-	  c1_info_sub_.unsubscribe();
-	  c2_info_sub_.unsubscribe();
-	  pos_sub_.shutdown();
-	}
-	else if (!do_continuous_ || !image_sub_.getSubscriber())
-	{
-	  image_sub_.subscribe(it_, left_topic_, 3);
-	  disp_image_sub_.subscribe(nh_, disparity_topic_, 3);
-	  c1_info_sub_.subscribe(nh_, left_camera_info_topic_, 3);
-	  c2_info_sub_.subscribe(nh_, right_camera_info_topic_, 3);	
-	  // // Subscribe to filter measurements.
-	  // if (external_init_) {
-	  //   //pos_sub_ = nh_.subscribe("people_tracker_filter",1,&FaceDetector::posCallback,this);
-	  //   pos_sub_ = nh_.subscribe("/face_detector/people_tracker_measurements_array",1,&FaceDetector::posCallback,this);
-	  // }
-	}
+      if (use_rgbd_) {
+        if (do_continuous_ && cloud_pub_.getNumSubscribers() == 0 && pos_array_pub_.getNumSubscribers() == 0) {
+          ROS_INFO_STREAM_NAMED("face_detector","You have unsubscribed to FaceDetector's outbound topics, so it will no longer publish anything.");
+          image_sub_.unsubscribe();
+          depth_image_sub_.unsubscribe();
+          c1_info_sub_.unsubscribe();
+          c2_info_sub_.unsubscribe();
+          pos_sub_.shutdown();
+        }
+        else if (!do_continuous_ || !image_sub_.getSubscriber()) {
+          image_sub_.subscribe(it_, camera_topic_, 3);
+          depth_image_sub_.subscribe(it_, depth_topic_, 3);
+          c1_info_sub_.subscribe(nh_, camera_info_topic_, 3);
+          c2_info_sub_.subscribe(nh_, depth_info_topic_,3);   
+          // // Subscribe to filter measurements.
+          // if (external_init_) {
+          //   //pos_sub_ = nh_.subscribe("people_tracker_filter",1,&FaceDetector::posCallback,this);
+          //   pos_sub_ = nh_.subscribe("/face_detector/people_tracker_measurements_array",1,&FaceDetector::posCallback,this);
+          // }
+        }
+      } else {
+        if (do_continuous_ && cloud_pub_.getNumSubscribers() == 0 && pos_array_pub_.getNumSubscribers() == 0) {
+          ROS_INFO_STREAM_NAMED("face_detector","You have unsubscribed to FaceDetector's outbound topics, so it will no longer publish anything.");
+          image_sub_.unsubscribe();
+          disp_image_sub_.unsubscribe();
+          c1_info_sub_.unsubscribe();
+          c2_info_sub_.unsubscribe();
+          pos_sub_.shutdown();
+        }
+        else if (!do_continuous_ || !image_sub_.getSubscriber()) {
+          image_sub_.subscribe(it_, left_topic_, 3);
+          disp_image_sub_.subscribe(nh_, disparity_topic_, 3);
+          c1_info_sub_.subscribe(nh_, left_camera_info_topic_, 3);
+          c2_info_sub_.subscribe(nh_, right_camera_info_topic_, 3);	
+          // // Subscribe to filter measurements.
+          // if (external_init_) {
+          //   //pos_sub_ = nh_.subscribe("people_tracker_filter",1,&FaceDetector::posCallback,this);
+          //   pos_sub_ = nh_.subscribe("/face_detector/people_tracker_measurements_array",1,&FaceDetector::posCallback,this);
+          // }
+        }
       }
     }
 
@@ -435,14 +426,15 @@ namespace people {
     {
 
       // Only run the detector if in continuous mode or the detector was turned on through an action invocation.
-      if (!do_continuous_ && !as_.isActive())
-	return; 
+      if (!do_continuous_ && !as_.isActive()) {
+        return; 
+      }
 
       // Clear out the result vector.
       result_.face_positions.clear();
 
       if (do_display_) {
-	cv_mutex_.lock();
+        cv_mutex_.lock();
       }
 
       // ROS --> OpenCV
@@ -459,7 +451,7 @@ namespace people {
 
       // For display, keep a copy of the image that we can draw on.
       if (do_display_) {
-	cv_image_out_ = (cv_image_ptr->image).clone();
+        cv_image_out_ = (cv_image_ptr->image).clone();
       }
 
       struct timeval timeofday;
@@ -483,18 +475,17 @@ namespace people {
      * (if requested) draw rectangles around the found faces.
      * Can also compute which faces are associated (by proximity, currently) with faces it already has in its list of people.
      */
-    void imageCBAllDisp(const sensor_msgs::Image::ConstPtr &image, const stereo_msgs::DisparityImage::ConstPtr& disp_image, const sensor_msgs::CameraInfo::ConstPtr& c1_info, const sensor_msgs::CameraInfo::ConstPtr& c2_info)
-    {
-
+    void imageCBAllDisp(const sensor_msgs::Image::ConstPtr &image, const stereo_msgs::DisparityImage::ConstPtr& disp_image, const sensor_msgs::CameraInfo::ConstPtr& c1_info, const sensor_msgs::CameraInfo::ConstPtr& c2_info) {
       // Only run the detector if in continuous mode or the detector was turned on through an action invocation.
-      if (!do_continuous_ && !as_.isActive())
-	return;
+      if (!do_continuous_ && !as_.isActive()) {
+        return;
+      }
 
       // Clear out the result vector.
       result_.face_positions.clear();
 
       if (do_display_) {
-	cv_mutex_.lock();
+        cv_mutex_.lock();
       }
 
 
@@ -505,7 +496,7 @@ namespace people {
 
       // For display, keep a copy of the image that we can draw on.
       if (do_display_) {
-	cv_image_out_ = (cv_image_ptr->image).clone();
+        cv_image_out_ = (cv_image_ptr->image).clone();
       }
 
       struct timeval timeofday;
@@ -596,16 +587,16 @@ namespace people {
 	    for (it = pos_list_.begin(); it != pos_list_.end(); it++) {
 	      dist = pow((*it).second.pos.pos.x - pos.pos.x, 2.0) + pow((*it).second.pos.pos.y - pos.pos.y, 2.0) + pow((*it).second.pos.pos.z - pos.pos.z, 2.0);
 	      if (dist <= faces_->face_sep_dist_m_ && dist < mindist) {
-		mindist = dist;
-		close_it = it;
+          mindist = dist;
+          close_it = it;
 	      }
 	    }
 	    if (close_it != pos_list_.end()) {
 	      pos.object_id = (*close_it).second.pos.object_id;
 	      if (mindist < (*close_it).second.dist) {
-		(*close_it).second.restamp = header.stamp;
-		(*close_it).second.dist = mindist;
-		(*close_it).second.pos = pos;
+          (*close_it).second.restamp = header.stamp;
+          (*close_it).second.dist = mindist;
+          (*close_it).second.pos = pos;
 	      }
 	      ROS_INFO_STREAM_NAMED("face_detector","Found face to match with id " << pos.object_id);
 	    }
@@ -685,8 +676,8 @@ namespace people {
 
       // Draw an appropriately colored rectangle on the display image and in the visualizer.
       if (do_display_) {
-	displayFacesOnImage(faces_vector);
-	cv_mutex_.unlock();
+        displayFacesOnImage(faces_vector);
+        cv_mutex_.unlock();
       }
       // Done drawing.
 
@@ -696,7 +687,7 @@ namespace people {
 
       // If you don't want continuous processing and you've found at least one face, turn off the detector.
       if (!do_continuous_ && found_faces) {
-	as_.setSucceeded(result_);
+        as_.setSucceeded(result_);
       }
     }
 
@@ -707,24 +698,24 @@ namespace people {
       Box2D3D *one_face;
     
       for (uint iface = 0; iface < faces_vector.size(); iface++) {
-	one_face = &faces_vector[iface];
-	// Visualization by image display.
-	if (do_display_) {
-	  cv::Scalar color;
-	  if (one_face->status == "good") {
-	    color = cv::Scalar(0,255,0);
-	  }
-	  else if (one_face->status == "unknown") {
-	    color = cv::Scalar(255,0,0);
-	  }
-	  else {
-	    color = cv::Scalar(0,0,255);
-	  }
-	
-	  cv::rectangle(cv_image_out_, 
-			cv::Point(one_face->box2d.x,one_face->box2d.y), 
-			cv::Point(one_face->box2d.x+one_face->box2d.width, one_face->box2d.y+one_face->box2d.height), color, 4);
-	}
+        one_face = &faces_vector[iface];
+        // Visualization by image display.
+        if (do_display_) {
+          cv::Scalar color;
+          if (one_face->status == "good") {
+            color = cv::Scalar(0,255,0);
+          }
+          else if (one_face->status == "unknown") {
+            color = cv::Scalar(255,0,0);
+          }
+          else {
+            color = cv::Scalar(0,0,255);
+          }
+        
+          cv::rectangle(cv_image_out_, 
+            cv::Point(one_face->box2d.x,one_face->box2d.y), 
+            cv::Point(one_face->box2d.x+one_face->box2d.width, one_face->box2d.y+one_face->box2d.height), color, 4);
+        }
       }
 
       cv::imshow("Face detector: Face Detection",cv_image_out_);
