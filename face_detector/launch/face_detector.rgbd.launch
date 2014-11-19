@@ -2,7 +2,7 @@
 
   <arg name="camera" default="camera" />
   <arg name="image_topic" default="image_rect_color" />
-  <arg name="depth_topic" default="image_rect_raw" />
+  <arg name="depth_topic" default="image_raw" />
   <arg name="fixed_frame" default="camera_rgb_optical_frame" />
   <arg name="depth_ns" default="depth_registered" />
 
