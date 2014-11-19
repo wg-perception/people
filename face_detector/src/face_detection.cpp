@@ -148,6 +148,7 @@ namespace people {
     // This could be replaced by visualization markers, but they can't be modified
     // in rviz at runtime (eg the alpha, display time, etc. can't be changed.)
     ros::Publisher cloud_pub_;
+    ros::Publisher image_vis_pub_;
     ros::Publisher pos_array_pub_;
 
     // Display
@@ -286,6 +287,7 @@ namespace people {
       }
       
       // Connection callbacks and advertise
+      ros::SubscriberStatusCallback image_vis_pub_connect_cb = boost::bind(&FaceDetector::connectCb, this);
       ros::SubscriberStatusCallback pos_pub_connect_cb = boost::bind(&FaceDetector::connectCb, this);
       ros::SubscriberStatusCallback cloud_pub_connect_cb = boost::bind(&FaceDetector::connectCb, this);
       if (do_continuous_) {
@@ -295,12 +297,12 @@ namespace people {
       {
         boost::mutex::scoped_lock lock(connect_mutex_);
 
+        // Advertise the visualization of the faces on a rgb image stream
+        image_vis_pub_ = nh_.advertise<sensor_msgs::Image>("face_detector/faces_video",1, image_vis_pub_connect_cb, image_vis_pub_connect_cb);
         // Advertise a position measure message.
         pos_array_pub_ = nh_.advertise<people_msgs::PositionMeasurementArray>("face_detector/people_tracker_measurements_array",1, pos_pub_connect_cb, pos_pub_connect_cb);
-
         cloud_pub_ = nh_.advertise<sensor_msgs::PointCloud>("face_detector/faces_cloud",0, cloud_pub_connect_cb, cloud_pub_connect_cb);
       }
-
 
       // If running as an action server, just stay connected so that action calls are fast.
       if (!do_continuous_) connectCb();
@@ -327,7 +329,7 @@ namespace people {
     void connectCb() {
       boost::mutex::scoped_lock lock(connect_mutex_);
       if (use_rgbd_) {
-        if (do_continuous_ && cloud_pub_.getNumSubscribers() == 0 && pos_array_pub_.getNumSubscribers() == 0) {
+        if (do_continuous_ && cloud_pub_.getNumSubscribers() == 0 && pos_array_pub_.getNumSubscribers() == 0 && image_vis_pub_.getNumSubscribers() == 0) {
           ROS_INFO_STREAM_NAMED("face_detector","You have unsubscribed to FaceDetector's outbound topics, so it will no longer publish anything.");
           image_sub_.unsubscribe();
           depth_image_sub_.unsubscribe();
@@ -347,7 +349,7 @@ namespace people {
           // }
         }
       } else {
-        if (do_continuous_ && cloud_pub_.getNumSubscribers() == 0 && pos_array_pub_.getNumSubscribers() == 0) {
+        if (do_continuous_ && cloud_pub_.getNumSubscribers() == 0 && pos_array_pub_.getNumSubscribers() == 0 && image_vis_pub_.getNumSubscribers() == 0) {
           ROS_INFO_STREAM_NAMED("face_detector","You have unsubscribed to FaceDetector's outbound topics, so it will no longer publish anything.");
           image_sub_.unsubscribe();
           disp_image_sub_.unsubscribe();
@@ -464,7 +466,7 @@ namespace people {
       ros::Duration diffdetect = endtdetect - starttdetect;
       ROS_INFO_STREAM_NAMED("face_detector","Detection duration = " << diffdetect.toSec() << "sec");
 
-      matchAndDisplay(faces_vector, image->header);
+      matchAndDisplay(cv_image_ptr, faces_vector, image->header);
     }
 
     /*!
@@ -509,13 +511,13 @@ namespace people {
       ros::Duration diffdetect = endtdetect - starttdetect;
       ROS_INFO_STREAM_NAMED("face_detector","Detection duration = " << diffdetect.toSec() << "sec");
 
-      matchAndDisplay(faces_vector, image->header);
+      matchAndDisplay(cv_image_ptr, faces_vector, image->header);
     }
 
 
   private:
 
-    void matchAndDisplay( vector<Box2D3D> faces_vector, std_msgs::Header header ) 
+    void matchAndDisplay(cv_bridge::CvImageConstPtr cv_image_ptr, vector<Box2D3D> faces_vector, std_msgs::Header header ) 
     {
       bool found_faces = false;
 
@@ -523,172 +525,184 @@ namespace people {
       sensor_msgs::PointCloud cloud;
       cloud.header.stamp = header.stamp;
       cloud.header.frame_id = header.frame_id;
+      // The CvImage which will be used for the 2D (rgb) visualization of the currently detected images
+      cv_bridge::CvImage* rect_image_ptr = new cv_bridge::CvImage(*cv_image_ptr);
 
       if (faces_vector.size() > 0 ) {
 
-	// Transform the positions of the known faces and remove anyone who hasn't had an update in a long time.
-	//      boost::mutex::scoped_lock pos_lock(pos_mutex_);
-	map<string, RestampedPositionMeasurement>::iterator it;
-	it = pos_list_.begin();
-	while (it != pos_list_.end()) {
-	  if ((header.stamp - (*it).second.restamp) > ros::Duration().fromSec(5.0)) {
-	    // Position is too old, remove the person.
-	    pos_list_.erase(it++);
-	  }
-	  else {
-	    // Transform the person to this time. Note that the pos time is updated but not the restamp.
-	    tf::Point pt;
-	    tf::pointMsgToTF((*it).second.pos.pos, pt);
-	    tf::Stamped<tf::Point> loc(pt, (*it).second.pos.header.stamp, (*it).second.pos.header.frame_id);
-	    try {
-	      tf_.transformPoint(header.frame_id, header.stamp, loc, fixed_frame_, loc);
-	      (*it).second.pos.header.stamp = header.stamp;
-	      (*it).second.pos.pos.x = loc[0];
-	      (*it).second.pos.pos.y = loc[1];
-	      (*it).second.pos.pos.z = loc[2];
-	    }
-	    catch (tf::TransformException& ex) {
-	    }
-	    it++;
-	  }
-	}
-	// End filter face position update
+          // Transform the positions of the known faces and remove anyone who hasn't had an update in a long time.
+          //      boost::mutex::scoped_lock pos_lock(pos_mutex_);
+          map<string, RestampedPositionMeasurement>::iterator it;
+          it = pos_list_.begin();
+          while (it != pos_list_.end()) {
+            if ((header.stamp - (*it).second.restamp) > ros::Duration().fromSec(5.0)) {
+              // Position is too old, remove the person.
+              pos_list_.erase(it++);
+            }
+            else {
+              // Transform the person to this time. Note that the pos time is updated but not the restamp.
+              tf::Point pt;
+              tf::pointMsgToTF((*it).second.pos.pos, pt);
+              tf::Stamped<tf::Point> loc(pt, (*it).second.pos.header.stamp, (*it).second.pos.header.frame_id);
+              try {
+                tf_.transformPoint(header.frame_id, header.stamp, loc, fixed_frame_, loc);
+                (*it).second.pos.header.stamp = header.stamp;
+                (*it).second.pos.pos.x = loc[0];
+                (*it).second.pos.pos.y = loc[1];
+                (*it).second.pos.pos.z = loc[2];
+              }
+              catch (tf::TransformException& ex) {
+              }
+              it++;
+            }
+          }
+          // End filter face position update
 
-	// Associate the found faces with previously seen faces, and publish all good face centers.
-	Box2D3D *one_face;
-	people_msgs::PositionMeasurement pos;
-	people_msgs::PositionMeasurementArray pos_array;
+          // Associate the found faces with previously seen faces, and publish all good face centers.
+          Box2D3D *one_face;
+          people_msgs::PositionMeasurement pos;
+          people_msgs::PositionMeasurementArray pos_array;
 
-	for (uint iface = 0; iface < faces_vector.size(); iface++) {
-	  one_face = &faces_vector[iface];
+          for (uint iface = 0; iface < faces_vector.size(); iface++) {
+            one_face = &faces_vector[iface];
 
-	  if (one_face->status=="good" || (one_face->status=="unknown" && do_publish_unknown_)) {
+            if (one_face->status=="good" || (one_face->status=="unknown" && do_publish_unknown_)) {
 
-	    std::string id = "";
+              std::string id = "";
 
-	    // Convert the face format to a PositionMeasurement msg.
-	    pos.header.stamp = header.stamp;
-	    pos.name = name_;
-	    pos.pos.x = one_face->center3d.x;
-	    pos.pos.y = one_face->center3d.y;
-	    pos.pos.z = one_face->center3d.z;
-	    pos.header.frame_id = header.frame_id;//"*_optical_frame";
-	    pos.reliability = reliability_;
-	    pos.initialization = 1;//0;
-	    pos.covariance[0] = 0.04; pos.covariance[1] = 0.0;  pos.covariance[2] = 0.0;
-	    pos.covariance[3] = 0.0;  pos.covariance[4] = 0.04; pos.covariance[5] = 0.0;
-	    pos.covariance[6] = 0.0;  pos.covariance[7] = 0.0;  pos.covariance[8] = 0.04;
+              // Convert the face format to a PositionMeasurement msg.
+              pos.header.stamp = header.stamp;
+              pos.name = name_;
+              pos.pos.x = one_face->center3d.x;
+              pos.pos.y = one_face->center3d.y;
+              pos.pos.z = one_face->center3d.z;
+              pos.header.frame_id = header.frame_id;//"*_optical_frame";
+              pos.reliability = reliability_;
+              pos.initialization = 1;//0;
+              pos.covariance[0] = 0.04; pos.covariance[1] = 0.0;  pos.covariance[2] = 0.0;
+              pos.covariance[3] = 0.0;  pos.covariance[4] = 0.04; pos.covariance[5] = 0.0;
+              pos.covariance[6] = 0.0;  pos.covariance[7] = 0.0;  pos.covariance[8] = 0.04;
 
-	    // Check if this person's face is close enough to one of the previously known faces and associate it with the closest one.
-	    // Otherwise publish it with an empty id.
-	    // Note that multiple face positions can be published with the same id, but ids in the pos_list_ are unique. The position of a face in the list is updated with the closest found face.
-	    double dist, mindist = BIGDIST_M;
-	    map<string, RestampedPositionMeasurement>::iterator close_it = pos_list_.end();
-	    for (it = pos_list_.begin(); it != pos_list_.end(); it++) {
-	      dist = pow((*it).second.pos.pos.x - pos.pos.x, 2.0) + pow((*it).second.pos.pos.y - pos.pos.y, 2.0) + pow((*it).second.pos.pos.z - pos.pos.z, 2.0);
-	      if (dist <= faces_->face_sep_dist_m_ && dist < mindist) {
-          mindist = dist;
-          close_it = it;
-	      }
-	    }
-	    if (close_it != pos_list_.end()) {
-	      pos.object_id = (*close_it).second.pos.object_id;
-	      if (mindist < (*close_it).second.dist) {
-          (*close_it).second.restamp = header.stamp;
-          (*close_it).second.dist = mindist;
-          (*close_it).second.pos = pos;
-	      }
-	      ROS_INFO_STREAM_NAMED("face_detector","Found face to match with id " << pos.object_id);
-	    }
-	    else {
-	      max_id_++;
-	      pos.object_id = static_cast<ostringstream*>( &(ostringstream() << max_id_) )->str();
-	      ROS_INFO_STREAM_NAMED("face_detector","Didn't find face to match, starting new ID " << pos.object_id);
-	    }
-	    result_.face_positions.push_back(pos);
-	    found_faces = true;
+              // Check if this person's face is close enough to one of the previously known faces and associate it with the closest one.
+              // Otherwise publish it with an empty id.
+              // Note that multiple face positions can be published with the same id, but ids in the pos_list_ are unique. The position of a face in the list is updated with the closest found face.
+              double dist, mindist = BIGDIST_M;
+              map<string, RestampedPositionMeasurement>::iterator close_it = pos_list_.end();
+              for (it = pos_list_.begin(); it != pos_list_.end(); it++) {
+                dist = pow((*it).second.pos.pos.x - pos.pos.x, 2.0) + pow((*it).second.pos.pos.y - pos.pos.y, 2.0) + pow((*it).second.pos.pos.z - pos.pos.z, 2.0);
+                if (dist <= faces_->face_sep_dist_m_ && dist < mindist) {
+                  mindist = dist;
+                  close_it = it;
+                }
+              }
+              if (close_it != pos_list_.end()) {
+                pos.object_id = (*close_it).second.pos.object_id;
+                if (mindist < (*close_it).second.dist) {
+                  (*close_it).second.restamp = header.stamp;
+                  (*close_it).second.dist = mindist;
+                  (*close_it).second.pos = pos;
+                }
+                ROS_INFO_STREAM_NAMED("face_detector","Found face to match with id " << pos.object_id);
+              }
+              else {
+                max_id_++;
+                pos.object_id = static_cast<ostringstream*>( &(ostringstream() << max_id_) )->str();
+                ROS_INFO_STREAM_NAMED("face_detector","Didn't find face to match, starting new ID " << pos.object_id);
+              }
+              result_.face_positions.push_back(pos);
+              found_faces = true;
 
-	  }
+            }
 
-	}
-	pos_array.header.stamp = header.stamp;
-	pos_array.header.frame_id = header.frame_id;
-	pos_array.people = result_.face_positions;
-	if (pos_array.people.size() > 0) {
-	  pos_array_pub_.publish(pos_array);
+          }
+          pos_array.header.stamp = header.stamp;
+          pos_array.header.frame_id = header.frame_id;
+          pos_array.people = result_.face_positions;
+          if (pos_array.people.size() > 0) {
+            pos_array_pub_.publish(pos_array);
 
-	  // Update the position list greedily. This should be rewritten.
-	  map<string, RestampedPositionMeasurement>::iterator it;
-	  for (uint ipa = 0; ipa < pos_array.people.size(); ipa++) {
-	    it = pos_list_.find(pos_array.people[ipa].object_id);
-	    RestampedPositionMeasurement rpm;
-	    rpm.pos = pos_array.people[ipa];
-	    rpm.restamp = pos_array.people[ipa].header.stamp;
-	    rpm.dist = BIGDIST_M;
-	    if (it == pos_list_.end()) {
-	      pos_list_.insert(pair<string, RestampedPositionMeasurement>(pos_array.people[ipa].object_id, rpm));
-	    }
-	    else if ((pos_array.people[ipa].header.stamp - (*it).second.pos.header.stamp) > ros::Duration().fromSec(-1.0) ){
-	      (*it).second = rpm;
-	    }
-	  }
-	  //      pos_lock.unlock();
+            // Update the position list greedily. This should be rewritten.
+            map<string, RestampedPositionMeasurement>::iterator it;
+            for (uint ipa = 0; ipa < pos_array.people.size(); ipa++) {
+              it = pos_list_.find(pos_array.people[ipa].object_id);
+              RestampedPositionMeasurement rpm;
+              rpm.pos = pos_array.people[ipa];
+              rpm.restamp = pos_array.people[ipa].header.stamp;
+              rpm.dist = BIGDIST_M;
+              if (it == pos_list_.end()) {
+                pos_list_.insert(pair<string, RestampedPositionMeasurement>(pos_array.people[ipa].object_id, rpm));
+              }
+              else if ((pos_array.people[ipa].header.stamp - (*it).second.pos.header.stamp) > ros::Duration().fromSec(-1.0) ){
+                (*it).second = rpm;
+              }
+            }
+            //      pos_lock.unlock();
 
-	  // Clean out all of the distances in the pos_list_
-	  for (it = pos_list_.begin(); it != pos_list_.end(); it++) {
-	    (*it).second.dist = BIGDIST_M;
-	  }
+            // Clean out all of the distances in the pos_list_
+            for (it = pos_list_.begin(); it != pos_list_.end(); it++) {
+              (*it).second.dist = BIGDIST_M;
+            }
 
-	}
+          }
 
 
-	// Done associating faces
+          // Done associating faces
 
-	/******** Display **************************************************************/
+          /******** Display **************************************************************/
+         
+          // Publish a point cloud of face centers and draw rectangles around faces for the 2D(rgb) visualization.
 
-	// Publish a point cloud of face centers.
+          cloud.channels.resize(1);
+          cloud.channels[0].name = "intensity";
 
-	cloud.channels.resize(1);
-	cloud.channels[0].name = "intensity";
+          for (uint iface = 0; iface < faces_vector.size(); iface++) {
+            cv::Scalar color = cv::Scalar(255,0,0);
+            one_face = &faces_vector[iface];
 
-	for (uint iface = 0; iface < faces_vector.size(); iface++) {
-	  one_face = &faces_vector[iface];
+            // Visualization of good faces as a point cloud
+            if (one_face->status == "good") {
+              geometry_msgs::Point32 p;
+              p.x = one_face->center3d.x;
+              p.y = one_face->center3d.y;
+              p.z = one_face->center3d.z;
+              cloud.points.push_back(p);
+              cloud.channels[0].values.push_back(1.0f);
 
-	  // Visualization of good faces as a point cloud
-	  if (one_face->status == "good") {
+              ngood ++;
+              
+              // set the rectangle color to green
+              color = cv::Scalar(0,255,0);
+          }
 
-	    geometry_msgs::Point32 p;
-	    p.x = one_face->center3d.x;
-	    p.y = one_face->center3d.y;
-	    p.z = one_face->center3d.z;
-	    cloud.points.push_back(p);
-	    cloud.channels[0].values.push_back(1.0f);
+          // Draw rectangle 
+          cv::rectangle(rect_image_ptr->image, 
+          cv::Point(one_face->box2d.x,one_face->box2d.y), 
+          cv::Point(one_face->box2d.x+one_face->box2d.width, one_face->box2d.y+one_face->box2d.height), color, 4);
 
-	    ngood ++;
-	  }
-	}
+          cloud_pub_.publish(cloud);
+          // Done publishing the point cloud.
 
-	cloud_pub_.publish(cloud);
-	// Done publishing the point cloud.
+        } // Done if faces_vector.size() > 0
+      
 
-      } // Done if faces_vector.size() > 0
-    
+        // Draw an appropriately colored rectangle on the display image and in the visualizer.
+        if (do_display_) {
+          displayFacesOnImage(faces_vector);
+          cv_mutex_.unlock();
+        }
+        // Done drawing.
 
-      // Draw an appropriately colored rectangle on the display image and in the visualizer.
-      if (do_display_) {
-        displayFacesOnImage(faces_vector);
-        cv_mutex_.unlock();
+        /******** Done display **********************************************************/
+
+        ROS_INFO_STREAM_NAMED("face_detector","Number of faces found: " << faces_vector.size() << ", number with good depth and size: " << ngood);
+
+        // If you don't want continuous processing and you've found at least one face, turn off the detector.
+        if (!do_continuous_ && found_faces) {
+          as_.setSucceeded(result_);
+        }
       }
-      // Done drawing.
-
-      /******** Done display **********************************************************/
-
-      ROS_INFO_STREAM_NAMED("face_detector","Number of faces found: " << faces_vector.size() << ", number with good depth and size: " << ngood);
-
-      // If you don't want continuous processing and you've found at least one face, turn off the detector.
-      if (!do_continuous_ && found_faces) {
-        as_.setSucceeded(result_);
-      }
+      // Publish the image for the 2D (rgb) visualization 
+      image_vis_pub_.publish(rect_image_ptr->toImageMsg());
     }
 
     // Draw bounding boxes around detected faces on the cv_image_out_ and show the image. 
