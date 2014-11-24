@@ -538,7 +538,10 @@ namespace people {
         cloud.header.stamp = header.stamp;
         cloud.header.frame_id = header.frame_id;
         // The CvImage which will be used for the 2D (rgb) visualization of the currently detected images
-        cv_bridge::CvImage* rect_image_ptr = new cv_bridge::CvImage(*cv_image_ptr);
+        cv_bridge::CvImage* rect_image_ptr;
+        if (image_vis_pub_.getNumSubscribers() >= 0) {
+          rect_image_ptr = new cv_bridge::CvImage(*cv_image_ptr);
+        }
 
         if (faces_vector.size() > 0 ) {
 
@@ -703,6 +706,7 @@ namespace people {
         // Publish the image for the 2D (rgb) visualization
         if (image_vis_pub_.getNumSubscribers() >= 0) {
           image_vis_pub_.publish(rect_image_ptr->toImageMsg());
+          delete rect_image_ptr;
         }
 
         // Draw an appropriately colored rectangle on the display image and in the visualizer.
