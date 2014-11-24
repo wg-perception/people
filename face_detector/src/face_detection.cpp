@@ -686,10 +686,12 @@ namespace people {
               // set the rectangle color to green
               color = cv::Scalar(0,255,0);
             }
-            // Draw rectangle
-            cv::rectangle(rect_image_ptr->image, 
-            cv::Point(one_face->box2d.x,one_face->box2d.y), 
-            cv::Point(one_face->box2d.x+one_face->box2d.width, one_face->box2d.y+one_face->box2d.height), color, 4);
+            if (image_vis_pub_.getNumSubscribers() >= 0) {
+              // Draw rectangle
+              cv::rectangle(rect_image_ptr->image, 
+              cv::Point(one_face->box2d.x,one_face->box2d.y), 
+              cv::Point(one_face->box2d.x+one_face->box2d.width, one_face->box2d.y+one_face->box2d.height), color, 4);
+            }
 
           }
 
@@ -698,6 +700,10 @@ namespace people {
 
         } // Done if faces_vector.size() > 0
 
+        // Publish the image for the 2D (rgb) visualization
+        if (image_vis_pub_.getNumSubscribers() >= 0) {
+          image_vis_pub_.publish(rect_image_ptr->toImageMsg());
+        }
 
         // Draw an appropriately colored rectangle on the display image and in the visualizer.
         if (do_display_) {
@@ -714,9 +720,6 @@ namespace people {
         if (!do_continuous_ && found_faces) {
           as_.setSucceeded(result_);
         }
-
-        // Publish the image for the 2D (rgb) visualization
-        image_vis_pub_.publish(rect_image_ptr->toImageMsg());
       }
 
       // Draw bounding boxes around detected faces on the cv_image_out_ and show the image. 
