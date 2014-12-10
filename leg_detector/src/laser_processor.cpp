@@ -46,8 +46,8 @@ Sample* Sample::Extract(int ind, const sensor_msgs::LaserScan& scan)
 
   s->index = ind;
   s->range = scan.ranges[ind];
-  s->x = cos( scan.angle_min + ind*scan.angle_increment ) * s->range;
-  s->y = sin( scan.angle_min + ind*scan.angle_increment ) * s->range;
+  s->x = cos(scan.angle_min + ind * scan.angle_increment) * s->range;
+  s->y = sin(scan.angle_min + ind * scan.angle_increment) * s->range;
   if (s->range > scan.range_min && s->range < scan.range_max)
     return s;
   else
@@ -63,7 +63,7 @@ void SampleSet::clear()
        i != end();
        i++)
   {
-    delete (*i);
+    delete(*i);
   }
   set<Sample*, CompareSample>::clear();
 }
@@ -73,7 +73,7 @@ void SampleSet::appendToCloud(sensor_msgs::PointCloud& cloud, int r, int g, int 
   float color_val = 0;
 
   int rgb = (r << 16) | (g << 8) | b;
-  color_val = *(float*)&(rgb);
+  color_val = *(float*) & (rgb);
 
   for (iterator sample_iter = begin();
        sample_iter != end();
@@ -100,11 +100,11 @@ tf::Point SampleSet::center()
        i++)
 
   {
-    x_mean += ((*i)->x)/size();
-    y_mean += ((*i)->y)/size();
+    x_mean += ((*i)->x) / size();
+    y_mean += ((*i)->y) / size();
   }
 
-  return tf::Point (x_mean, y_mean, 0.0);
+  return tf::Point(x_mean, y_mean, 0.0);
 }
 
 
@@ -116,9 +116,10 @@ void ScanMask::addScan(sensor_msgs::LaserScan& scan)
     angle_max = scan.angle_max;
     size      = scan.ranges.size();
     filled    = true;
-  } else if (angle_min != scan.angle_min     ||
-             angle_max != scan.angle_max     ||
-             size      != scan.ranges.size())
+  }
+  else if (angle_min != scan.angle_min     ||
+           angle_max != scan.angle_max     ||
+           size      != scan.ranges.size())
   {
     throw std::runtime_error("laser_scan::ScanMask::addScan: inconsistantly sized scans added to mask");
   }
@@ -135,10 +136,12 @@ void ScanMask::addScan(sensor_msgs::LaserScan& scan)
       {
         if ((*m)->range > s->range)
         {
-          delete (*m);
+          delete(*m);
           mask_.erase(m);
           mask_.insert(s);
-        } else {
+        }
+        else
+        {
           delete s;
         }
       }
@@ -156,7 +159,7 @@ bool ScanMask::hasSample(Sample* s, float thresh)
   if (s != NULL)
   {
     SampleSet::iterator m = mask_.find(s);
-    if ( m != mask_.end())
+    if (m != mask_.end())
       if (((*m)->range - thresh) < s->range)
         return true;
   }
@@ -180,7 +183,9 @@ ScanProcessor::ScanProcessor(const sensor_msgs::LaserScan& scan, ScanMask& mask_
       if (!mask_.hasSample(s, mask_threshold))
       {
         cluster->insert(s);
-      } else {
+      }
+      else
+      {
         delete s;
       }
     }
@@ -192,10 +197,10 @@ ScanProcessor::ScanProcessor(const sensor_msgs::LaserScan& scan, ScanMask& mask_
 
 ScanProcessor::~ScanProcessor()
 {
-  for ( list<SampleSet*>::iterator c = clusters_.begin();
-        c != clusters_.end();
-        c++)
-    delete (*c);
+  for (list<SampleSet*>::iterator c = clusters_.begin();
+       c != clusters_.end();
+       c++)
+    delete(*c);
 }
 
 void
@@ -204,11 +209,13 @@ ScanProcessor::removeLessThan(uint32_t num)
   list<SampleSet*>::iterator c_iter = clusters_.begin();
   while (c_iter != clusters_.end())
   {
-    if ( (*c_iter)->size() < num )
+    if ((*c_iter)->size() < num)
     {
-      delete (*c_iter);
+      delete(*c_iter);
       clusters_.erase(c_iter++);
-    } else {
+    }
+    else
+    {
       ++c_iter;
     }
   }
@@ -226,7 +233,7 @@ ScanProcessor::splitConnected(float thresh)
   while (c_iter != clusters_.end())
   {
     // Go through the entire list
-    while ((*c_iter)->size() > 0 )
+    while ((*c_iter)->size() > 0)
     {
       // Take the first element
       SampleSet::iterator s_first = (*c_iter)->begin();
@@ -241,23 +248,25 @@ ScanProcessor::splitConnected(float thresh)
       list<Sample*>::iterator s_q = sample_queue.begin();
       while (s_q != sample_queue.end())
       {
-        int expand = (int)(asin( thresh / (*s_q)->range ) / scan_.angle_increment);
+        int expand = (int)(asin(thresh / (*s_q)->range) / scan_.angle_increment);
 
         SampleSet::iterator s_rest = (*c_iter)->begin();
 
-        while ( (s_rest != (*c_iter)->end() &&
-                 (*s_rest)->index < (*s_q)->index + expand ) )
+        while ((s_rest != (*c_iter)->end() &&
+                (*s_rest)->index < (*s_q)->index + expand))
         {
-          if ( (*s_rest)->range - (*s_q)->range > thresh)
+          if ((*s_rest)->range - (*s_q)->range > thresh)
           {
             break;
           }
-          else if (sqrt( pow( (*s_q)->x - (*s_rest)->x, 2.0f) + pow( (*s_q)->y - (*s_rest)->y, 2.0f)) < thresh)
+          else if (sqrt(pow((*s_q)->x - (*s_rest)->x, 2.0f) + pow((*s_q)->y - (*s_rest)->y, 2.0f)) < thresh)
           {
             sample_queue.push_back(*s_rest);
             (*c_iter)->erase(s_rest++);
             break;
-          } else {
+          }
+          else
+          {
             ++s_rest;
           }
         }
@@ -274,7 +283,7 @@ ScanProcessor::splitConnected(float thresh)
     }
 
     //Now that c_iter is empty, we can delete
-    delete (*c_iter);
+    delete(*c_iter);
 
     //And remove from the map
     clusters_.erase(c_iter++);

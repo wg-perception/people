@@ -1,13 +1,13 @@
 /*********************************************************************
 * Software License Agreement (BSD License)
-* 
+*
 *  Copyright (c) 2008, Willow Garage, Inc.
 *  All rights reserved.
-* 
+*
 *  Redistribution and use in source and binary forms, with or without
 *  modification, are permitted provided that the following conditions
 *  are met:
-* 
+*
 *   * Redistributions of source code must retain the above copyright
 *     notice, this list of conditions and the following disclaimer.
 *   * Redistributions in binary form must reproduce the above
@@ -17,7 +17,7 @@
 *   * Neither the name of the Willow Garage nor the names of its
 *     contributors may be used to endorse or promote products derived
 *     from this software without specific prior written permission.
-* 
+*
 *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
@@ -43,27 +43,27 @@
 
 namespace BFL
 {
-  /// Class representing a vector mcpdf
-  class MCPdfVector: public MCPdf<tf::Vector3>
-    {
-    public:
-      /// Constructor
-      MCPdfVector (unsigned int num_samples);
+/// Class representing a vector mcpdf
+class MCPdfVector: public MCPdf<tf::Vector3>
+{
+public:
+  /// Constructor
+  MCPdfVector(unsigned int num_samples);
 
-      /// Destructor
-      virtual ~MCPdfVector();
+  /// Destructor
+  virtual ~MCPdfVector();
 
-      /// Get evenly distributed particle cloud
-      void getParticleCloud(const tf::Vector3& step, double threshold, sensor_msgs::PointCloud& cloud) const;
+  /// Get evenly distributed particle cloud
+  void getParticleCloud(const tf::Vector3& step, double threshold, sensor_msgs::PointCloud& cloud) const;
 
-      /// Get pos histogram from certain area
-      MatrixWrapper::Matrix getHistogram(const tf::Vector3& min, const tf::Vector3& max, const tf::Vector3& step) const;
+  /// Get pos histogram from certain area
+  MatrixWrapper::Matrix getHistogram(const tf::Vector3& min, const tf::Vector3& max, const tf::Vector3& step) const;
 
-      virtual tf::Vector3 ExpectedValueGet() const;
-      virtual WeightedSample<tf::Vector3> SampleGet(unsigned int particle) const;
-      virtual unsigned int numParticlesGet() const;
+  virtual tf::Vector3 ExpectedValueGet() const;
+  virtual WeightedSample<tf::Vector3> SampleGet(unsigned int particle) const;
+  virtual unsigned int numParticlesGet() const;
 
-    };
+};
 
 
 

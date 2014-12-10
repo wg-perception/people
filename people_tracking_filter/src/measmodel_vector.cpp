@@ -1,13 +1,13 @@
 /*********************************************************************
 * Software License Agreement (BSD License)
-* 
+*
 *  Copyright (c) 2008, Willow Garage, Inc.
 *  All rights reserved.
-* 
+*
 *  Redistribution and use in source and binary forms, with or without
 *  modification, are permitted provided that the following conditions
 *  are met:
-* 
+*
 *   * Redistributions of source code must retain the above copyright
 *     notice, this list of conditions and the following disclaimer.
 *   * Redistributions in binary form must reproduce the above
@@ -17,7 +17,7 @@
 *   * Neither the name of the Willow Garage nor the names of its
 *     contributors may be used to endorse or promote products derived
 *     from this software without specific prior written permission.
-* 
+*
 *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
@@ -47,7 +47,7 @@ static const unsigned int DIM_MEASMODEL_VECTOR            = 3;
 // Constructor
 MeasPdfVector::MeasPdfVector(const Vector3& sigma)
   : ConditionalPdf<Vector3, Vector3>(DIM_MEASMODEL_VECTOR, NUM_MEASMODEL_VECTOR_COND_ARGS),
-    meas_noise_(Vector3(0,0,0), sigma)
+    meas_noise_(Vector3(0, 0, 0), sigma)
 {}
 
 
@@ -57,7 +57,7 @@ MeasPdfVector::~MeasPdfVector()
 
 
 
-Probability 
+Probability
 MeasPdfVector::ProbabilityGet(const Vector3& measurement) const
 {
   return meas_noise_.ProbabilityGet(measurement - ConditionalArgumentGet(0));
@@ -66,7 +66,7 @@ MeasPdfVector::ProbabilityGet(const Vector3& measurement) const
 
 
 bool
-MeasPdfVector::SampleFrom (Sample<Vector3>& one_sample, int method, void *args) const
+MeasPdfVector::SampleFrom(Sample<Vector3>& one_sample, int method, void *args) const
 {
   cerr << "MeasPdfVector::SampleFrom Method not applicable" << endl;
   assert(0);
@@ -88,7 +88,7 @@ MeasPdfVector::ExpectedValueGet() const
 
 
 
-SymmetricMatrix 
+SymmetricMatrix
 MeasPdfVector::CovarianceGet() const
 {
   cerr << "MeasPdfVector::CovarianceGet Method not applicable" << endl;
@@ -101,7 +101,7 @@ MeasPdfVector::CovarianceGet() const
 void
 MeasPdfVector::CovarianceSet(const MatrixWrapper::SymmetricMatrix& cov)
 {
-  Vector3 cov_vec(sqrt(cov(1,1)), sqrt(cov(2,2)),sqrt(cov(3,3)));
+  Vector3 cov_vec(sqrt(cov(1, 1)), sqrt(cov(2, 2)), sqrt(cov(3, 3)));
   meas_noise_.sigmaSet(cov_vec);
 }
 

@@ -1,13 +1,13 @@
 /*********************************************************************
 * Software License Agreement (BSD License)
-* 
+*
 *  Copyright (c) 2008, Willow Garage, Inc.
 *  All rights reserved.
-* 
+*
 *  Redistribution and use in source and binary forms, with or without
 *  modification, are permitted provided that the following conditions
 *  are met:
-* 
+*
 *   * Redistributions of source code must retain the above copyright
 *     notice, this list of conditions and the following disclaimer.
 *   * Redistributions in binary form must reproduce the above
@@ -17,7 +17,7 @@
 *   * Neither the name of the Willow Garage nor the names of its
 *     contributors may be used to endorse or promote products derived
 *     from this software without specific prior written permission.
-* 
+*
 *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
@@ -68,7 +68,7 @@ using namespace MatrixWrapper;
 
 static double no_observation_timeout_s = 0.5;
 static double max_second_leg_age_s     = 2.0;
-static double max_track_jump_m         = 1.0; 
+static double max_track_jump_m         = 1.0;
 static double max_meas_jump_m          = 0.75; // 1.0
 static double leg_pair_separation_m    = 1.0;
 static string fixed_frame              = "odom_combined";
@@ -101,11 +101,11 @@ public:
   SavedFeature(Stamped<Point> loc, TransformListener& tfl)
     : tfl_(tfl),
       sys_sigma_(Vector3(0.05, 0.05, 0.05), Vector3(1.0, 1.0, 1.0)),
-      filter_("tracker_name",sys_sigma_),
+      filter_("tracker_name", sys_sigma_),
       reliability(-1.), p(4)
   {
     char id[100];
-    snprintf(id,100,"legtrack%d", nextid++);
+    snprintf(id, 100, "legtrack%d", nextid++);
     id_ = std::string(id);
 
     object_id = "";
@@ -113,16 +113,19 @@ public:
     meas_time_ = loc.stamp_;
     other = NULL;
 
-    try {
-    tfl_.transformPoint(fixed_frame, loc, loc);
-    } catch(...) {
+    try
+    {
+      tfl_.transformPoint(fixed_frame, loc, loc);
+    }
+    catch (...)
+    {
       ROS_WARN("TF exception spot 6.");
     }
-    StampedTransform pose( Pose(Quaternion(0.0, 0.0, 0.0, 1.0), loc), loc.stamp_, id_, loc.frame_id_);
+    StampedTransform pose(Pose(Quaternion(0.0, 0.0, 0.0, 1.0), loc), loc.stamp_, id_, loc.frame_id_);
     tfl_.setTransform(pose);
 
-    StatePosVel prior_sigma(Vector3(0.1,0.1,0.1), Vector3(0.0000001, 0.0000001, 0.0000001));
-    filter_.initialize(loc, prior_sigma, time_.toSec());    
+    StatePosVel prior_sigma(Vector3(0.1, 0.1, 0.1), Vector3(0.0000001, 0.0000001, 0.0000001));
+    filter_.initialize(loc, prior_sigma, time_.toSec());
 
     StatePosVel est;
     filter_.getEstimate(est);
@@ -141,7 +144,7 @@ public:
 
   void update(Stamped<Point> loc, double probability)
   {
-    StampedTransform pose( Pose(Quaternion(0.0, 0.0, 0.0, 1.0), loc), loc.stamp_, id_, loc.frame_id_);
+    StampedTransform pose(Pose(Quaternion(0.0, 0.0, 0.0, 1.0), loc), loc.stamp_, id_, loc.frame_id_);
     tfl_.setTransform(pose);
 
     meas_time_ = loc.stamp_;
@@ -149,23 +152,25 @@ public:
 
     SymmetricMatrix cov(3);
     cov = 0.0;
-    cov(1,1) = 0.0025;
-    cov(2,2) = 0.0025;
-    cov(3,3) = 0.0025;
+    cov(1, 1) = 0.0025;
+    cov(2, 2) = 0.0025;
+    cov(3, 3) = 0.0025;
 
     filter_.updateCorrection(loc, cov);
 
     updatePosition();
 
-    if(reliability<0 || !use_filter){
-        reliability = probability;
-        p = kal_p;
+    if (reliability < 0 || !use_filter)
+    {
+      reliability = probability;
+      p = kal_p;
     }
-    else{
-        p += kal_q;
-        double k = p / (p+kal_r);
-        reliability += k * (probability - reliability);
-        p *= (1 - k);
+    else
+    {
+      p += kal_q;
+      double k = p / (p + kal_r);
+      reliability += k * (probability - reliability);
+      p *= (1 - k);
     }
   }
 
@@ -209,10 +214,10 @@ public:
   double probability_;
 
   MatchedFeature(SampleSet* candidate, SavedFeature* closest, float distance, double probability)
-  : candidate_(candidate)
-  , closest_(closest)
-  , distance_(distance)
-  , probability_(probability)
+    : candidate_(candidate)
+    , closest_(closest)
+    , distance_(distance)
+    , probability_(probability)
   {}
 
   inline bool operator< (const MatchedFeature& b) const
@@ -270,20 +275,23 @@ public:
   tf::MessageFilter<sensor_msgs::LaserScan> laser_notifier_;
 
   LegDetector(ros::NodeHandle nh) :
-    nh_(nh), 
-    mask_count_(0), 
+    nh_(nh),
+    mask_count_(0),
     feat_count_(0),
     next_p_id_(0),
-    people_sub_(nh_,"people_tracker_filter",10),
-    laser_sub_(nh_,"scan",10),
-    people_notifier_(people_sub_,tfl_,fixed_frame,10),
-    laser_notifier_(laser_sub_,tfl_,fixed_frame,10)
+    people_sub_(nh_, "people_tracker_filter", 10),
+    laser_sub_(nh_, "scan", 10),
+    people_notifier_(people_sub_, tfl_, fixed_frame, 10),
+    laser_notifier_(laser_sub_, tfl_, fixed_frame, 10)
   {
-    if (g_argc > 1) {
+    if (g_argc > 1)
+    {
       forest.load(g_argv[1]);
       feat_count_ = forest.get_active_var_mask()->cols;
       printf("Loaded forest with %d features: %s\n", feat_count_, g_argv[1]);
-    } else {
+    }
+    else
+    {
       printf("Please provide a trained random forests classifier as an input.\n");
       shutdown();
     }
@@ -291,11 +299,12 @@ public:
     nh_.param<bool>("use_seeds", use_seeds_, !true);
 
     // advertise topics
-    leg_measurements_pub_ = nh_.advertise<people_msgs::PositionMeasurementArray>("leg_tracker_measurements",0);
+    leg_measurements_pub_ = nh_.advertise<people_msgs::PositionMeasurementArray>("leg_tracker_measurements", 0);
     people_measurements_pub_ = nh_.advertise<people_msgs::PositionMeasurementArray>("people_tracker_measurements", 0);
     markers_pub_ = nh_.advertise<visualization_msgs::Marker>("visualization_marker", 20);
 
-    if(use_seeds_){
+    if (use_seeds_)
+    {
       people_notifier_.registerCallback(boost::bind(&LegDetector::peopleCallback, this, _1));
       people_notifier_.setTolerance(ros::Duration(0.01));
     }
@@ -314,7 +323,8 @@ public:
   {
   }
 
-  void configure(leg_detector::LegDetectorConfig &config, uint32_t level) {
+  void configure(leg_detector::LegDetectorConfig &config, uint32_t level)
+  {
     connected_thresh_       = config.connection_threshold;
     min_points_per_group    = config.min_points_per_group;
     leg_reliability_limit_  = config.leg_reliability_limit;
@@ -328,7 +338,7 @@ public:
     max_track_jump_m         = config.max_track_jump;
     max_meas_jump_m          = config.max_meas_jump;
     leg_pair_separation_m    = config.leg_pair_separation;
-    if(fixed_frame.compare(config.fixed_frame) != 0)
+    if (fixed_frame.compare(config.fixed_frame) != 0)
     {
       fixed_frame              = config.fixed_frame;
       laser_notifier_.setTargetFrame(fixed_frame);
@@ -341,10 +351,11 @@ public:
     use_filter               = config.kalman_on == 1;
   }
 
-  double distance( list<SavedFeature*>::iterator it1,  list<SavedFeature*>::iterator it2){
+  double distance(list<SavedFeature*>::iterator it1,  list<SavedFeature*>::iterator it2)
+  {
     Stamped<Point> one = (*it1)->position_, two = (*it2)->position_;
-    double dx = one[0]-two[0], dy = one[1]-two[1], dz = one[2]-two[2];
-    return sqrt(dx*dx+dy*dy+dz*dz);
+    double dx = one[0] - two[0], dy = one[1] - two[1], dz = one[2] - two[2];
+    return sqrt(dx * dx + dy * dy + dz * dz);
   }
 
   // Find the tracker that is closest to this person message
@@ -352,7 +363,7 @@ public:
   void peopleCallback(const people_msgs::PositionMeasurement::ConstPtr& people_meas)
   {
     // If there are no legs, return.
-    if (saved_features_.empty()) 
+    if (saved_features_.empty())
       return;
 
     Point pt;
@@ -367,29 +378,32 @@ public:
     list<SavedFeature*>::iterator closest1 = saved_features_.end();
     list<SavedFeature*>::iterator closest2 = saved_features_.end();
     float closest_dist = max_meas_jump_m;
-    float closest_pair_dist = 2*max_meas_jump_m;
+    float closest_pair_dist = 2 * max_meas_jump_m;
 
     list<SavedFeature*>::iterator begin = saved_features_.begin();
     list<SavedFeature*>::iterator end = saved_features_.end();
     list<SavedFeature*>::iterator it1, it2;
 
     // If there's a pair of legs with the right label and within the max dist, return
-    // If there's one leg with the right label and within the max dist, 
+    // If there's one leg with the right label and within the max dist,
     //   find a partner for it from the unlabeled legs whose tracks are reasonably new.
     //   If no partners exist, label just the one leg.
     // If there are no legs with the right label and within the max dist,
     //   find a pair of unlabeled legs and assign them the label.
-    // If all of the above cases fail, 
+    // If all of the above cases fail,
     //   find a new unlabeled leg and assign the label.
-    
+
     // For each tracker, get the distance to this person.
-    for (it1 = begin; it1 != end; ++it1) 
+    for (it1 = begin; it1 != end; ++it1)
     {
-      try {
-      tfl_.transformPoint((*it1)->id_, people_meas->header.stamp,
-        person_loc, fixed_frame, dest_loc);
-      //ROS_INFO("Succesful leg transformation at spot 7"); 
-      } catch(...) {
+      try
+      {
+        tfl_.transformPoint((*it1)->id_, people_meas->header.stamp,
+                            person_loc, fixed_frame, dest_loc);
+        //ROS_INFO("Succesful leg transformation at spot 7");
+      }
+      catch (...)
+      {
         ROS_WARN("TF exception spot 7.");
       }
       (*it1)->dist_to_person_ = dest_loc.length();
@@ -401,26 +415,27 @@ public:
     for (it1 = begin; it1 != end; ++it1)
     {
       // If this leg belongs to the person...
-      if ((*it1)->object_id == people_meas->object_id) 
+      if ((*it1)->object_id == people_meas->object_id)
       {
-        // and their distance is close enough... 
+        // and their distance is close enough...
         if ((*it1)->dist_to_person_ < max_meas_jump_m)
         {
           // if this is the first leg we've found, assign it to it2. Otherwise, leave it assigned to it1 and break.
-          if (it2 == end) 
+          if (it2 == end)
             it2 = it1;
           else
             break;
         }
         // Otherwise, remove the tracker's label, it doesn't belong to this person.
-        else{
+        else
+        {
           // the two trackers moved apart. This should not happen.
           (*it1)->object_id = "";
         }
       }
     }
     // If we found two legs with the right label and within the max distance, all is good, return.
-    if (it1 != end && it2 != end) 
+    if (it1 != end && it2 != end)
     {
       cout << "Found matching pair. The second distance was " << (*it1)->dist_to_person_ << endl;
       return;
@@ -428,37 +443,40 @@ public:
 
 
 
-    // If we only found one close leg with the right label, let's try to find a second leg that 
+    // If we only found one close leg with the right label, let's try to find a second leg that
     //   * doesn't yet have a label  (=valid precondition),
     //   * is within the max distance,
     //   * is less than max_second_leg_age_s old.
     cout << "Looking for one leg plus one new leg" << endl;
     float dist_between_legs, closest_dist_between_legs;
-    if (it2 != end) 
+    if (it2 != end)
     {
       closest_dist = max_meas_jump_m;
       closest = saved_features_.end();
 
-      for (it1 = begin; it1 != end; ++it1) 
+      for (it1 = begin; it1 != end; ++it1)
       {
         // Skip this leg track if:
         // - you're already using it.
         // - it already has an id.
         // - it's too old. Old unassigned trackers are unlikely to be the second leg in a pair.
         // - it's too far away from the person.
-        if ((it1 == it2) || ((*it1)->object_id != "") ||  ((*it1)->getLifetime() > max_second_leg_age_s) || ((*it1)->dist_to_person_ >= closest_dist) )
+        if ((it1 == it2) || ((*it1)->object_id != "") || ((*it1)->getLifetime() > max_second_leg_age_s) || ((*it1)->dist_to_person_ >= closest_dist))
           continue;
 
         // Get the distance between the two legs
-        try {
+        try
+        {
           tfl_.transformPoint((*it1)->id_, (*it2)->position_.stamp_, (*it2)->position_, fixed_frame, dest_loc);
-        } catch(...) {
+        }
+        catch (...)
+        {
           ROS_WARN("TF exception getting distance between legs.");
         }
         dist_between_legs = dest_loc.length();
 
         // If this is the closest dist (and within range), and the legs are close together and unlabeled, mark it.
-        if ( dist_between_legs < leg_pair_separation_m )
+        if (dist_between_legs < leg_pair_separation_m)
         {
           closest = it1;
           closest_dist = (*it1)->dist_to_person_;
@@ -466,16 +484,16 @@ public:
         }
       }
       // If we found a close, unlabeled leg, set it's label.
-      if (closest != end) 
+      if (closest != end)
       {
         cout << "Replaced one leg with a distance of " << closest_dist << " and a distance between the legs of " << closest_dist_between_legs << endl;
         (*closest)->object_id = people_meas->object_id;
       }
-      else 
+      else
       {
         cout << "Returned one matched leg only" << endl;
       }
-      
+
       // Regardless of whether we found a second leg, return.
       return;
     }
@@ -488,15 +506,15 @@ public:
     closest1 = saved_features_.end();
     closest2 = saved_features_.end();
     closest_dist = max_meas_jump_m;
-    closest_pair_dist = 2*max_meas_jump_m;
-    for (; it1 != end; ++it1) 
+    closest_pair_dist = 2 * max_meas_jump_m;
+    for (; it1 != end; ++it1)
     {
       // Only look at trackers without ids and that are not too far away.
-      if ((*it1)->object_id != "" || (*it1)->dist_to_person_ >= max_meas_jump_m )
+      if ((*it1)->object_id != "" || (*it1)->dist_to_person_ >= max_meas_jump_m)
         continue;
 
       // Keep the single closest leg around in case none of the pairs work out.
-      if ( (*it1)->dist_to_person_ < closest_dist ) 
+      if ((*it1)->dist_to_person_ < closest_dist)
       {
         closest_dist = (*it1)->dist_to_person_;
         closest = it1;
@@ -505,24 +523,27 @@ public:
       // Find a second leg.
       it2 = it1;
       it2++;
-      for (; it2 != end; ++it2) 
+      for (; it2 != end; ++it2)
       {
         // Only look at trackers without ids and that are not too far away.
-        if ((*it2)->object_id != "" || (*it2)->dist_to_person_ >= max_meas_jump_m ) 
+        if ((*it2)->object_id != "" || (*it2)->dist_to_person_ >= max_meas_jump_m)
           continue;
-   
+
         // Get the distance between the two legs
-        try {
+        try
+        {
           tfl_.transformPoint((*it1)->id_, (*it2)->position_.stamp_, (*it2)->position_, fixed_frame, dest_loc);
-        } catch(...) {
+        }
+        catch (...)
+        {
           ROS_WARN("TF exception getting distance between legs in spot 2.");
         }
         dist_between_legs = dest_loc.length();
 
         // Ensure that this pair of legs is the closest pair to the tracker, and that the distance between the legs isn't too large.
-        if ( (*it1)->dist_to_person_+(*it2)->dist_to_person_ < closest_pair_dist && dist_between_legs < leg_pair_separation_m ) 
+        if ((*it1)->dist_to_person_ + (*it2)->dist_to_person_ < closest_pair_dist && dist_between_legs < leg_pair_separation_m)
         {
-          closest_pair_dist = (*it1)->dist_to_person_+(*it2)->dist_to_person_;
+          closest_pair_dist = (*it1)->dist_to_person_ + (*it2)->dist_to_person_;
           closest1 = it1;
           closest2 = it2;
           closest_dist_between_legs = dist_between_legs;
@@ -530,7 +551,7 @@ public:
       }
     }
     // Found a pair of legs.
-    if (closest1 != end && closest2 != end) 
+    if (closest1 != end && closest2 != end)
     {
       (*closest1)->object_id = people_meas->object_id;
       (*closest2)->object_id = people_meas->object_id;
@@ -560,45 +581,53 @@ public:
     for (leg1 = begin; leg1 != end; ++leg1)
     {
       // If this leg has no id, skip
-      if ((*leg1)->object_id == "") 
+      if ((*leg1)->object_id == "")
         continue;
 
       leg2 = end;
       best = end;
       double closest_dist = leg_pair_separation_m;
-      for ( it = begin; it != end; ++it)
+      for (it = begin; it != end; ++it)
       {
-        if(it==leg1) continue;
+        if (it == leg1) continue;
 
-        if ( (*it)->object_id == (*leg1)->object_id ) {
+        if ((*it)->object_id == (*leg1)->object_id)
+        {
           leg2 = it;
           break;
         }
-        
+
         if ((*it)->object_id != "")
           continue;
 
         double d = distance(it, leg1);
-        if (((*it)->getLifetime() <= max_second_leg_age_s) 
-             && (d < closest_dist)){
+        if (((*it)->getLifetime() <= max_second_leg_age_s)
+            && (d < closest_dist))
+        {
           closest_dist = d;
           best = it;
         }
-        
+
       }
 
-      if(leg2 != end){
+      if (leg2 != end)
+      {
         double dist_between_legs = distance(leg1, leg2);
-        if (dist_between_legs > leg_pair_separation_m){
+        if (dist_between_legs > leg_pair_separation_m)
+        {
           (*leg1)->object_id = "";
           (*leg1)->other = NULL;
           (*leg2)->object_id = "";
           (*leg2)->other = NULL;
-        }else{
+        }
+        else
+        {
           (*leg1)->other = *leg2;
           (*leg2)->other = *leg1;
         }
-      }else if(best != end){
+      }
+      else if (best != end)
+      {
         (*best)->object_id = (*leg1)->object_id;
         (*leg1)->other = *best;
         (*best)->other = *leg1;
@@ -606,38 +635,43 @@ public:
     }
 
     // Attempt to pair up legs with no id
-    for(;;){
+    for (;;)
+    {
       list<SavedFeature*>::iterator best1 = end, best2 = end;
       double closest_dist = leg_pair_separation_m;
 
       for (leg1 = begin; leg1 != end; ++leg1)
       {
         // If this leg has an id or low reliability, skip
-        if ((*leg1)->object_id != "" 
-            || (*leg1)->getReliability() < leg_reliability_limit_) 
+        if ((*leg1)->object_id != ""
+            || (*leg1)->getReliability() < leg_reliability_limit_)
           continue;
 
-        for ( leg2 = begin; leg2 != end; ++leg2)
+        for (leg2 = begin; leg2 != end; ++leg2)
         {
-          if(    ((*leg2)->object_id != "") 
+          if (((*leg2)->object_id != "")
               || ((*leg2)->getReliability() < leg_reliability_limit_)
-              || (leg1==leg2) ) continue;
+              || (leg1 == leg2)) continue;
           double d = distance(leg1, leg2);
-          if(d<closest_dist){
+          if (d < closest_dist)
+          {
             best1 = leg1;
             best2 = leg2;
           }
         }
       }
 
-      if(best1 != end){
+      if (best1 != end)
+      {
         char id[100];
-        snprintf(id,100,"Person%d", next_p_id_++);
+        snprintf(id, 100, "Person%d", next_p_id_++);
         (*best1)->object_id = std::string(id);
         (*best2)->object_id = std::string(id);
         (*best1)->other = *best2;
         (*best2)->other = *best1;
-      }else{
+      }
+      else
+      {
         break;
       }
     }
@@ -650,7 +684,7 @@ public:
     processor.splitConnected(connected_thresh_);
     processor.removeLessThan(5);
 
-    CvMat* tmp_mat = cvCreateMat(1,feat_count_,CV_32FC1);
+    CvMat* tmp_mat = cvCreateMat(1, feat_count_, CV_32FC1);
 
     // if no measurement matches to a tracker in the last <no_observation_timeout>  seconds: erase tracker
     ros::Time purge = scan->header.stamp + ros::Duration().fromSec(-no_observation_timeout_s);
@@ -659,9 +693,9 @@ public:
     {
       if ((*sf_iter)->meas_time_ < purge)
       {
-        if( (*sf_iter)->other )
+        if ((*sf_iter)->other)
           (*sf_iter)->other->other = NULL;
-        delete (*sf_iter);
+        delete(*sf_iter);
         saved_features_.erase(sf_iter++);
       }
       else
@@ -693,39 +727,42 @@ public:
       for (int k = 0; k < feat_count_; k++)
         tmp_mat->data.fl[k] = (float)(f[k]);
 
-      float probability = forest.predict_prob( tmp_mat );
+      float probability = forest.predict_prob(tmp_mat);
       Stamped<Point> loc((*i)->center(), scan->header.stamp, scan->header.frame_id);
-      try {
+      try
+      {
         tfl_.transformPoint(fixed_frame, loc, loc);
-      } catch(...) {
+      }
+      catch (...)
+      {
         ROS_WARN("TF exception spot 3.");
       }
 
       list<SavedFeature*>::iterator closest = propagated.end();
       float closest_dist = max_track_jump_m;
-      
+
       for (list<SavedFeature*>::iterator pf_iter = propagated.begin();
            pf_iter != propagated.end();
            pf_iter++)
       {
         // find the closest distance between candidate and trackers
         float dist = loc.distance((*pf_iter)->position_);
-        if ( dist < closest_dist )
+        if (dist < closest_dist)
         {
           closest = pf_iter;
           closest_dist = dist;
         }
       }
       // Nothing close to it, start a new track
-      if (closest == propagated.end()) 
+      if (closest == propagated.end())
       {
         list<SavedFeature*>::iterator new_saved = saved_features_.insert(saved_features_.end(), new SavedFeature(loc, tfl_));
       }
       // Add the candidate, the tracker and the distance to a match list
       else
-        matches.insert(MatchedFeature(*i,*closest,closest_dist,probability));
+        matches.insert(MatchedFeature(*i, *closest, closest_dist, probability));
     }
-    
+
     // loop through _sorted_ matches list
     // find the match with the shortest distance for each tracker
     while (matches.size() > 0)
@@ -740,16 +777,19 @@ public:
         {
           // Transform candidate to fixed frame
           Stamped<Point> loc(matched_iter->candidate_->center(), scan->header.stamp, scan->header.frame_id);
-          try {
+          try
+          {
             tfl_.transformPoint(fixed_frame, loc, loc);
-          } catch(...) {
+          }
+          catch (...)
+          {
             ROS_WARN("TF exception spot 4.");
           }
 
           // Update the tracker with the candidate location
           matched_iter->closest_->update(loc, matched_iter->probability_);
-          
-          // remove this match and 
+
+          // remove this match and
           matches.erase(matched_iter);
           propagated.erase(pf_iter++);
           found = true;
@@ -767,21 +807,24 @@ public:
       if (!found)
       {
         Stamped<Point> loc(matched_iter->candidate_->center(), scan->header.stamp, scan->header.frame_id);
-        try {
+        try
+        {
           tfl_.transformPoint(fixed_frame, loc, loc);
-        } catch(...) {
+        }
+        catch (...)
+        {
           ROS_WARN("TF exception spot 5.");
         }
 
         list<SavedFeature*>::iterator closest = propagated.end();
         float closest_dist = max_track_jump_m;
-      
+
         for (list<SavedFeature*>::iterator remain_iter = propagated.begin();
              remain_iter != propagated.end();
              remain_iter++)
         {
           float dist = loc.distance((*remain_iter)->position_);
-          if ( dist < closest_dist )
+          if (dist < closest_dist)
           {
             closest = remain_iter;
             closest_dist = dist;
@@ -793,13 +836,14 @@ public:
         if (closest == propagated.end())
           list<SavedFeature*>::iterator new_saved = saved_features_.insert(saved_features_.end(), new SavedFeature(loc, tfl_));
         else
-          matches.insert(MatchedFeature(matched_iter->candidate_,*closest,closest_dist, matched_iter->probability_));
+          matches.insert(MatchedFeature(matched_iter->candidate_, *closest, closest_dist, matched_iter->probability_));
         matches.erase(matched_iter);
       }
     }
 
-    cvReleaseMat(&tmp_mat); tmp_mat = 0;
-    if(!use_seeds_)
+    cvReleaseMat(&tmp_mat);
+    tmp_mat = 0;
+    if (!use_seeds_)
       pairLegs();
 
     // Publish Data!
@@ -809,13 +853,14 @@ public:
 
     for (list<SavedFeature*>::iterator sf_iter = saved_features_.begin();
          sf_iter != saved_features_.end();
-         sf_iter++,i++)
+         sf_iter++, i++)
     {
       // reliability
       double reliability = (*sf_iter)->getReliability();
 
       if ((*sf_iter)->getReliability() > leg_reliability_limit_
-          && publish_legs_){
+          && publish_legs_)
+      {
         people_msgs::PositionMeasurement pos;
         pos.header.stamp = scan->header.stamp;
         pos.header.frame_id = fixed_frame;
@@ -825,21 +870,22 @@ public:
         pos.pos.y = (*sf_iter)->position_[1];
         pos.pos.z = (*sf_iter)->position_[2];
         pos.reliability = reliability;
-        pos.covariance[0] = pow(0.3 / reliability,2.0);
+        pos.covariance[0] = pow(0.3 / reliability, 2.0);
         pos.covariance[1] = 0.0;
         pos.covariance[2] = 0.0;
         pos.covariance[3] = 0.0;
-        pos.covariance[4] = pow(0.3 / reliability,2.0);
+        pos.covariance[4] = pow(0.3 / reliability, 2.0);
         pos.covariance[5] = 0.0;
         pos.covariance[6] = 0.0;
         pos.covariance[7] = 0.0;
         pos.covariance[8] = 10000.0;
         pos.initialization = 0;
-	legs.push_back(pos);
+        legs.push_back(pos);
 
       }
 
-      if (publish_leg_markers_){
+      if (publish_leg_markers_)
+      {
         visualization_msgs::Marker m;
         m.header.stamp = (*sf_iter)->time_;
         m.header.frame_id = fixed_frame;
@@ -855,23 +901,29 @@ public:
         m.scale.z = .1;
         m.color.a = 1;
         m.lifetime = ros::Duration(0.5);
-        if((*sf_iter)->object_id != ""){
+        if ((*sf_iter)->object_id != "")
+        {
           m.color.r = 1;
-        }else{
+        }
+        else
+        {
           m.color.b = (*sf_iter)->getReliability();
         }
 
         markers_pub_.publish(m);
       }
 
-      if (publish_people_ || publish_people_markers_){
+      if (publish_people_ || publish_people_markers_)
+      {
         SavedFeature* other = (*sf_iter)->other;
-        if(other!=NULL && other<(*sf_iter)){
-          double dx = ((*sf_iter)->position_[0] + other->position_[0])/2,
-                 dy = ((*sf_iter)->position_[1] + other->position_[1])/2,
-                 dz = ((*sf_iter)->position_[2] + other->position_[2])/2;
+        if (other != NULL && other < (*sf_iter))
+        {
+          double dx = ((*sf_iter)->position_[0] + other->position_[0]) / 2,
+                 dy = ((*sf_iter)->position_[1] + other->position_[1]) / 2,
+                 dz = ((*sf_iter)->position_[2] + other->position_[2]) / 2;
 
-          if (publish_people_){
+          if (publish_people_)
+          {
             reliability = reliability * other->reliability;
             people_msgs::PositionMeasurement pos;
             pos.header.stamp = (*sf_iter)->time_;
@@ -882,20 +934,21 @@ public:
             pos.pos.y = dy;
             pos.pos.z = dz;
             pos.reliability = reliability;
-            pos.covariance[0] = pow(0.3 / reliability,2.0);
+            pos.covariance[0] = pow(0.3 / reliability, 2.0);
             pos.covariance[1] = 0.0;
             pos.covariance[2] = 0.0;
             pos.covariance[3] = 0.0;
-            pos.covariance[4] = pow(0.3 / reliability,2.0);
+            pos.covariance[4] = pow(0.3 / reliability, 2.0);
             pos.covariance[5] = 0.0;
             pos.covariance[6] = 0.0;
             pos.covariance[7] = 0.0;
             pos.covariance[8] = 10000.0;
             pos.initialization = 0;
-            people.push_back(pos);  
+            people.push_back(pos);
           }
-   
-          if (publish_people_markers_){
+
+          if (publish_people_markers_)
+          {
             visualization_msgs::Marker m;
             m.header.stamp = (*sf_iter)->time_;
             m.header.frame_id = fixed_frame;
@@ -920,11 +973,13 @@ public:
 
     people_msgs::PositionMeasurementArray array;
     array.header.stamp = ros::Time::now();
-    if(publish_legs_){
+    if (publish_legs_)
+    {
       array.people = legs;
       leg_measurements_pub_.publish(array);
     }
-    if(publish_people_){
+    if (publish_people_)
+    {
       array.people = people;
       people_measurements_pub_.publish(array);
     }
@@ -933,13 +988,13 @@ public:
 
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv,"leg_detector");
+  ros::init(argc, argv, "leg_detector");
   g_argc = argc;
   g_argv = argv;
   ros::NodeHandle nh;
   LegDetector ld(nh);
   ros::spin();
-  
+
   return 0;
 }
 

@@ -1,13 +1,13 @@
 /*********************************************************************
 * Software License Agreement (BSD License)
-* 
+*
 *  Copyright (c) 2008, Willow Garage, Inc.
 *  All rights reserved.
-* 
+*
 *  Redistribution and use in source and binary forms, with or without
 *  modification, are permitted provided that the following conditions
 *  are met:
-* 
+*
 *   * Redistributions of source code must retain the above copyright
 *     notice, this list of conditions and the following disclaimer.
 *   * Redistributions in binary form must reproduce the above
@@ -17,7 +17,7 @@
 *   * Neither the name of the Willow Garage nor the names of its
 *     contributors may be used to endorse or promote products derived
 *     from this software without specific prior written permission.
-* 
+*
 *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
@@ -75,11 +75,14 @@ public:
       switch (load)
       {
       case LOADING_POS:
-        printf("Loading positive training data from file: %s\n",file); break;
+        printf("Loading positive training data from file: %s\n", file);
+        break;
       case LOADING_NEG:
-        printf("Loading negative training data from file: %s\n",file); break;
+        printf("Loading negative training data from file: %s\n", file);
+        break;
       case LOADING_TEST:
-        printf("Loading test data from file: %s\n",file); break;
+        printf("Loading test data from file: %s\n", file);
+        break;
       default:
         break;
       }
@@ -88,27 +91,27 @@ public:
       if (p.open(file, ros::Time()))
       {
         mask_.clear();
-        mask_count_ = 0;    
+        mask_count_ = 0;
 
-      switch (load)
-      {
-      case LOADING_POS:
-        p.addHandler<sensor_msgs::LaserScan>(string("*"), &TrainLegDetector::loadCb, this, &pos_data_);
-        break;
-      case LOADING_NEG:
-        mask_count_ = 1000; // effectively disable masking
-        p.addHandler<sensor_msgs::LaserScan>(string("*"), &TrainLegDetector::loadCb, this, &neg_data_);
-        break;
-      case LOADING_TEST:
-        p.addHandler<sensor_msgs::LaserScan>(string("*"), &TrainLegDetector::loadCb, this, &test_data_);
-        break;
-      default:
-        break;
-      }
-    
+        switch (load)
+        {
+        case LOADING_POS:
+          p.addHandler<sensor_msgs::LaserScan>(string("*"), &TrainLegDetector::loadCb, this, &pos_data_);
+          break;
+        case LOADING_NEG:
+          mask_count_ = 1000; // effectively disable masking
+          p.addHandler<sensor_msgs::LaserScan>(string("*"), &TrainLegDetector::loadCb, this, &neg_data_);
+          break;
+        case LOADING_TEST:
+          p.addHandler<sensor_msgs::LaserScan>(string("*"), &TrainLegDetector::loadCb, this, &test_data_);
+          break;
+        default:
+          break;
+        }
+
         while (p.nextMsg())
-        {}
-    } 
+          {}
+      }
     }
   }
 
@@ -122,14 +125,14 @@ public:
     }
     else
     {
-      ScanProcessor processor(*scan,mask_);
+      ScanProcessor processor(*scan, mask_);
       processor.splitConnected(connected_thresh_);
       processor.removeLessThan(5);
-    
+
       for (list<SampleSet*>::iterator i = processor.getClusters().begin();
            i != processor.getClusters().end();
            i++)
-        data->push_back( calcLegFeatures(*i, *scan));
+        data->push_back(calcLegFeatures(*i, *scan));
     }
   }
 
@@ -138,8 +141,8 @@ public:
     int sample_size = pos_data_.size() + neg_data_.size();
     feat_count_ = pos_data_[0].size();
 
-    CvMat* cv_data = cvCreateMat( sample_size, feat_count_, CV_32FC1);
-    CvMat* cv_resp = cvCreateMat( sample_size, 1, CV_32S);
+    CvMat* cv_data = cvCreateMat(sample_size, feat_count_, CV_32FC1);
+    CvMat* cv_resp = cvCreateMat(sample_size, 1, CV_32S);
 
     // Put positive data in opencv format.
     int j = 0;
@@ -147,10 +150,10 @@ public:
          i != pos_data_.end();
          i++)
     {
-      float* data_row = (float*)(cv_data->data.ptr + cv_data->step*j);
+      float* data_row = (float*)(cv_data->data.ptr + cv_data->step * j);
       for (int k = 0; k < feat_count_; k++)
         data_row[k] = (*i)[k];
-      
+
       cv_resp->data.i[j] = 1;
       j++;
     }
@@ -160,25 +163,25 @@ public:
          i != neg_data_.end();
          i++)
     {
-      float* data_row = (float*)(cv_data->data.ptr + cv_data->step*j);
+      float* data_row = (float*)(cv_data->data.ptr + cv_data->step * j);
       for (int k = 0; k < feat_count_; k++)
         data_row[k] = (*i)[k];
-      
+
       cv_resp->data.i[j] = -1;
       j++;
     }
 
-    CvMat* var_type = cvCreateMat( 1, feat_count_ + 1, CV_8U );
-    cvSet( var_type, cvScalarAll(CV_VAR_ORDERED));
-    cvSetReal1D( var_type, feat_count_, CV_VAR_CATEGORICAL );
-    
+    CvMat* var_type = cvCreateMat(1, feat_count_ + 1, CV_8U);
+    cvSet(var_type, cvScalarAll(CV_VAR_ORDERED));
+    cvSetReal1D(var_type, feat_count_, CV_VAR_CATEGORICAL);
+
     float priors[] = {1.0, 1.0};
-    
-    CvRTParams fparam(8,20,0,false,10,priors,false,5,50,0.001f,CV_TERMCRIT_ITER);
+
+    CvRTParams fparam(8, 20, 0, false, 10, priors, false, 5, 50, 0.001f, CV_TERMCRIT_ITER);
     fparam.term_crit = cvTermCriteria(CV_TERMCRIT_ITER, 100, 0.1);
-    
-    forest.train( cv_data, CV_ROW_SAMPLE, cv_resp, 0, 0, var_type, 0,
-                  fparam);
+
+    forest.train(cv_data, CV_ROW_SAMPLE, cv_resp, 0, 0, var_type, 0,
+                 fparam);
 
 
     cvReleaseMat(&cv_data);
@@ -188,17 +191,17 @@ public:
 
   void test()
   {
-    CvMat* tmp_mat = cvCreateMat(1,feat_count_,CV_32FC1);
+    CvMat* tmp_mat = cvCreateMat(1, feat_count_, CV_32FC1);
 
     int pos_right = 0;
-    int pos_total = 0;    
+    int pos_total = 0;
     for (vector< vector<float> >::iterator i = pos_data_.begin();
          i != pos_data_.end();
          i++)
     {
       for (int k = 0; k < feat_count_; k++)
         tmp_mat->data.fl[k] = (float)((*i)[k]);
-      if (forest.predict( tmp_mat) > 0)
+      if (forest.predict(tmp_mat) > 0)
         pos_right++;
       pos_total++;
     }
@@ -211,7 +214,7 @@ public:
     {
       for (int k = 0; k < feat_count_; k++)
         tmp_mat->data.fl[k] = (float)((*i)[k]);
-      if (forest.predict( tmp_mat ) < 0)
+      if (forest.predict(tmp_mat) < 0)
         neg_right++;
       neg_total++;
     }
@@ -224,14 +227,14 @@ public:
     {
       for (int k = 0; k < feat_count_; k++)
         tmp_mat->data.fl[k] = (float)((*i)[k]);
-      if (forest.predict( tmp_mat ) > 0)
+      if (forest.predict(tmp_mat) > 0)
         test_right++;
       test_total++;
     }
 
-    printf(" Pos train set: %d/%d %g\n",pos_right, pos_total, (float)(pos_right)/pos_total);
-    printf(" Neg train set: %d/%d %g\n",neg_right, neg_total, (float)(neg_right)/neg_total);
-    printf(" Test set:      %d/%d %g\n",test_right, test_total, (float)(test_right)/test_total);
+    printf(" Pos train set: %d/%d %g\n", pos_right, pos_total, (float)(pos_right) / pos_total);
+    printf(" Neg train set: %d/%d %g\n", neg_right, neg_total, (float)(neg_right) / neg_total);
+    printf(" Test set:      %d/%d %g\n", test_right, test_total, (float)(test_right) / test_total);
 
     cvReleaseMat(&tmp_mat);
 
@@ -255,16 +258,16 @@ int main(int argc, char **argv)
   printf("Loading data...\n");
   for (int i = 1; i < argc; i++)
   {
-    if (!strcmp(argv[i],"--train"))
+    if (!strcmp(argv[i], "--train"))
       loading = LOADING_POS;
-    else if (!strcmp(argv[i],"--neg"))
+    else if (!strcmp(argv[i], "--neg"))
       loading = LOADING_NEG;
-    else if (!strcmp(argv[i],"--test"))
+    else if (!strcmp(argv[i], "--test"))
       loading = LOADING_TEST;
-    else if (!strcmp(argv[i],"--save"))
+    else if (!strcmp(argv[i], "--save"))
     {
       if (++i < argc)
-        strncpy(save_file,argv[i],100);
+        strncpy(save_file, argv[i], 100);
       continue;
     }
     else
@@ -276,7 +279,7 @@ int main(int argc, char **argv)
 
   printf("Evlauating classifier...\n");
   tld.test();
-  
+
   if (strlen(save_file) > 0)
   {
     printf("Saving classifier as: %s\n", save_file);

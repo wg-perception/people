@@ -1,13 +1,13 @@
 /*********************************************************************
 * Software License Agreement (BSD License)
-* 
+*
 *  Copyright (c) 2008, Willow Garage, Inc.
 *  All rights reserved.
-* 
+*
 *  Redistribution and use in source and binary forms, with or without
 *  modification, are permitted provided that the following conditions
 *  are met:
-* 
+*
 *   * Redistributions of source code must retain the above copyright
 *     notice, this list of conditions and the following disclaimer.
 *   * Redistributions in binary form must reproduce the above
@@ -17,7 +17,7 @@
 *   * Neither the name of the Willow Garage nor the names of its
 *     contributors may be used to endorse or promote products derived
 *     from this software without specific prior written permission.
-* 
+*
 *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
@@ -45,41 +45,44 @@ namespace BFL
 /// Class representing state with pos and vel
 class StatePosVel
 {
- public:
+public:
   tf::Vector3 pos_, vel_;
-  
+
   /// Constructor
-  StatePosVel(const tf::Vector3& pos=tf::Vector3(0,0,0), 
-	      const tf::Vector3& vel=tf::Vector3(0,0,0)):  pos_(pos), vel_(vel) {};
+  StatePosVel(const tf::Vector3& pos = tf::Vector3(0, 0, 0),
+              const tf::Vector3& vel = tf::Vector3(0, 0, 0)):  pos_(pos), vel_(vel) {};
 
   /// Destructor
   ~StatePosVel() {};
-  
+
   /// operator +=
-  StatePosVel& operator += (const StatePosVel& s) 
+  StatePosVel& operator += (const StatePosVel& s)
   {
     this->pos_ += s.pos_;
     this->vel_ += s.vel_;
     return *this;
- }
+  }
 
   /// operator +
-  StatePosVel operator + (const StatePosVel& s) 
+  StatePosVel operator + (const StatePosVel& s)
   {
     StatePosVel res;
 
     res.pos_ = this->pos_ + s.pos_;
     res.vel_ = this->vel_ + s.vel_;
     return res;
- }
+  }
 
   /// output stream for StatePosVel
-  friend std::ostream& operator<< (std::ostream& os, const StatePosVel& s) 
-    { os << "(" << s.pos_[0] << ", " << s.pos_[1] << ", "  << s.pos_[2] << ")--("
-	 << "(" << s.vel_[0] << ", " << s.vel_[1] << ", "  << s.vel_[2] << ") "; return os;};
-  
+  friend std::ostream& operator<< (std::ostream& os, const StatePosVel& s)
+  {
+    os << "(" << s.pos_[0] << ", " << s.pos_[1] << ", "  << s.pos_[2] << ")--("
+       << "(" << s.vel_[0] << ", " << s.vel_[1] << ", "  << s.vel_[2] << ") ";
+    return os;
+  };
 
-  
+
+
 
 };
 } // end namespace

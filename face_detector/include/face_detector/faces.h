@@ -4,14 +4,14 @@
 **********************************************************************
 *
 * Software License Agreement (BSD License)
-* 
+*
 *  Copyright (c) 2008, Willow Garage, Inc.
 *  All rights reserved.
-* 
+*
 *  Redistribution and use in source and binary forms, with or without
 *  modification, are permitted provided that the following conditions
 *  are met:
-* 
+*
 *   * Redistributions of source code must retain the above copyright
 *     notice, this list of conditions and the following disclaimer.
 *   * Redistributions in binary form must reproduce the above
@@ -21,7 +21,7 @@
 *   * Neither the name of the Willow Garage nor the names of its
 *     contributors may be used to endorse or promote products derived
 *     from this software without specific prior written permission.
-* 
+*
 *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
@@ -68,13 +68,15 @@ using namespace std;
 // Default thresholds for face tracking.
 #define FACE_SEP_DIST_M 1.0 /**< Default separation distance for associating faces. Only use this for initialization. */
 
-namespace people {
+namespace people
+{
 
 
 /*!
  * \brief A structure for holding information about boxes in 2d and 3d.
  */
-struct Box2D3D {
+struct Box2D3D
+{
   cv::Point2d center2d;
   cv::Point3d center3d;
   double width2d;
@@ -88,9 +90,10 @@ struct Box2D3D {
 /*!
  * \brief A structure containing the person's identifying data.
  */
-struct Face {
+struct Face
+{
   string id;
-  string name; 
+  string name;
 };
 
 
@@ -101,7 +104,7 @@ struct Face {
 
 class Faces
 {
- public:
+public:
 
   // Default thresholds for the face detection algorithm.
 
@@ -123,7 +126,7 @@ class Faces
 
   /*!
    * \brief Detect all faces in an image and disparity image.
-   * 
+   *
    * Input:
    * \param image The image in which to detect faces.
    * \param haar_classifier_filename Path to the xml file containing the trained haar classifier cascade.
@@ -132,12 +135,12 @@ class Faces
    * \param cam_model The camera model used to convert 2D points to 3D points.
    * Output:
    * A vector of Box2D3Ds containing the bounding boxes around found faces in 2D and 3D.
-   */ 
+   */
   vector<Box2D3D> detectAllFacesDisparity(const cv::Mat &image, double threshold, const cv::Mat &disparity_image, image_geometry::StereoCameraModel *cam_model);
 
   /*!
    * \brief Detect all faces in an image and depth image.
-   * 
+   *
    * Input:
    * \param image The image in which to detect faces.
    * \param haar_classifier_filename Path to the xml file containing the trained haar classifier cascade.
@@ -146,11 +149,11 @@ class Faces
    * \param cam_model The camera model used to convert 2D points to 3D points.
    * Output:
    * A vector of Box2D3Ds containing the bounding boxes around found faces in 2D and 3D.
-   */ 
+   */
   vector<Box2D3D> detectAllFacesDepth(const cv::Mat &image, double threshold, const cv::Mat &depth_image, image_geometry::StereoCameraModel *cam_model);
 
-  /*! 
-   * \brief Initialize the face detector with images and disparities. 
+  /*!
+   * \brief Initialize the face detector with images and disparities.
    *
    * Initialize the face detector, including loading in the classifier cascade.
    * Input:
@@ -160,8 +163,8 @@ class Faces
   void initFaceDetectionDisparity(uint num_cascades, string haar_classifier_filename, double face_size_min_m, double face_size_max_m, double max_face_z_m, double face_sep_dist_m);
 
 
-  /*! 
-   * \brief Initialize the face detector with images and depth. 
+  /*!
+   * \brief Initialize the face detector with images and depth.
    *
    * Initialize the face detector, including loading in the classifier cascade.
    * Input:
@@ -170,8 +173,8 @@ class Faces
    */
   void initFaceDetectionDepth(uint num_cascades, string haar_classifier_filename, double face_size_min_m, double face_size_max_m, double max_face_z_m, double face_sep_dist_m);
 
- ////////////////////
- private:
+////////////////////
+private:
 
   vector<Face> list_;  /**< The list of face ids. */
   vector<Box2D3D> faces_; /**< The list of face positions. */
@@ -181,10 +184,10 @@ class Faces
   cv::Mat const* depth_image_; /**< Depth image */
   image_geometry::StereoCameraModel *cam_model_; /**< The stereo camera model for 2D-->3D conversions. */
 
-  boost::mutex face_mutex_, face_done_mutex_, t_mutex_; 
+  boost::mutex face_mutex_, face_done_mutex_, t_mutex_;
   boost::mutex* face_go_mutex_;
   boost::thread_group threads_;
-  boost::condition face_detection_ready_cond_, face_detection_done_cond_; 
+  boost::condition face_detection_ready_cond_, face_detection_done_cond_;
   int num_threads_to_wait_for_;
   int images_ready_;
 

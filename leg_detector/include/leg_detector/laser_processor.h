@@ -1,13 +1,13 @@
 /*********************************************************************
 * Software License Agreement (BSD License)
-* 
+*
 *  Copyright (c) 2008, Willow Garage, Inc.
 *  All rights reserved.
-* 
+*
 *  Redistribution and use in source and binary forms, with or without
 *  modification, are permitted provided that the following conditions
 *  are met:
-* 
+*
 *   * Redistributions of source code must retain the above copyright
 *     notice, this list of conditions and the following disclaimer.
 *   * Redistributions in binary form must reproduce the above
@@ -17,7 +17,7 @@
 *   * Neither the name of the Willow Garage nor the names of its
 *     contributors may be used to endorse or promote products derived
 *     from this software without specific prior written permission.
-* 
+*
 *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
@@ -59,89 +59,99 @@
 
 namespace laser_processor
 {
-  //! A struct representing a single sample from the laser.
-  class Sample
+//! A struct representing a single sample from the laser.
+class Sample
+{
+public:
+  int   index;
+  float range;
+  float intensity;
+  float x;
+  float y;
+
+  static Sample* Extract(int ind, const sensor_msgs::LaserScan& scan);
+
+private:
+  Sample() {};
+};
+
+//! The comparator allowing the creation of an ordered "SampleSet"
+struct CompareSample
+{
+  CompareSample() {}
+
+  inline bool operator()(const Sample* a, const Sample* b)
   {
-  public:
-    int   index;
-    float range;
-    float intensity;
-    float x;
-    float y;
+    return (a->index <  b->index);
+  }
+};
 
-    static Sample* Extract(int ind, const sensor_msgs::LaserScan& scan);
 
-  private:
-     Sample() {};
-  };
+//! An ordered set of Samples
+class SampleSet : public std::set<Sample*, CompareSample>
+{
+public:
+  SampleSet() {}
 
-  //! The comparator allowing the creation of an ordered "SampleSet"
-  struct CompareSample
+  ~SampleSet()
   {
-     CompareSample() {}
+    clear();
+  }
 
-    inline bool operator() (const Sample* a, const Sample* b)
-    {
-      return (a->index <  b->index);
-    }
-  };
+  void clear();
 
+  void appendToCloud(sensor_msgs::PointCloud& cloud, int r = 0, int g = 0, int b = 0);
 
-  //! An ordered set of Samples
-  class SampleSet : public std::set<Sample*, CompareSample>
+  tf::Point center();
+};
+
+//! A mask for filtering out Samples based on range
+class ScanMask
+{
+  SampleSet mask_;
+
+  bool     filled;
+  float    angle_min;
+  float    angle_max;
+  uint32_t size;
+
+public:
+
+  ScanMask() : filled(false), angle_min(0), angle_max(0), size(0) { }
+
+  inline void clear()
   {
-  public:
-    SampleSet() {}
+    mask_.clear();
+    filled = false;
+  }
 
-    ~SampleSet() { clear(); }
+  void addScan(sensor_msgs::LaserScan& scan);
 
-    void clear();
+  bool hasSample(Sample* s, float thresh);
+};
 
-    void appendToCloud(sensor_msgs::PointCloud& cloud, int r = 0, int g = 0, int b = 0);
 
-    tf::Point center();
-  };
 
-  //! A mask for filtering out Samples based on range
-  class ScanMask
+class ScanProcessor
+{
+  std::list<SampleSet*> clusters_;
+  sensor_msgs::LaserScan scan_;
+
+public:
+
+  std::list<SampleSet*>& getClusters()
   {
-    SampleSet mask_;
+    return clusters_;
+  }
 
-    bool     filled;
-    float    angle_min;
-    float    angle_max;
-    uint32_t size;
+  ScanProcessor(const sensor_msgs::LaserScan& scan, ScanMask& mask_, float mask_threshold = 0.03);
 
-  public:
+  ~ScanProcessor();
 
-    ScanMask() : filled(false), angle_min(0), angle_max(0), size(0) { }
+  void removeLessThan(uint32_t num);
 
-    inline void clear() { mask_.clear(); filled = false; }
-
-    void addScan(sensor_msgs::LaserScan& scan);
-
-    bool hasSample(Sample* s, float thresh);
-  };
-
-
-
-  class ScanProcessor
-  {
-    std::list<SampleSet*> clusters_;
-    sensor_msgs::LaserScan scan_;
-
-  public:
-
-    std::list<SampleSet*>& getClusters() { return clusters_; }
-
-    ScanProcessor(const sensor_msgs::LaserScan& scan, ScanMask& mask_, float mask_threshold = 0.03);
-
-    ~ScanProcessor();
-
-    void removeLessThan(uint32_t num);
-
-    void splitConnected(float thresh);
-  };
+  void splitConnected(float thresh);
+};
 };
 
 #endif

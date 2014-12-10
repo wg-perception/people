@@ -1,13 +1,13 @@
 /*********************************************************************
 * Software License Agreement (BSD License)
-* 
+*
 *  Copyright (c) 2008, Willow Garage, Inc.
 *  All rights reserved.
-* 
+*
 *  Redistribution and use in source and binary forms, with or without
 *  modification, are permitted provided that the following conditions
 *  are met:
-* 
+*
 *   * Redistributions of source code must retain the above copyright
 *     notice, this list of conditions and the following disclaimer.
 *   * Redistributions in binary form must reproduce the above
@@ -17,7 +17,7 @@
 *   * Neither the name of the Willow Garage nor the names of its
 *     contributors may be used to endorse or promote products derived
 *     from this software without specific prior written permission.
-* 
+*
 *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
@@ -47,58 +47,66 @@
 namespace BFL
 {
 
-  class SysPdfVector 
-    : public ConditionalPdf<tf::Vector3, tf::Vector3>
+class SysPdfVector
+  : public ConditionalPdf<tf::Vector3, tf::Vector3>
+{
+public:
+  /// Constructor
+  SysPdfVector(const tf::Vector3& sigma);
+
+  /// Destructor
+  virtual ~SysPdfVector();
+
+  // set time
+  void SetDt(double dt)
   {
-  public:
-    /// Constructor
-    SysPdfVector(const tf::Vector3& sigma);
-    
-    /// Destructor
-    virtual ~SysPdfVector();
-    
-    // set time
-    void SetDt(double dt) {dt_ = dt;};
+    dt_ = dt;
+  };
 
-    // Redefining pure virtual methods
-    virtual bool SampleFrom (BFL::Sample<tf::Vector3>& one_sample, int method, void *args) const;  
-    virtual tf::Vector3 ExpectedValueGet() const; // not applicable
-    virtual Probability ProbabilityGet(const tf::Vector3& state) const; // not applicable
-    virtual MatrixWrapper::SymmetricMatrix  CovarianceGet() const; // Not applicable
+  // Redefining pure virtual methods
+  virtual bool SampleFrom(BFL::Sample<tf::Vector3>& one_sample, int method, void *args) const;
+  virtual tf::Vector3 ExpectedValueGet() const; // not applicable
+  virtual Probability ProbabilityGet(const tf::Vector3& state) const; // not applicable
+  virtual MatrixWrapper::SymmetricMatrix  CovarianceGet() const; // Not applicable
 
 
-  private:
-    GaussianVector noise_;
-    double dt_;
+private:
+  GaussianVector noise_;
+  double dt_;
 
-  }; // class
-  
+}; // class
 
 
 
 
 
 
-  class SysModelVector
-    : public SystemModel<tf::Vector3>
+
+class SysModelVector
+  : public SystemModel<tf::Vector3>
+{
+public:
+  SysModelVector(const tf::Vector3& sigma)
+    : SystemModel<tf::Vector3>(new SysPdfVector(sigma))
+  {};
+
+  /// destructor
+  ~SysModelVector()
   {
-  public:
-    SysModelVector(const tf::Vector3& sigma)
-      :SystemModel<tf::Vector3>(new SysPdfVector(sigma))
-    {};
+    delete SystemPdfGet();
+  };
 
-    /// destructor
-    ~SysModelVector()
-    { delete SystemPdfGet(); };
+  // set time
+  void SetDt(double dt)
+  {
+    ((SysPdfVector*)SystemPdfGet())->SetDt(dt);
+  };
 
-    // set time
-    void SetDt(double dt) {((SysPdfVector*)SystemPdfGet())->SetDt(dt);};
+}; // class
 
-  }; // class
-  
 
-  
+
 } //namespace
-  
-  
+
+
 #endif

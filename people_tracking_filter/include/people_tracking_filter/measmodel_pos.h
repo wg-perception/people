@@ -1,13 +1,13 @@
 /*********************************************************************
 * Software License Agreement (BSD License)
-* 
+*
 *  Copyright (c) 2008, Willow Garage, Inc.
 *  All rights reserved.
-* 
+*
 *  Redistribution and use in source and binary forms, with or without
 *  modification, are permitted provided that the following conditions
 *  are met:
-* 
+*
 *   * Redistributions of source code must retain the above copyright
 *     notice, this list of conditions and the following disclaimer.
 *   * Redistributions in binary form must reproduce the above
@@ -17,7 +17,7 @@
 *   * Neither the name of the Willow Garage nor the names of its
 *     contributors may be used to endorse or promote products derived
 *     from this software without specific prior written permission.
-* 
+*
 *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
@@ -48,54 +48,54 @@
 namespace BFL
 {
 
-  class MeasPdfPos 
-    : public BFL::ConditionalPdf<tf::Vector3, StatePosVel>
+class MeasPdfPos
+  : public BFL::ConditionalPdf<tf::Vector3, StatePosVel>
+{
+public:
+  /// Constructor
+  MeasPdfPos(const tf::Vector3& sigma);
+
+  /// Destructor
+  virtual ~MeasPdfPos();
+
+  // set covariance
+  void CovarianceSet(const  MatrixWrapper::SymmetricMatrix& cov);
+
+  // Redefining pure virtual methods
+  virtual BFL::Probability ProbabilityGet(const tf::Vector3& input) const;
+  virtual bool SampleFrom(BFL::Sample<tf::Vector3>& one_sample, int method, void *args) const;   // Not applicable
+  virtual tf::Vector3 ExpectedValueGet() const; // Not applicable
+  virtual MatrixWrapper::SymmetricMatrix  CovarianceGet() const; // Not applicable
+
+
+private:
+  GaussianVector meas_noise_;
+
+}; // class
+
+
+
+
+
+
+class MeasModelPos
+  : public BFL::MeasurementModel<tf::Vector3, StatePosVel>
+{
+public:
+  /// constructor
+  MeasModelPos(const tf::Vector3& sigma)
+    : BFL::MeasurementModel<tf::Vector3, StatePosVel>(new MeasPdfPos(sigma))
+  {};
+
+  /// destructor
+  ~MeasModelPos()
   {
-  public:
-    /// Constructor
-    MeasPdfPos(const tf::Vector3& sigma);
-    
-    /// Destructor
-    virtual ~MeasPdfPos();
-    
-    // set covariance
-    void CovarianceSet(const  MatrixWrapper::SymmetricMatrix& cov);
+    delete MeasurementPdfGet();
+  };
 
-    // Redefining pure virtual methods
-    virtual BFL::Probability ProbabilityGet(const tf::Vector3& input) const;
-    virtual bool SampleFrom (BFL::Sample<tf::Vector3>& one_sample, int method, void *args) const;  // Not applicable
-    virtual tf::Vector3 ExpectedValueGet() const; // Not applicable
-    virtual MatrixWrapper::SymmetricMatrix  CovarianceGet() const; // Not applicable
-
-
-  private:
-    GaussianVector meas_noise_;
-    
-  }; // class
-  
-
-
-
-
-
-  class MeasModelPos
-    : public BFL::MeasurementModel<tf::Vector3, StatePosVel>
-  {
-  public:
-    /// constructor
-    MeasModelPos(const tf::Vector3& sigma)
-      : BFL::MeasurementModel<tf::Vector3, StatePosVel>(new MeasPdfPos(sigma))
-    {};
-
-    /// destructor
-    ~MeasModelPos()
-    {
-      delete MeasurementPdfGet();
-    };
-
-  }; // class
+}; // class
 
 } //namespace
-  
-  
-#endif 
+
+
+#endif
