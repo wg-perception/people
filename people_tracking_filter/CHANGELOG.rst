@@ -2,8 +2,8 @@
 Changelog for package people_tracking_filter
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.5 (2014-12-10)
+------------------
 * cleanup formatting with astyle (supersedes `#18 <https://github.com/wg-perception/people/issues/18>`_)
 * Contributors: Dan Lazewatsky
 
