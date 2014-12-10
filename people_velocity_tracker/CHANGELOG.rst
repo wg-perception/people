@@ -2,6 +2,9 @@
 Changelog for package people_velocity_tracker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.0.4 (2014-07-09)
 ------------------
 * Merging people_velocity_tracker into people

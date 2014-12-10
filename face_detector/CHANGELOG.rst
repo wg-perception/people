@@ -2,6 +2,12 @@
 Changelog for package face_detector
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* cleanup formatting with astyle (supersedes `#18 <https://github.com/wg-perception/people/issues/18>`_)
+* centrally reference cascade from standalone opencv (addresses `#15 <https://github.com/wg-perception/people/issues/15>`_)
+* Contributors: Dan Lazewatsky
+
 1.0.3 (2014-03-01)
 ------------------
 * fix message generation
