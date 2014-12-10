@@ -2,7 +2,7 @@
 Changelog for package face_detector
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1.0.5 (2014-12-10)
+1.0.8 (2014-12-10)
 ------------------
 * cleanup formatting with astyle (supersedes `#18 <https://github.com/wg-perception/people/issues/18>`_)
 * centrally reference cascade from standalone opencv (addresses `#15 <https://github.com/wg-perception/people/issues/15>`_)

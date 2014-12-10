@@ -2,7 +2,7 @@
 Changelog for package people
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1.0.5 (2014-12-10)
+1.0.8 (2014-12-10)
 ------------------
 * moved social_navigation_layers from metapackage
 * Contributors: Dan Lazewatsky
