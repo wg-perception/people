@@ -1,0 +1,6 @@
+<launch>
+  <arg name="limit" default="0.2" />
+  <param name="/leg_detector/leg_reliability_limit" value="$(arg limit)" type="double"/>
+  <include file="$(find leg_detector)/launch/leg_detector.launch" />
+  <node name="velocity_tracker" pkg="people_velocity_tracker" type="tracker.py" respawn="true" />
+</launch>

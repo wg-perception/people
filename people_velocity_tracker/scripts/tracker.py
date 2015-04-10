@@ -9,9 +9,9 @@ from easy_markers.generator import MarkerGenerator, Marker
 from kalman_filter import Kalman
 
 def distance(leg1, leg2):
-    return math.sqrt(math.pow(leg1.x-leg2.x, 2) +
-                     math.pow(leg1.y-leg2.y, 2) +
-                     math.pow(leg1.z-leg2.z, 2))
+    return math.sqrt(math.pow(leg1.x - leg2.x, 2) +
+                     math.pow(leg1.y - leg2.y, 2) +
+                     math.pow(leg1.z - leg2.z, 2))
 
 def average(leg1, leg2):
     return Point((leg1.x + leg2.x) / 2,
@@ -51,7 +51,7 @@ class PersonEstimate(object):
 
         ivel = subtract(self.pos.pos, last.pos)
         time = (self.pos.header.stamp - last.header.stamp).to_sec()
-        scale(ivel, 1.0/time)
+        scale(ivel, 1.0 / time)
 
         self.k.update([ivel.x, ivel.y, ivel.z])
 
@@ -91,9 +91,14 @@ class VelocityTracker(object):
         self.people = {}
         self.TIMEOUT = rospy.Duration(rospy.get_param('~timeout', 1.0))
         self.sub = rospy.Subscriber('/people_tracker_measurements',
-                                    PositionMeasurementArray, self.pm_cb)
-        self.mpub = rospy.Publisher('/visualization_marker', Marker)
-        self.ppub = rospy.Publisher('/people', People)
+                                    PositionMeasurementArray,
+                                    self.pm_cb)
+        self.mpub = rospy.Publisher('/visualization_marker',
+                                    Marker,
+                                    queue_size=0)
+        self.ppub = rospy.Publisher('/people',
+                                    People,
+                                    queue_size=0)
 
     def pm_cb(self, msg):
         for pm in msg.people:
@@ -106,7 +111,7 @@ class VelocityTracker(object):
     def spin(self):
         rate = rospy.Rate(10)
         while not rospy.is_shutdown():
-            # Remove Old People
+            # Remove People Older Than timeout param
             now = rospy.Time.now()
             for p in self.people.values():
                 if now - p.age() > self.TIMEOUT:
