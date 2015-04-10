@@ -5,7 +5,8 @@ import rospy
 import sys
 from people_msgs.msg import Person, People
 
-class VelocityTracker:
+
+class VelocityTracker(object):
     def __init__(self):
         self.ppub = rospy.Publisher('/people', People)
 
@@ -22,9 +23,9 @@ class VelocityTracker:
             pv.velocity.x = float(sys.argv[3])
             pv.velocity.y = float(sys.argv[4])
             pv.name = 'asdf'
-            pv.reliability = .90       
+            pv.reliability = .90
             pl.people.append(pv)
-            
+
             self.ppub.publish(pl)
             rate.sleep()
 
