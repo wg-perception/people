@@ -95,10 +95,10 @@ class VelocityTracker(object):
                                     self.pm_cb)
         self.mpub = rospy.Publisher('/visualization_marker',
                                     Marker,
-                                    queue_size=0)
+                                    queue_size=10)
         self.ppub = rospy.Publisher('/people',
                                     People,
-                                    queue_size=0)
+                                    queue_size=10)
 
     def pm_cb(self, msg):
         for pm in msg.people:
