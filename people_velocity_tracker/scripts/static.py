@@ -8,7 +8,7 @@ from people_msgs.msg import Person, People
 
 class VelocityTracker(object):
     def __init__(self):
-        self.ppub = rospy.Publisher('/people', People)
+        self.ppub = rospy.Publisher('/people', People, queue_size=10)
 
     def spin(self):
         rate = rospy.Rate(10)
