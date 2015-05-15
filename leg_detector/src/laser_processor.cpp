@@ -248,7 +248,7 @@ ScanProcessor::splitConnected(float thresh)
       list<Sample*>::iterator s_q = sample_queue.begin();
       while (s_q != sample_queue.end())
       {
-        int expand = (int)(asin(thresh / (*s_q)->range) / scan_.angle_increment);
+        int expand = (int)(asin(thresh / (*s_q)->range) / std::abs(scan_.angle_increment));
 
         SampleSet::iterator s_rest = (*c_iter)->begin();
 
