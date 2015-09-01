@@ -2,6 +2,12 @@
 Changelog for package leg_detector
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix handling of scans with negative angle increment
+  For laser sensors which are mounted upside down. Old code did not generate any clusters in that case.
+* Contributors: Timm Linder
+
 1.0.8 (2014-12-10)
 ------------------
 * cleanup formatting with astyle (supersedes `#18 <https://github.com/wg-perception/people/issues/18>`_)

@@ -2,6 +2,11 @@
 Changelog for package people_tracking_filter
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Update CMakeLists.txt
+* Contributors: David Lu!!
+
 1.0.8 (2014-12-10)
 ------------------
 * cleanup formatting with astyle (supersedes `#18 <https://github.com/wg-perception/people/issues/18>`_)
