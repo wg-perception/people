@@ -2,8 +2,8 @@
 Changelog for package face_detector
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.9 (2015-09-01)
+------------------
 * Install missing param directory: face_detector.rgbd.launch fails due to the `param` folder.
 * Contributors: Isaac I.Y. Saito
 

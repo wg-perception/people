@@ -2,8 +2,8 @@
 Changelog for package leg_detector
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.9 (2015-09-01)
+------------------
 * Fix handling of scans with negative angle increment
   For laser sensors which are mounted upside down. Old code did not generate any clusters in that case.
 * Contributors: Timm Linder

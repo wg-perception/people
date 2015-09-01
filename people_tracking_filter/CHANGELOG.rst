@@ -2,8 +2,8 @@
 Changelog for package people_tracking_filter
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.9 (2015-09-01)
+------------------
 * Update CMakeLists.txt
 * Contributors: David Lu!!
 

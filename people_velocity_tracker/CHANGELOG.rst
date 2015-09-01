@@ -2,8 +2,8 @@
 Changelog for package people_velocity_tracker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.9 (2015-09-01)
+------------------
 * change queue sizes to 10
 * Update for Indigo and add unfiltered people velocity launcher
 * PEP8 fixes
