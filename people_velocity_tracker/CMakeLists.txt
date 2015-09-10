@@ -19,6 +19,8 @@ catkin_package(
 install(PROGRAMS scripts/static.py scripts/tracker.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
-install(FILES filtered_tracked_detector.launch
+install(FILES 
+  launch/filtered_tracked_detector.launch
+  launch/tracked_detector.launch
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
