@@ -1,10 +1,9 @@
 <launch>
 
-  <!-- Following args `camera` and `depth_ns` together consist the namespace prefix, and the args `*_topic` and `fixed_frame` make the body of the topic for face_detector node to subscribe. In the example below, you're subscribing to: 
+  <!-- Following args `camera` and `depth_ns` together consist the namespace prefix, and the args `*_topic` make the body of the topic for face_detector node to subscribe. In the example below, you're subscribing to: 
 
-        /camera/depth_ns/image_rect_color
+        /camera/rgb/image_rect_color
         /camera/depth_ns/image_rect_raw 
-        /camera/depth_ns/camera_rgb_optical_frame
    -->
   <arg name="camera" default="camera" />
   <arg name="depth_ns" default="depth_registered" />
