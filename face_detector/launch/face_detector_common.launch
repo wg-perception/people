@@ -1,0 +1,31 @@
+<launch>
+  <arg name="camera" default="camera" />
+  <arg name="rgb_ns" default="rgb" />
+  <arg name="depth_ns" default="depth_registered" />
+  <arg name="image_topic" default="image_rect_color" />
+  <arg name="depth_topic" default="image_rect_raw" />
+  <arg name="fixed_frame" default="camera_rgb_optical_frame" />
+  <arg name="classifier_name" default="frontalface" />
+  <arg name="paramfile_classifier" default="$(find face_detector)/param/classifier.yaml"/>
+  <arg name="classifier_reliability" default="0.9"/>
+  <arg name="do_continuous" default="false" />
+  <arg name="do_publish_faces_of_unknown_size" default="false" />	
+  <arg name="do_display" default="false" />
+  <arg name="use_rgbd" default="true" />
+  <arg name="approximate_sync" default="true" />
+
+  <node pkg="face_detector" type="face_detector" name="face_detector_action" output="screen">
+    <remap from="camera" to="$(arg camera)" />
+    <remap from="rgb_ns" to="$(arg rgb_ns)" />
+    <remap from="image" to="$(arg image_topic)" />
+    <param name="fixed_frame" type="string" value="$(arg fixed_frame)" />
+    <param name="classifier_name" type="string" value="frontalface" />
+    <rosparam command="load" file="$(arg paramfile_classifier)"/>
+    <param name="classifier_reliability" type="double" value="$(arg classifier_reliability)"/>
+    <param name="do_continuous" type="bool" value="$(arg do_continuous)" />
+    <param name="do_publish_faces_of_unknown_size" type="bool" value="$(arg do_publish_faces_of_unknown_size)" />	
+    <param name="do_display" type="bool" value="$(arg do_display)" />
+    <param name="use_rgbd" type="bool" value="$(arg use_rgbd)" />
+    <param name="approximate_sync" type="bool" value="$(arg approximate_sync)" />
+  </node>
+</launch>

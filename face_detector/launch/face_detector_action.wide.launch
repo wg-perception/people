@@ -3,19 +3,15 @@
   <arg name="camera" default="wide_stereo" />
   <arg name="image_topic" default="image_rect" />
   <arg name="fixed_frame" default="wide_stereo_optical_frame" />
-
-  <node pkg="face_detector" type="face_detector" name="face_detector" output="screen">
+  <arg name="use_rgbd" default="false" />  
+  <arg name="approximate_sync" default="false" />
+  
+  <include file="$(find face_detector)/launch/face_detector_common.launch">
     <remap from="camera" to="$(arg camera)" />
     <remap from="image" to="$(arg image_topic)" />
-    <param name="fixed_frame" type="string" value="$(arg fixed_frame)" />	
-    <param name="classifier_name" type="string" value="frontalface" />
-    <rosparam command="load" file="$(find face_detector)/param/classifier.yaml"/>
-    <param name="classifier_reliability" type="double" value="0.9"/>
-    <param name="do_continuous" type="bool" value="false" />
-    <param name="do_publish_faces_of_unknown_size" type="bool" value="false" />	
-    <param name="do_display" type="bool" value="false" />
-    <param name="use_rgbd" type="bool" value="false" />
-    <param name="approximate_sync" type="bool" value="false" />
-  </node>
+    <param name="fixed_frame" type="string" value="$(arg fixed_frame)" />
+    <param name="use_rgbd" type="bool" value="$(arg use_rgbd)" />
+    <param name="approximate_sync" type="bool" value="$(arg approximate_sync)" />
+  </include>
 
 </launch>
