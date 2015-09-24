@@ -6,6 +6,7 @@
         /camera/depth_ns/image_rect_raw 
    -->
   <arg name="camera" default="camera" />
+  <arg name="rgb_ns" default="rgb" />  
   <arg name="depth_ns" default="depth_registered" />
   <arg name="image_topic" default="image_rect_color" />
   <arg name="depth_topic" default="image_rect_raw" />
