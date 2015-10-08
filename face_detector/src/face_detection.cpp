@@ -108,6 +108,7 @@ public:
   string depth_topic_;
   string camera_info_topic_;
   string depth_info_topic_;
+  string rgb_ns_;
   string depth_ns_;
 
   // Images and conversion for both the stereo camera and rgb-d camera cases.
@@ -241,8 +242,9 @@ public:
       camera_ = nh_.resolveName("camera");
       image_image_ = nh_.resolveName("image_topic");
       depth_image_ = nh_.resolveName("depth_topic");
+      rgb_ns_ = nh_.resolveName("rgb_ns");
       depth_ns_ = nh_.resolveName("depth_ns");
-      camera_topic_ = ros::names::clean(camera_ + "/rgb/" + image_image_);
+      camera_topic_ = ros::names::clean(camera_ + "/" + rgb_ns_ + "/" + image_image_);
       depth_topic_ = ros::names::clean(camera_ + "/" + depth_ns_ + "/" + depth_image_);
       camera_info_topic_ = ros::names::clean(camera_ + "/rgb/camera_info");
       depth_info_topic_ = ros::names::clean(camera_ + "/" + depth_ns_ + "/camera_info");
