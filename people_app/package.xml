@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<package>
+  <name>people_app</name>
+  <version>1.0.10</version>
+  <description>Samples or applications of people package are stored.</description>
+  <license>BSD</license>
+  <url type="website">http://wiki.ros.org/people_app</url>
+
+  <maintainer email="iiysaito@opensource-robotics.tokyo.jp">Isaac I.Y. Saito</maintainer>
+  <author email="iiysaito@opensource-robotics.tokyo.jp">Isaac I.Y. Saito</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <run_depend>face_detector</run_depend>
+  <run_depend>jsk_rviz_plugins</run_depend>
+  <run_depend>leg_detector</run_depend>
+  <run_depend>people_msgs</run_depend>
+  <run_depend>pr2_gazebo</run_depend>
+  <run_depend>turtlebot_gazebo</run_depend>
+
+  <export/>
+</package>
