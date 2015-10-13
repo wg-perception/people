@@ -1,6 +1,5 @@
 <launch>
 
-  <include file="$(find face_detector)/launch/classifier.launch"/>
   <arg name="camera" default="narrow_stereo" />
   <arg name="image_topic" default="image_rect" />
   <arg name="fixed_frame" default="narrow_stereo_optical_frame" />
