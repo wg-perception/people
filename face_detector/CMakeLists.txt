@@ -82,6 +82,10 @@ if(CATKIN_ENABLE_TESTING)
     DESTINATION ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/test
     MD5 59126117e049e69d577b7ee27251a6f8)
 
-  add_rostest(test/face_detector_true_rtest.xml DEPENDENCIES ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/face_detector_withface_test_diamondback.bag)
-  add_rostest(test/face_detector_false_rtest.xml DEPENDENCIES ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/face_detector_noface_test_diamondback.bag)
+  add_rostest(test/wide-stereo_true_rtest.xml DEPENDENCIES ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/face_detector_withface_test_diamondback.bag)
+  add_rostest(test/wide-stereo_false_rtest.xml DEPENDENCIES ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/face_detector_noface_test_diamondback.bag)
+  add_rostest(test/rgbd_true_rtest.xml DEPENDENCIES ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/face_detector_withface_test_diamondback.bag)
+  add_rostest(test/rgbd_false_rtest.xml DEPENDENCIES ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/face_detector_noface_test_diamondback.bag)
+  add_rostest(test/narrow-stereo_true_rtest.xml DEPENDENCIES ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/face_detector_withface_test_diamondback.bag)
+  add_rostest(test/narrow-stereo_false_rtest.xml DEPENDENCIES ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/face_detector_noface_test_diamondback.bag)
 endif()
