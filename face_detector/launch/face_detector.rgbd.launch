@@ -12,6 +12,8 @@
   <arg name="depth_topic" default="image_rect_raw" />
   <arg name="fixed_frame" default="camera_rgb_optical_frame" />
 
+  <arg name="paramfile_classifier" default="$(find face_detector)/param/classifier.yaml"/>
+
   <!--include file="$(find openni_launch)/launch/openni.launch"/-->
   <node name="$(anon dynparam)" pkg="dynamic_reconfigure" type="dynparam" args="set_from_parameters $(arg camera)/driver">
     <param name="depth_registration" type="bool" value="true" />
@@ -26,7 +28,7 @@
     <arg name="fixed_frame" value="$(arg fixed_frame)" />
 
     <arg name="classifier_name" value="frontalface" />
-    <arg name="paramfile_classifier" value="$(find face_detector)/param/classifier.yaml"/>
+    <arg name="paramfile_classifier" value="$(arg paramfile_classifier)"/>
     <arg name="classifier_reliability" value="0.9"/>
     <arg name="do_continuous" value="true" />
     <arg name="do_publish_faces_of_unknown_size" value="false" />	

@@ -277,7 +277,7 @@ public:
       faces_->initFaceDetectionDisparity(1, haar_filename_, face_size_min_m, face_size_max_m, max_face_z_m, face_sep_dist_m);
 
       stereo_namespace_ = nh_.resolveName("camera");
-      image_image_ = nh_.resolveName("image");
+      image_image_ = nh_.resolveName("image_topic");
       left_topic_ = ros::names::clean(stereo_namespace_ + "/left/" + image_image_);
       disparity_topic_ = ros::names::clean(stereo_namespace_ + "/disparity");
       left_camera_info_topic_ = ros::names::clean(stereo_namespace_ + "/left/camera_info");
