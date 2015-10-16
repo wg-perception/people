@@ -20,7 +20,10 @@ groovy - Catkinized version for Groovy - Released as deb.
 
 hydro-devel - Most recent version for Hydro. Bug fixes only.
 
-indigo-devel - Most recent version for Indigo. Bug fixes and stable new features.
+indigo-devel - |ci_indigo| Most recent version for Indigo. Bug fixes and stable new features.
+
+.. |ci_indigo| image:: https://travis-ci.org/wg-perception/people.svg
+    :target: https://travis-ci.org/wg-perception/people
 
 master - Really new features, may not be stable. Currently developing against Hydro.
 
