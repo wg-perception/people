@@ -80,7 +80,7 @@ if(CATKIN_ENABLE_TESTING)
   catkin_download_test_data(${PROJECT_NAME}_withface_test_diamondback.bag
     http://download.ros.org/data/face_detector/face_detector_withface_test_diamondback.bag
     DESTINATION ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/test
-    MD5 9210704c6cd88862a8e6e2b4a5407e27)
+    MD5 59126117e049e69d577b7ee27251a6f8)
 
   add_rostest(test/wide-stereo_true_rtest.xml)
   add_rostest(test/wide-stereo_false_rtest.xml)
