@@ -1,0 +1,8 @@
+<launch>
+
+  <node ns="wide_stereo" pkg="stereo_image_proc" type="stereo_image_proc" name="stereo" />
+
+  <include file="$(find face_detector)/launch/face_detector.wide.launch"/> 
+
+  <include file="$(find face_detector)/test/common_rtest.xml" />
+</launch>

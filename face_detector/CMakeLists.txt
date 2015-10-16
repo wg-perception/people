@@ -70,18 +70,27 @@ install(DIRECTORY launch param
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/
 )
 
-# if(CATKIN_ENABLE_TESTING)
-#   find_package(rostest REQUIRED)
+if(CATKIN_ENABLE_TESTING)
+  find_package(rostest REQUIRED)
 
-#   catkin_download_test_data(${PROJECT_NAME}_face_detector_noface_test_diamondback.bag
-#     http://download.ros.org/data/face_detector/face_detector_noface_test_diamondback.bag
-#     DESTINATION ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/test
-#     MD5 37f043be780a4511c853379defdd9855)
-#   catkin_download_test_data(${PROJECT_NAME}_ace_detector_withface_test_diamondback.bag
-#     http://download.ros.org/data/face_detector/face_detector_withface_test_diamondback.bag
-#     DESTINATION ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/test
-#     MD5 59126117e049e69d577b7ee27251a6f8)
+  catkin_download_test_data(${PROJECT_NAME}_noface_test_diamondback.bag
+    http://download.ros.org/data/face_detector/face_detector_noface_test_diamondback.bag
+    DESTINATION ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/test
+    MD5 37f043be780a4511c853379defdd9855)
+  catkin_download_test_data(${PROJECT_NAME}_withface_test_diamondback.bag
+    http://download.ros.org/data/face_detector/face_detector_withface_test_diamondback.bag
+    DESTINATION ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/test
+    MD5 9210704c6cd88862a8e6e2b4a5407e27)
 
-#   add_rostest(test/face_detector_true_rtest.xml)
-#   add_rostest(test/face_detector_false_rtest.xml)
-# endif()
+  add_rostest(test/wide-stereo_true_rtest.xml)
+  add_rostest(test/wide-stereo_false_rtest.xml)
+  add_rostest(test/rgbd_true_rtest.xml)
+  add_rostest(test/rgbd_false_rtest.xml)
+  add_rostest(test/narrow-stereo_true_rtest.xml)
+  add_rostest(test/narrow-stereo_false_rtest.xml)
+  add_rostest(test/action-wide_true_rtest.xml)
+  add_rostest(test/action-wide_false_rtest.xml)
+  add_rostest(test/action-rgbd_true_rtest.xml)
+  add_rostest(test/action-rgbd_false_rtest.xml)
+
+endif()

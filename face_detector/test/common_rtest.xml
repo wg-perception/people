@@ -1,0 +1,17 @@
+<launch>
+  <arg name="expected_success" default="true" />
+
+  <group unless="$(arg expected_success)">
+    <node pkg="rosbag" type="play" name="play" args="-r 0.5 $(find face_detector)/test/face_detector_noface_test_diamondback.bag"/>
+    <param name="hztest1/hz" value="0.0" />
+  </group>
+  <group if="$(arg expected_success)">
+    <node pkg="rosbag" type="play" name="play" args="-r 0.5 $(find face_detector)/test/face_detector_withface_test_diamondback.bag"/>
+    <param name="hztest1/hz" value="30.0" />
+    <param name="hztest1/hzerror" value="29.9" />
+  </group>
+    
+  <param name="hztest1/topic" value="face_detector/people_tracker_measurements_array" />
+  <param name="hztest1/test_duration" value="15.0" />
+  <test test-name="hztest_test" pkg="rostest" type="hztest" name="hztest1" />
+</launch>
