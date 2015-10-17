@@ -12,26 +12,29 @@
   <arg name="depth_topic" default="image_rect_raw" />
   <arg name="fixed_frame" default="camera_rgb_optical_frame" />
 
+  <arg name="paramfile_classifier" default="$(find face_detector)/param/classifier.yaml"/>
+
   <!--include file="$(find openni_launch)/launch/openni.launch"/-->
   <node name="$(anon dynparam)" pkg="dynamic_reconfigure" type="dynparam" args="set_from_parameters $(arg camera)/driver">
     <param name="depth_registration" type="bool" value="true" />
   </node>
 
   <include file="$(find face_detector)/launch/face_detector_common.launch">
-    <remap from="camera" to="$(arg camera)" />
-    <remap from="depth_ns" to="$(arg depth_ns)" />
-    <remap from="image_topic" to="$(arg image_topic)" />
-    <remap from="depth_topic" to="$(arg depth_topic)" />
+    <arg name="camera" value="$(arg camera)" />
+    <arg name="rgb_ns" value="$(arg rgb_ns)" />
+    <arg name="image_topic" value="$(arg image_topic)" />
+    <arg name="depth_topic" value="$(arg depth_topic)" />    
+    <arg name="depth_ns" value="$(arg depth_ns)" />
+    <arg name="fixed_frame" value="$(arg fixed_frame)" />
 
-    <param name="fixed_frame" value="$(arg fixed_frame)" />
-    <rosparam command="load" file="$(arg paramfile_classifier)"/>
-    <param name="classifier_name" value="$(arg classifier_name)" />
-    <param name="classifier_reliability" value="$(arg classifier_reliability)"/>
-    <param name="do_continuous" value="$(arg do_continuous)" />
-    <param name="do_publish_faces_of_unknown_size" value="$(arg do_publish_faces_of_unknown_size)" />	
-    <param name="do_display" value="$(arg do_display)" />
-    <param name="use_rgbd" value="$(arg use_rgbd)" />
-    <param name="approximate_sync" value="$(arg approximate_sync)" />
+    <arg name="classifier_name" value="frontalface" />
+    <arg name="paramfile_classifier" value="$(arg paramfile_classifier)"/>
+    <arg name="classifier_reliability" value="0.9"/>
+    <arg name="do_continuous" value="true" />
+    <arg name="do_publish_faces_of_unknown_size" value="false" />	
+    <arg name="do_display" value="false" />
+    <arg name="use_rgbd" value="true" />
+    <arg name="approximate_sync" value="true" />
   </include>
 
 </launch>

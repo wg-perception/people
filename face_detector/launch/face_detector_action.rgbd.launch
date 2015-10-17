@@ -10,8 +10,10 @@
   </node>
 
   <include file="$(find face_detector)/launch/face_detector_common.launch">
-    <remap from="camera" to="$(arg camera)" />
-    <remap from="image_topic" to="$(arg image_topic)" />
-    <param name="fixed_frame" value="$(arg fixed_frame)" />
+    <arg name="camera" value="$(arg camera)" />
+    <arg name="image_topic" value="$(arg image_topic)" />
+    <arg name="fixed_frame" value="$(arg fixed_frame)" />
+
+    <arg name="nodename" value="facedetector_action_rgbd" />
   </include>
 </launch>
