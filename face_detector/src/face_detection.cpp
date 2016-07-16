@@ -779,9 +779,14 @@ private:
           color = cv::Scalar(0, 0, 255);
         }
 
+        char id_str[16];
+        sprintf(id_str, "Id: %d", one_face->id);
+
         cv::rectangle(cv_image_out_,
                       cv::Point(one_face->box2d.x, one_face->box2d.y),
                       cv::Point(one_face->box2d.x + one_face->box2d.width, one_face->box2d.y + one_face->box2d.height), color, 4);
+        cv::putText(cv_image_out_, id_str, cv::Point(one_face->box2d.x, one_face->box2d.y- 6), cv::FONT_HERSHEY_PLAIN, 1, color);
+
       }
     }
 
