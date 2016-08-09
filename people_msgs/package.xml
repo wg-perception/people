@@ -1,6 +1,6 @@
 <package>
   <name>people_msgs</name>
-  <version>1.0.10</version>
+  <version>1.0.11</version>
   <description>Messages used by nodes in the people stack.</description>
   <maintainer email="dan@lazewatsky.com">Dan Lazewatsky</maintainer>
 
