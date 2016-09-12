@@ -730,7 +730,12 @@ public:
       for (int k = 0; k < feat_count_; k++)
         tmp_mat.data[k] = (float)(f[k]);
 
-      float probability = forest->predict(tmp_mat);
+      // Probability is the fuzzy measure of the probability that the second element should be chosen,
+      // in opencv2 RTrees had a method predict_prob, but that disapeared in opencv3, this is the
+      // substitute.
+      float probability = 0.5 -
+                          forest->predict(tmp_mat, cv::noArray(), cv::ml::RTrees::PREDICT_SUM) /
+                          forest->getRoots().size();
       Stamped<Point> loc((*i)->center(), scan->header.stamp, scan->header.frame_id);
       try
       {
