@@ -1,8 +1,18 @@
 <launch>
+  <arg name="hz" default="500.0" />
+  <arg name="hz_error" default="499.9" />
+  <arg name="testnode_name" default="hztest_rgbd_true" />
+  <arg name="topicname_hztest" default="/face_detector/faces_cloud" />
 
   <node ns="wide_stereo" pkg="stereo_image_proc" type="stereo_image_proc" name="stereo" />
 
-  <include file="$(find face_detector)/launch/face_detector.rgbd.launch"/> 
+  <include file="$(find face_detector)/launch/face_detector.rgbd.launch">
+    <arg name="camera" value="wide_stereo" />
+    <arg name="rgb_ns" value="right" />
+    <arg name="image_topic" value="image_raw" />
+    <arg name="depth_ns" value="right" />
+    <arg name="depth_topic" value="image_raw" />
+  </include> 
 
-  <include file="$(find face_detector)/test/common_rtest.xml" />
+  <include file="$(find face_detector)/test/common_rtest.xml" pass_all_args="true" />
 </launch>
