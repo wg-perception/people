@@ -155,6 +155,7 @@ public:
 
   // Display
   bool do_display_; /**< True/false display images with bounding boxes locally. */
+  bool do_display_face_id_; /**< True/false display face id on images. This has effect only if do_display is true. */
   cv::Mat cv_image_out_; /**< Display image. */
 
   // Depth
@@ -215,6 +216,7 @@ public:
     local_nh.param("classifier_filename", haar_filename_, std::string(""));
     local_nh.param("classifier_reliability", reliability_, 0.0);
     local_nh.param("do_display", do_display_, false);
+    local_nh.param("do_display_face_id", do_display_face_id_, false);
     local_nh.param("do_continuous", do_continuous_, true);
     local_nh.param("do_publish_faces_of_unknown_size", do_publish_unknown_, false);
     local_nh.param("use_depth", use_depth_, true);
@@ -779,13 +781,17 @@ private:
           color = cv::Scalar(0, 0, 255);
         }
 
-        char id_str[16];
-        sprintf(id_str, "Id: %d", one_face->id);
-
         cv::rectangle(cv_image_out_,
                       cv::Point(one_face->box2d.x, one_face->box2d.y),
                       cv::Point(one_face->box2d.x + one_face->box2d.width, one_face->box2d.y + one_face->box2d.height), color, 4);
-        cv::putText(cv_image_out_, id_str, cv::Point(one_face->box2d.x, one_face->box2d.y- 6), cv::FONT_HERSHEY_PLAIN, 1, color);
+
+        if (do_display_face_id_) {
+
+            char id_str[16];
+            sprintf(id_str, "Id: %d", one_face->id);
+            cv::putText(cv_image_out_, id_str, cv::Point(one_face->box2d.x, one_face->box2d.y- 6), cv::FONT_HERSHEY_PLAIN, 1, color);
+
+        }
 
       }
     }
