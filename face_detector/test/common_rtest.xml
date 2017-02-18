@@ -1,17 +1,34 @@
 <launch>
   <arg name="expected_success" default="true" />
+  <arg name="hz" default="30.0" />
+  <arg name="hztest_duration" default="2.0" />
+  <arg name="hz_error" default="29.9" />
+  <arg name="RETRY_TEST" default="5" />
+  <arg name="testnode_name" default="hztest1" />
+  <arg name="topicname_hztest" default="face_detector/people_tracker_measurements_array" />
+
+  <param name ="use_sim_time" value="true" />
 
   <group unless="$(arg expected_success)">
-    <node pkg="rosbag" type="play" name="play" args="-r 0.5 $(find face_detector)/test/face_detector_noface_test_diamondback.bag"/>
-    <param name="hztest1/hz" value="0.0" />
+    <node pkg="rosbag" type="play" name="play" args="--clock -l -r 0.5 $(find face_detector)/test/face_detector_noface_test_diamondback.bag"/>
+
+    <test test-name="hztest_noface_$(arg testnode_name)" pkg="rostest" type="hztest" name="$(arg testnode_name)" retry="$(arg RETRY_TEST)">
+      <param name="topic" value="face_detector/people_tracker_measurements_array" />
+      <param name="hz" value="0.0" />
+      <param name="test_duration" value="$(arg hztest_duration)" />
+    </test>
   </group>
   <group if="$(arg expected_success)">
-    <node pkg="rosbag" type="play" name="play" args="-r 0.5 $(find face_detector)/test/face_detector_withface_test_diamondback.bag"/>
-    <param name="hztest1/hz" value="30.0" />
-    <param name="hztest1/hzerror" value="29.9" />
+    <node pkg="rosbag" type="play" name="play" args="--clock -l -r 0.5 $(find face_detector)/test/face_detector_withface_test_diamondback.bag"/>
+
+    <test pkg="rostest" type="publishtest"
+          test-name="pubtest_detectedface" name="pubtest_detectedface" retry="$(arg RETRY_TEST)">
+      <rosparam subst_value="True">
+        topics:
+          - name: $(arg topicname_hztest)
+            timeout: 5
+            negative: False
+      </rosparam>
+    </test>
   </group>
-    
-  <param name="hztest1/topic" value="face_detector/people_tracker_measurements_array" />
-  <param name="hztest1/test_duration" value="15.0" />
-  <test test-name="hztest_test" pkg="rostest" type="hztest" name="hztest1" />
 </launch>
