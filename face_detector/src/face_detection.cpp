@@ -228,6 +228,10 @@ public:
     local_nh.param("use_rgbd", use_rgbd_, false);
     local_nh.param("queue_size", queue_size, 5);
     local_nh.param("approximate_sync", approx, false);
+    local_nh.param("image_topic", image_image_, std::string("image_raw"));
+    local_nh.param("depth_topic", depth_image_, std::string("image_raw"));
+    local_nh.param("rgb_ns", rgb_ns_, std::string("rgb"));
+    local_nh.param("depth_ns", depth_ns_, std::string("depth"));
 
     if (do_display_)
     {
@@ -242,10 +246,6 @@ public:
       faces_->initFaceDetectionDepth(1, haar_filename_, face_size_min_m, face_size_max_m, max_face_z_m, face_sep_dist_m);
 
       camera_ = nh_.resolveName("camera");
-      image_image_ = nh_.resolveName("image_topic");
-      depth_image_ = nh_.resolveName("depth_topic");
-      rgb_ns_ = nh_.resolveName("rgb_ns");
-      depth_ns_ = nh_.resolveName("depth_ns");
       camera_topic_ = ros::names::clean(camera_ + "/" + rgb_ns_ + "/" + image_image_);
       depth_topic_ = ros::names::clean(camera_ + "/" + depth_ns_ + "/" + depth_image_);
       camera_info_topic_ = ros::names::clean(camera_ + "/" + rgb_ns_ + "/camera_info");
