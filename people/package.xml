@@ -18,6 +18,7 @@
 
 
   <!-- Dependencies needed after this package is compiled. -->
+  <run_depend>people_app</run_depend>
   <run_depend>people_msgs</run_depend>
   <run_depend>face_detector</run_depend>
   <run_depend>leg_detector</run_depend>

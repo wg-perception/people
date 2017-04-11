@@ -1,0 +1,19 @@
+<launch>
+  <arg name="camera" default="head_mount_kinect" />
+  <arg name="depth_ns" default="depth" /> 
+  <arg name="image_topic" default="image_raw" />
+  <arg name="depth_topic" default="image_raw" />
+  <arg name="fixed_frame" default="head_mount_kinect_rgb_link" />
+
+  <include file="$(find face_detector)/launch/face_detector.rgbd.launch">
+    <arg name="camera" value="$(arg camera)" />
+    <arg name="rgb_ns" value="rgb" />
+    <arg name="depth_ns" value="$(arg depth_ns)" />
+    <arg name="image_topic" value="$(arg image_topic)" />
+    <arg name="depth_topic" value="$(arg depth_topic)" />
+    <arg name="fixed_frame" value="$(arg fixed_frame)" />
+  </include>
+
+  <node pkg="rviz" type="rviz" name="pr2_facedetect_rviz"
+        args="-d $(find people_app)/launch/pr2.rviz" />
+</launch>
