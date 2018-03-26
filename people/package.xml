@@ -1,6 +1,6 @@
 <package>
   <name>people</name>
-  <version>1.0.10</version>
+  <version>1.0.11</version>
   <description>The people stack holds algorithms for perceiving people from a number of sensors.</description>
   <maintainer email="dan@lazewatsky.com">Dan Lazewatsky</maintainer>
 
@@ -20,9 +20,7 @@
   <!-- Dependencies needed after this package is compiled. -->
   <run_depend>people_msgs</run_depend>
   <run_depend>face_detector</run_depend>
-  <run_depend>leg_detector</run_depend>
   <run_depend>people_tracking_filter</run_depend>
-  <run_depend>people_velocity_tracker</run_depend>
 
   <!-- Dependencies needed only for running tests. -->
 

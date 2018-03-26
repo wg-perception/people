@@ -244,7 +244,7 @@ public:
 
   int mask_count_;
 
-  CvRTrees forest;
+  cv::ml::RTrees forest;
 
   float connected_thresh_;
 
