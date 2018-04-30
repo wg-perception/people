@@ -69,6 +69,7 @@
   <!-- <test_depend>image_geometry</test_depend> -->
   <!-- <test_depend>actionlib_msgs</test_depend> -->
   <!-- <test_depend>actionlib</test_depend> -->
+  <test_depend>stereo_image_proc</test_depend>
 
 <!-- <export>
     <cpp cflags="-I${prefix}/msg/cpp -I${prefix}/srv/cpp"/>

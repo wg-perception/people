@@ -39,26 +39,26 @@ include_directories(
 )
 
 ## Declare a cpp library
-add_library(people_tracking_filter 
-            src/uniform_vector.cpp 
-            src/gaussian_vector.cpp 
-            src/gaussian_pos_vel.cpp 
+add_library(people_tracking_filter
+            src/uniform_vector.cpp
+            src/gaussian_vector.cpp
+            src/gaussian_pos_vel.cpp
             src/mcpdf_pos_vel.cpp
             src/mcpdf_vector.cpp
             src/sysmodel_pos_vel.cpp
             src/sysmodel_vector.cpp
             src/measmodel_pos.cpp
             src/measmodel_vector.cpp
-	    src/tracker_particle.cpp 
-	    src/tracker_kalman.cpp 
-	    src/detector_particle.cpp 
+	    src/tracker_particle.cpp
+	    src/tracker_kalman.cpp
+	    src/detector_particle.cpp
 )
 
 ## Declare a cpp executable
 add_executable(people_tracker src/people_tracking_node.cpp)
 
 ## Add cmake target dependencies of the executable/library
-add_dependencies(people_tracker people_msgs_gencpp people_tracking_filter)
+add_dependencies(people_tracker people_tracking_filter)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(people_tracker

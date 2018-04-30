@@ -244,7 +244,8 @@ public:
 
   int mask_count_;
 
-  cv::ml::RTrees forest;
+  // cv::ml::RTrees forest;
+  cv::Ptr<cv::ml::RTrees> forest;
 
   float connected_thresh_;
 
@@ -286,8 +287,10 @@ public:
   {
     if (g_argc > 1)
     {
-      forest.load(g_argv[1]);
-      feat_count_ = forest.get_active_var_mask()->cols;
+      forest = cv::ml::RTrees::create();
+      cv::String feature_file = cv::String(g_argv[1]);
+      forest = cv::ml::StatModel::load<cv::ml::RTrees>(feature_file);
+      feat_count_ = forest->getVarCount();
       printf("Loaded forest with %d features: %s\n", feat_count_, g_argv[1]);
     }
     else
@@ -684,7 +687,7 @@ public:
     processor.splitConnected(connected_thresh_);
     processor.removeLessThan(5);
 
-    CvMat* tmp_mat = cvCreateMat(1, feat_count_, CV_32FC1);
+    cv::Mat tmp_mat = cv::Mat(1, feat_count_, CV_32FC1);
 
     // if no measurement matches to a tracker in the last <no_observation_timeout>  seconds: erase tracker
     ros::Time purge = scan->header.stamp + ros::Duration().fromSec(-no_observation_timeout_s);
@@ -725,9 +728,14 @@ public:
       vector<float> f = calcLegFeatures(*i, *scan);
 
       for (int k = 0; k < feat_count_; k++)
-        tmp_mat->data.fl[k] = (float)(f[k]);
+        tmp_mat.data[k] = (float)(f[k]);
 
-      float probability = forest.predict_prob(tmp_mat);
+      // Probability is the fuzzy measure of the probability that the second element should be chosen,
+      // in opencv2 RTrees had a method predict_prob, but that disapeared in opencv3, this is the
+      // substitute.
+      float probability = 0.5 -
+                          forest->predict(tmp_mat, cv::noArray(), cv::ml::RTrees::PREDICT_SUM) /
+                          forest->getRoots().size();
       Stamped<Point> loc((*i)->center(), scan->header.stamp, scan->header.frame_id);
       try
       {
@@ -841,8 +849,6 @@ public:
       }
     }
 
-    cvReleaseMat(&tmp_mat);
-    tmp_mat = 0;
     if (!use_seeds_)
       pairLegs();
 
