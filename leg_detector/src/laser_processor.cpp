@@ -255,7 +255,7 @@ ScanProcessor::splitConnected(float thresh)
         while ((s_rest != (*c_iter)->end() &&
                 (*s_rest)->index < (*s_q)->index + expand))
         {
-          if ((*s_rest)->range - (*s_q)->range > thresh)
+          if (std::abs((*s_rest)->range - (*s_q)->range) > thresh)
           {
             break;
           }
