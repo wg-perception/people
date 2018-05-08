@@ -647,16 +647,16 @@ public:
             || (*leg1)->getReliability() < leg_reliability_limit_)
           continue;
 
-        for (leg2 = begin; leg2 != end; ++leg2)
+        for (leg2 = leg1,leg2++; leg2 != end; ++leg2)
         {
           if (((*leg2)->object_id != "")
-              || ((*leg2)->getReliability() < leg_reliability_limit_)
-              || (leg1 == leg2)) continue;
+              || ((*leg2)->getReliability() < leg_reliability_limit_)) continue;
           double d = distance(leg1, leg2);
           if (d < closest_dist)
           {
             best1 = leg1;
             best2 = leg2;
+            closest_dist = d;
           }
         }
       }
