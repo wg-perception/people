@@ -2,23 +2,25 @@ cmake_minimum_required(VERSION 2.8.3)
 project(face_detector)
 
 find_package(catkin REQUIRED COMPONENTS
-  roscpp
-  std_msgs
-  geometry_msgs
-  std_srvs
-  cv_bridge
-  stereo_msgs
-  sensor_msgs
-  tf
-  rosbag
-  image_transport
-  people_msgs
-  image_geometry
-  actionlib
-  actionlib_msgs
-  message_generation
-  rospy
-  roslib)
+        actionlib
+        actionlib_msgs
+        cv_bridge
+        geometry_msgs
+        image_geometry
+        image_transport
+        message_filters
+        message_generation
+        people_msgs
+        rosbag
+        roscpp
+        roslib
+        rospy
+        sensor_msgs
+        std_msgs
+        std_srvs
+        stereo_msgs
+        tf
+)
 
 find_package(Boost REQUIRED COMPONENTS signals system thread)
 find_package(OpenCV)
@@ -27,7 +29,8 @@ include_directories(
   include
   ${Boost_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
-  ${catkin_INCLUDE_DIRS})
+  ${catkin_INCLUDE_DIRS}
+)
 
 add_action_files(
   DIRECTORY action
@@ -35,14 +38,26 @@ add_action_files(
 )
 generate_messages(DEPENDENCIES actionlib_msgs people_msgs)
 
-catkin_package(INCLUDE_DIRS include
-  CATKIN_DEPENDS people_msgs 
-                 geometry_msgs 
-                 actionlib_msgs 
-                 stereo_msgs
-                 sensor_msgs
-                 std_msgs
-                 message_runtime)
+catkin_package(
+    INCLUDE_DIRS include
+    CATKIN_DEPENDS
+        actionlib
+        actionlib_msgs
+        cv_bridge
+        geometry_msgs
+        image_geometry
+        image_transport
+        message_filters
+        message_runtime
+        people_msgs
+        roscpp
+        roslib
+        rospy
+        sensor_msgs
+        std_msgs
+        stereo_msgs
+        tf
+)
 
 add_executable(face_detector
                        src/face_detection.cpp 
@@ -52,22 +67,21 @@ target_link_libraries(${PROJECT_NAME}
   ${Boost_LIBRARIES}
   ${OpenCV_LIBRARIES})
 
-add_dependencies(face_detector ${PROJECT_NAME}_generate_messages_cpp)
-
+add_dependencies(face_detector ${catkin_EXPORTED_TARGETS})
 
 install(TARGETS
   face_detector
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
 install(DIRECTORY include/face_detector/
-  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
 )
 
 install(DIRECTORY launch param
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/
 )
 
 if(CATKIN_ENABLE_TESTING)

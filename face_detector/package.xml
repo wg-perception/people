@@ -1,4 +1,4 @@
-<package>
+<package format="2">
   <name>face_detector</name>
   <version>1.0.11</version>
   <description>Face detection in images.</description>
@@ -7,72 +7,36 @@
   <license>BSD</license>
 
   <url type="website">http://ros.org/wiki/face_detector</url>
-  <!-- <url type="bugtracker"></url> -->
-
   <author>Caroline Pantofaru</author>
 
-  <!-- Dependencies which this package needs to build itself. -->
   <buildtool_depend>catkin</buildtool_depend>
 
-  <!-- Dependencies needed to compile this package. -->
-  <build_depend>roscpp</build_depend>
-  <build_depend>std_msgs</build_depend>
-  <build_depend>geometry_msgs</build_depend>
-  <build_depend>std_srvs</build_depend>
-  <build_depend>cv_bridge</build_depend>
-  <build_depend>stereo_msgs</build_depend>
-  <build_depend>sensor_msgs</build_depend>
-  <build_depend>tf</build_depend>
-  <build_depend>rosbag</build_depend>
-  <build_depend>image_transport</build_depend>
-  <build_depend>people_msgs</build_depend>
-  <build_depend>image_geometry</build_depend>
-  <build_depend>actionlib_msgs</build_depend>
-  <build_depend>actionlib</build_depend>
+  <depend>actionlib</depend>
+  <depend>actionlib_msgs</depend>
+  <depend>cv_bridge</depend>
+  <depend>geometry_msgs</depend>
+  <depend>image_geometry</depend>
+  <depend>image_transport</depend>
+  <depend>people_msgs</depend>
+  <depend>rosbag</depend>
+  <depend>roscpp</depend>
+  <depend>roslib</depend>
+  <depend>rospy</depend>
+  <depend>sensor_msgs</depend>
+  <depend>std_msgs</depend>
+  <depend>std_srvs</depend>
+  <depend>stereo_msgs</depend>
+  <depend>tf</depend>
+  <depend>message_filters</depend>
+  <depend>stereo_image_proc</depend>
+
   <build_depend>message_generation</build_depend>
-  <build_depend>roslib</build_depend>
-  <build_depend>rospy</build_depend>
+  <build_export_depend>message_runtime</build_export_depend>
 
-  <!-- Dependencies needed after this package is compiled. -->
-  <run_depend>roscpp</run_depend>
-  <run_depend>std_msgs</run_depend>
-  <run_depend>geometry_msgs</run_depend>
-  <run_depend>std_srvs</run_depend>
-  <run_depend>cv_bridge</run_depend>
-  <run_depend>stereo_msgs</run_depend>
-  <run_depend>sensor_msgs</run_depend>
-  <run_depend>tf</run_depend>
-  <run_depend>rosbag</run_depend>
-  <run_depend>image_transport</run_depend>
-  <run_depend>people_msgs</run_depend>
-  <run_depend>image_geometry</run_depend>
-  <run_depend>actionlib_msgs</run_depend>
-  <run_depend>actionlib</run_depend>
-  <run_depend>message_runtime</run_depend>
-  <run_depend>dynamic_reconfigure</run_depend>
-  <run_depend>openni_launch</run_depend>
-  <run_depend>roslib</run_depend>
-  <run_depend>rospy</run_depend>
+  <exec_depend>dynamic_reconfigure</exec_depend>
+  <exec_depend>message_runtime</exec_depend>
+  <exec_depend>openni_launch</exec_depend>
 
-  <!-- Dependencies needed only for running tests. -->
-  <!-- <test_depend>roscpp</test_depend> -->
-  <!-- <test_depend>std_msgs</test_depend> -->
-  <!-- <test_depend>geometry_msgs</test_depend> -->
-  <!-- <test_depend>std_srvs</test_depend> -->
-  <!-- <test_depend>cv_bridge</test_depend> -->
-  <!-- <test_depend>stereo_msgs</test_depend> -->
-  <!-- <test_depend>sensor_msgs</test_depend> -->
-  <!-- <test_depend>tf</test_depend> -->
-  <!-- <test_depend>rosbag</test_depend> -->
-  <!-- <test_depend>image_transport</test_depend> -->
-  <!-- <test_depend>people_msgs</test_depend> -->
-  <!-- <test_depend>image_geometry</test_depend> -->
-  <!-- <test_depend>actionlib_msgs</test_depend> -->
-  <!-- <test_depend>actionlib</test_depend> -->
   <test_depend>stereo_image_proc</test_depend>
-
-<!-- <export>
-    <cpp cflags="-I${prefix}/msg/cpp -I${prefix}/srv/cpp"/>
-</export>
- -->
+  <test_depend>rostest</test_depend>
 </package>

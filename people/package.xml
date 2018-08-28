@@ -1,4 +1,4 @@
-<package>
+<package format="2">
   <name>people</name>
   <version>1.0.11</version>
   <description>The people stack holds algorithms for perceiving people from a number of sensors.</description>
@@ -7,32 +7,15 @@
   <license>BSD</license>
 
   <url type="website">http://ros.org/wiki/people</url>
-  <!-- <url type="bugtracker"></url> -->
-
   <author>Caroline Pantofaru</author>
-
-  <!-- Dependencies which this package needs to build itself. -->
   <buildtool_depend>catkin</buildtool_depend>
-
-  <!-- Dependencies needed to compile this package. -->
-
-
-  <!-- Dependencies needed after this package is compiled. -->
-  <run_depend>people_msgs</run_depend>
-  <run_depend>face_detector</run_depend>
-  <run_depend>leg_detector</run_depend>
-  <run_depend>people_tracking_filter</run_depend>
-  <run_depend>people_velocity_tracker</run_depend>
-
-  <!-- Dependencies needed only for running tests. -->
-
-
-
-
-
+  <exec_depend>face_detector</exec_depend>
+  <exec_depend>leg_detector</exec_depend>
+  <exec_depend>people_msgs</exec_depend>
+  <exec_depend>people_tracking_filter</exec_depend>
+  <exec_depend>people_velocity_tracker</exec_depend>
 
   <export>
     <metapackage/>
   </export>
-
 </package>
