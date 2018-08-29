@@ -1,4 +1,4 @@
-<package>
+<package format="2">
   <name>people_tracking_filter</name>
   <version>1.0.11</version>
   <description>
@@ -10,25 +10,13 @@
   <url>http://ros.org/wiki/people_tracking_filter</url>  
 
   <buildtool_depend>catkin</buildtool_depend>
-  
-  <build_depend>roscpp</build_depend>
-  <build_depend>std_msgs</build_depend>
-  <build_depend>geometry_msgs</build_depend>
-  <build_depend>tf</build_depend>
-  <build_depend>bfl</build_depend>
-  <build_depend>message_filters</build_depend>
-  <build_depend>people_msgs</build_depend>
-  <build_depend>sensor_msgs</build_depend>
 
-  <run_depend>roscpp</run_depend>
-  <run_depend>std_msgs</run_depend>
-  <run_depend>geometry_msgs</run_depend>
-  <run_depend>tf</run_depend>
-  <run_depend>bfl</run_depend>
-  <run_depend>message_filters</run_depend>
-  <run_depend>people_msgs</run_depend>
-  <run_depend>sensor_msgs</run_depend>
-
+  <depend>bfl</depend>
+  <depend>geometry_msgs</depend>
+  <depend>message_filters</depend>
+  <depend>people_msgs</depend>
+  <depend>roscpp</depend>
+  <depend>sensor_msgs</depend>
+  <depend>std_msgs</depend>
+  <depend>tf</depend>
 </package>
-
-
