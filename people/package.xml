@@ -1,6 +1,6 @@
 <package format="2">
   <name>people</name>
-  <version>1.0.11</version>
+  <version>1.0.12</version>
   <description>The people stack holds algorithms for perceiving people from a number of sensors.</description>
   <maintainer email="dan@lazewatsky.com">Dan Lazewatsky</maintainer>
 
