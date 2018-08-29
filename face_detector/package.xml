@@ -35,7 +35,6 @@
 
   <exec_depend>dynamic_reconfigure</exec_depend>
   <exec_depend>message_runtime</exec_depend>
-  <exec_depend>openni_launch</exec_depend>
 
   <test_depend>stereo_image_proc</test_depend>
   <test_depend>rostest</test_depend>

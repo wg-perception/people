@@ -14,7 +14,6 @@
 
   <arg name="paramfile_classifier" default="$(find face_detector)/param/classifier.yaml"/>
 
-  <!--include file="$(find openni_launch)/launch/openni.launch"/-->
   <node name="$(anon dynparam)" pkg="dynamic_reconfigure" type="dynparam" args="set_from_parameters $(arg camera)/driver">
     <param name="depth_registration" type="bool" value="true" />
   </node>
