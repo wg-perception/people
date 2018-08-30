@@ -35,7 +35,7 @@
 /* Author: Wim Meeussen */
 
 #include "people_tracking_filter/uniform_vector.h"
-#include <wrappers/rng/rng.h>
+#include <bfl/wrappers/rng/rng.h>
 #include <cmath>
 #include <cassert>
 

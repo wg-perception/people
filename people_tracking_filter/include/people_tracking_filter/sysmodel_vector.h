@@ -39,9 +39,9 @@
 
 
 #include "gaussian_vector.h"
-#include <model/systemmodel.h>
-#include <pdf/conditionalpdf.h>
-#include <wrappers/matrix/matrix_wrapper.h>
+#include <bfl/model/systemmodel.h>
+#include <bfl/pdf/conditionalpdf.h>
+#include <bfl/wrappers/matrix/matrix_wrapper.h>
 #include <string>
 
 namespace BFL

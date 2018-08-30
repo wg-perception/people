@@ -37,7 +37,7 @@
 #ifndef UNIFORM_VECTOR_H
 #define UNIFORM_VECTOR_H
 
-#include <pdf/pdf.h>
+#include <bfl/pdf/pdf.h>
 #include <tf/tf.h>
 
 

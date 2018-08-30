@@ -36,7 +36,7 @@
 
 
 #include "people_tracking_filter/gaussian_pos_vel.h"
-#include <wrappers/rng/rng.h>
+#include <bfl/wrappers/rng/rng.h>
 #include <cmath>
 #include <cassert>
 

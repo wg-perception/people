@@ -37,7 +37,7 @@
 #ifndef MCPDF_POSVEL_H
 #define MCPDF_POSVEL_H
 
-#include <pdf/mcpdf.h>
+#include <bfl/pdf/mcpdf.h>
 #include "state_pos_vel.h"
 #include <tf/tf.h>
 #include <sensor_msgs/PointCloud.h>

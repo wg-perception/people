@@ -37,7 +37,7 @@
 #ifndef MCPDF_VECTOR_H
 #define MCPDF_VECTOR_H
 
-#include <pdf/mcpdf.h>
+#include <bfl/pdf/mcpdf.h>
 #include <tf/tf.h>
 #include <sensor_msgs/PointCloud.h>
 
