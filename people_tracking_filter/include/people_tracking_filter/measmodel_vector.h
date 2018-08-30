@@ -40,9 +40,9 @@
 
 #include "tf/tf.h"
 #include "gaussian_vector.h"
-#include <model/measurementmodel.h>
-#include <pdf/conditionalpdf.h>
-#include <wrappers/matrix/matrix_wrapper.h>
+#include <bfl/model/measurementmodel.h>
+#include <bfl/pdf/conditionalpdf.h>
+#include <bfl/wrappers/matrix/matrix_wrapper.h>
 #include <string>
 
 namespace BFL

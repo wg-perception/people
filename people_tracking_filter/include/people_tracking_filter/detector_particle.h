@@ -40,7 +40,7 @@
 #include "tracker.h"
 
 // bayesian filtering
-#include <filter/bootstrapfilter.h>
+#include <bfl/filter/bootstrapfilter.h>
 #include "mcpdf_vector.h"
 #include "measmodel_vector.h"
 #include "sysmodel_vector.h"

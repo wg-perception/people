@@ -38,7 +38,7 @@
 #ifndef GAUSSIAN_POS_VEL_H
 #define GAUSSIAN_POS_VEL_H
 
-#include <pdf/pdf.h>
+#include <bfl/pdf/pdf.h>
 #include "state_pos_vel.h"
 #include "gaussian_vector.h"
 

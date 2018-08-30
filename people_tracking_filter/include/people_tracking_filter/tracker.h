@@ -39,7 +39,7 @@
 
 #include "state_pos_vel.h"
 #include <people_msgs/PositionMeasurement.h>
-#include <wrappers/matrix/matrix_wrapper.h>
+#include <bfl/wrappers/matrix/matrix_wrapper.h>
 #include <string>
 
 

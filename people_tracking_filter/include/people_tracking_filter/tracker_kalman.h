@@ -40,10 +40,10 @@
 #include "tracker.h"
 
 // bayesian filtering
-#include <filter/extendedkalmanfilter.h>
-#include <model/linearanalyticsystemmodel_gaussianuncertainty.h>
-#include <model/linearanalyticmeasurementmodel_gaussianuncertainty.h>
-#include <pdf/linearanalyticconditionalgaussian.h>
+#include <bfl/filter/extendedkalmanfilter.h>
+#include <bfl/model/linearanalyticsystemmodel_gaussianuncertainty.h>
+#include <bfl/model/linearanalyticmeasurementmodel_gaussianuncertainty.h>
+#include <bfl/pdf/linearanalyticconditionalgaussian.h>
 
 
 #include "state_pos_vel.h"
