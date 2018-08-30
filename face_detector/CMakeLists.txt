@@ -60,14 +60,14 @@ catkin_package(
 )
 
 add_executable(face_detector
-                       src/face_detection.cpp 
+                       src/face_detection.cpp
                        src/faces.cpp)
 target_link_libraries(${PROJECT_NAME}
   ${catkin_LIBRARIES}
   ${Boost_LIBRARIES}
   ${OpenCV_LIBRARIES})
 
-add_dependencies(face_detector ${catkin_EXPORTED_TARGETS})
+add_dependencies(face_detector ${catkin_EXPORTED_TARGETS} ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
 install(TARGETS
   face_detector
