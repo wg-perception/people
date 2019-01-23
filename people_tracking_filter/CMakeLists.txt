@@ -6,7 +6,9 @@ find_package(PkgConfig)
 pkg_check_modules(BFL REQUIRED orocos-bfl)
 
 include_directories(${BFL_INCLUDE_DIRS})
+include_directories(${BFL_INCLUDE_DIRS}/bfl)
 link_directories(${BFL_LIBRARY_DIRS})
+link_directories(${BFL_LIBRARY_DIRS}/bfl)
 
 find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
