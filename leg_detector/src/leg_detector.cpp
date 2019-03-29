@@ -727,8 +727,7 @@ public:
     {
       vector<float> f = calcLegFeatures(*i, *scan);
 
-      for (int k = 0; k < feat_count_; k++)
-        tmp_mat.data[k] = (float)(f[k]);
+      memcpy(tmp_mat.data, f.data(), f.size()*sizeof(float));
 
       // Probability is the fuzzy measure of the probability that the second element should be chosen,
       // in opencv2 RTrees had a method predict_prob, but that disapeared in opencv3, this is the
