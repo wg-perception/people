@@ -41,6 +41,7 @@
 #include "face_detector/faces.h"
 #include <cfloat>
 #include <algorithm>
+#include <iostream>
 
 namespace people
 {

@@ -43,7 +43,6 @@
 
 
 
-#include <iostream>
 #include <vector>
 
 #include <opencv/cv.hpp>
