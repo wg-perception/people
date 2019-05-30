@@ -5,4 +5,3 @@ geometry_msgs/Point pos
 float64             reliability
 float64[9]          covariance
 byte                initialization
-
