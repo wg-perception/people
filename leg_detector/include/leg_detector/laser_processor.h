@@ -32,21 +32,14 @@
 *  POSSIBILITY OF SUCH DAMAGE.
 *********************************************************************/
 
-/*! \mainpage
- *  \htmlinclude manifest.html
- */
-
-//! A namespace containing the laser processor helper classes
-
-
-#ifndef LASER_SCAN_LASERPROCESSOR_HH
-#define LASER_SCAN_LASERPROCESSOR_HH
+#ifndef LEG_DETECTOR_LASER_PROCESSOR_H
+#define LEG_DETECTOR_LASER_PROCESSOR_H
 
 #include <unistd.h>
 #include <math.h>
-#include "sensor_msgs/LaserScan.h"
-#include "sensor_msgs/PointCloud.h"
-#include "geometry_msgs/Point.h"
+#include <sensor_msgs/LaserScan.h>
+#include <sensor_msgs/PointCloud.h>
+#include <geometry_msgs/Point.h>
 
 #include <list>
 #include <set>
@@ -55,7 +48,7 @@
 #include <utility>
 #include <algorithm>
 
-#include "tf/transform_datatypes.h"
+#include <tf/transform_datatypes.h>
 
 namespace laser_processor
 {
@@ -72,7 +65,7 @@ public:
   static Sample* Extract(int ind, const sensor_msgs::LaserScan& scan);
 
 private:
-  Sample() {};
+  Sample() {}
 };
 
 //! The comparator allowing the creation of an ordered "SampleSet"
@@ -116,7 +109,6 @@ class ScanMask
   uint32_t size;
 
 public:
-
   ScanMask() : filled(false), angle_min(0), angle_max(0), size(0) { }
 
   inline void clear()
@@ -138,7 +130,6 @@ class ScanProcessor
   sensor_msgs::LaserScan scan_;
 
 public:
-
   std::list<SampleSet*>& getClusters()
   {
     return clusters_;
@@ -152,6 +143,6 @@ public:
 
   void splitConnected(float thresh);
 };
-};
+};  // namespace laser_processor
 
-#endif
+#endif  // LEG_DETECTOR_LASER_PROCESSOR_H

@@ -56,8 +56,11 @@
 #include <dynamic_reconfigure/server.h>
 
 #include <algorithm>
+#include <list>
+#include <set>
+#include <string>
+#include <vector>
 
-using namespace std;
 using namespace laser_processor;
 using namespace ros;
 using namespace tf;
@@ -69,9 +72,9 @@ using namespace MatrixWrapper;
 static double no_observation_timeout_s = 0.5;
 static double max_second_leg_age_s     = 2.0;
 static double max_track_jump_m         = 1.0;
-static double max_meas_jump_m          = 0.75; // 1.0
+static double max_meas_jump_m          = 0.75;  // 1.0
 static double leg_pair_separation_m    = 1.0;
-static string fixed_frame              = "odom_combined";
+static std::string fixed_frame         = "odom_combined";
 
 static double kal_p = 4, kal_q = .002, kal_r = 10;
 static bool use_filter = true;
@@ -86,8 +89,8 @@ public:
   BFL::StatePosVel sys_sigma_;
   TrackerKalman filter_;
 
-  string id_;
-  string object_id;
+  std::string id_;
+  std::string object_id;
   ros::Time time_;
   ros::Time meas_time_;
 
@@ -196,7 +199,7 @@ private:
     position_.stamp_ = time_;
     position_.frame_id_ = fixed_frame;
     double nreliability = fmin(1.0, fmax(0.1, est.vel_.length() / 0.5));
-    //reliability = fmax(reliability, nreliability);
+    // reliability = fmax(reliability, nreliability);
   }
 };
 
@@ -253,7 +256,7 @@ public:
 
   char save_[100];
 
-  list<SavedFeature*> saved_features_;
+  std::list<SavedFeature*> saved_features_;
   boost::mutex saved_mutex_;
 
   int feature_id_;
@@ -354,7 +357,7 @@ public:
     use_filter               = config.kalman_on == 1;
   }
 
-  double distance(list<SavedFeature*>::iterator it1,  list<SavedFeature*>::iterator it2)
+  double distance(std::list<SavedFeature*>::iterator it1,  std::list<SavedFeature*>::iterator it2)
   {
     Stamped<Point> one = (*it1)->position_, two = (*it2)->position_;
     double dx = one[0] - two[0], dy = one[1] - two[1], dz = one[2] - two[2];
@@ -362,7 +365,8 @@ public:
   }
 
   // Find the tracker that is closest to this person message
-  // If a tracker was already assigned to a person, keep this assignment when the distance between them is not too large.
+  // If a tracker was already assigned to a person,
+  // keep this assignment when the distance between them is not too large.
   void peopleCallback(const people_msgs::PositionMeasurement::ConstPtr& people_meas)
   {
     // If there are no legs, return.
@@ -372,20 +376,22 @@ public:
     Point pt;
     pointMsgToTF(people_meas->pos, pt);
     Stamped<Point> person_loc(pt, people_meas->header.stamp, people_meas->header.frame_id);
-    person_loc[2] = 0.0; // Ignore the height of the person measurement.
-    Stamped<Point> dest_loc(pt, people_meas->header.stamp, people_meas->header.frame_id); // Holder for all transformed pts.
+    person_loc[2] = 0.0;  // Ignore the height of the person measurement.
+
+    // Holder for all transformed pts.
+    Stamped<Point> dest_loc(pt, people_meas->header.stamp, people_meas->header.frame_id);
 
     boost::mutex::scoped_lock lock(saved_mutex_);
 
-    list<SavedFeature*>::iterator closest = saved_features_.end();
-    list<SavedFeature*>::iterator closest1 = saved_features_.end();
-    list<SavedFeature*>::iterator closest2 = saved_features_.end();
+    std::list<SavedFeature*>::iterator closest = saved_features_.end();
+    std::list<SavedFeature*>::iterator closest1 = saved_features_.end();
+    std::list<SavedFeature*>::iterator closest2 = saved_features_.end();
     float closest_dist = max_meas_jump_m;
     float closest_pair_dist = 2 * max_meas_jump_m;
 
-    list<SavedFeature*>::iterator begin = saved_features_.begin();
-    list<SavedFeature*>::iterator end = saved_features_.end();
-    list<SavedFeature*>::iterator it1, it2;
+    std::list<SavedFeature*>::iterator begin = saved_features_.begin();
+    std::list<SavedFeature*>::iterator end = saved_features_.end();
+    std::list<SavedFeature*>::iterator it1, it2;
 
     // If there's a pair of legs with the right label and within the max dist, return
     // If there's one leg with the right label and within the max dist,
@@ -403,7 +409,7 @@ public:
       {
         tfl_.transformPoint((*it1)->id_, people_meas->header.stamp,
                             person_loc, fixed_frame, dest_loc);
-        //ROS_INFO("Succesful leg transformation at spot 7");
+        // ROS_INFO("Succesful leg transformation at spot 7");
       }
       catch (...)
       {
@@ -464,7 +470,8 @@ public:
         // - it already has an id.
         // - it's too old. Old unassigned trackers are unlikely to be the second leg in a pair.
         // - it's too far away from the person.
-        if ((it1 == it2) || ((*it1)->object_id != "") || ((*it1)->getLifetime() > max_second_leg_age_s) || ((*it1)->dist_to_person_ >= closest_dist))
+        if ((it1 == it2) || ((*it1)->object_id != "") || ((*it1)->getLifetime() > max_second_leg_age_s) ||
+            ((*it1)->dist_to_person_ >= closest_dist))
           continue;
 
         // Get the distance between the two legs
@@ -489,7 +496,8 @@ public:
       // If we found a close, unlabeled leg, set it's label.
       if (closest != end)
       {
-        cout << "Replaced one leg with a distance of " << closest_dist << " and a distance between the legs of " << closest_dist_between_legs << endl;
+        cout << "Replaced one leg with a distance of " << closest_dist
+             << " and a distance between the legs of " << closest_dist_between_legs << endl;
         (*closest)->object_id = people_meas->object_id;
       }
       else
@@ -502,7 +510,8 @@ public:
     }
 
     cout << "Looking for a pair of new legs" << endl;
-    // If we didn't find any legs with this person's label, try to find two unlabeled legs that are close together and close to the tracker.
+    // If we didn't find any legs with this person's label,
+    // try to find two unlabeled legs that are close together and close to the tracker.
     it1 = saved_features_.begin();
     it2 = saved_features_.begin();
     closest = saved_features_.end();
@@ -543,8 +552,10 @@ public:
         }
         dist_between_legs = dest_loc.length();
 
-        // Ensure that this pair of legs is the closest pair to the tracker, and that the distance between the legs isn't too large.
-        if ((*it1)->dist_to_person_ + (*it2)->dist_to_person_ < closest_pair_dist && dist_between_legs < leg_pair_separation_m)
+        // Ensure that this pair of legs is the closest pair to the tracker,
+        // and that the distance between the legs isn't too large.
+        if ((*it1)->dist_to_person_ + (*it2)->dist_to_person_ < closest_pair_dist &&
+            dist_between_legs < leg_pair_separation_m)
         {
           closest_pair_dist = (*it1)->dist_to_person_ + (*it2)->dist_to_person_;
           closest1 = it1;
@@ -558,7 +569,8 @@ public:
     {
       (*closest1)->object_id = people_meas->object_id;
       (*closest2)->object_id = people_meas->object_id;
-      cout << "Found a completely new pair with total distance " << closest_pair_dist << " and a distance between the legs of " << closest_dist_between_legs << endl;
+      cout << "Found a completely new pair with total distance " << closest_pair_dist
+           << " and a distance between the legs of " << closest_dist_between_legs << endl;
       return;
     }
 
@@ -577,9 +589,9 @@ public:
   void pairLegs()
   {
     // Deal With legs that already have ids
-    list<SavedFeature*>::iterator begin = saved_features_.begin();
-    list<SavedFeature*>::iterator end = saved_features_.end();
-    list<SavedFeature*>::iterator leg1, leg2, best, it;
+    std::list<SavedFeature*>::iterator begin = saved_features_.begin();
+    std::list<SavedFeature*>::iterator end = saved_features_.end();
+    std::list<SavedFeature*>::iterator leg1, leg2, best, it;
 
     for (leg1 = begin; leg1 != end; ++leg1)
     {
@@ -610,7 +622,6 @@ public:
           closest_dist = d;
           best = it;
         }
-
       }
 
       if (leg2 != end)
@@ -640,7 +651,7 @@ public:
     // Attempt to pair up legs with no id
     for (;;)
     {
-      list<SavedFeature*>::iterator best1 = end, best2 = end;
+      std::list<SavedFeature*>::iterator best1 = end, best2 = end;
       double closest_dist = leg_pair_separation_m;
 
       for (leg1 = begin; leg1 != end; ++leg1)
@@ -691,7 +702,7 @@ public:
 
     // if no measurement matches to a tracker in the last <no_observation_timeout>  seconds: erase tracker
     ros::Time purge = scan->header.stamp + ros::Duration().fromSec(-no_observation_timeout_s);
-    list<SavedFeature*>::iterator sf_iter = saved_features_.begin();
+    std::list<SavedFeature*>::iterator sf_iter = saved_features_.begin();
     while (sf_iter != saved_features_.end())
     {
       if ((*sf_iter)->meas_time_ < purge)
@@ -707,8 +718,8 @@ public:
 
 
     // System update of trackers, and copy updated ones in propagate list
-    list<SavedFeature*> propagated;
-    for (list<SavedFeature*>::iterator sf_iter = saved_features_.begin();
+    std::list<SavedFeature*> propagated;
+    for (std::list<SavedFeature*>::iterator sf_iter = saved_features_.begin();
          sf_iter != saved_features_.end();
          sf_iter++)
     {
@@ -720,12 +731,12 @@ public:
     // Detection step: build up the set of "candidate" clusters
     // For each candidate, find the closest tracker (within threshold) and add to the match list
     // If no tracker is found, start a new one
-    multiset<MatchedFeature> matches;
-    for (list<SampleSet*>::iterator i = processor.getClusters().begin();
+    std::multiset<MatchedFeature> matches;
+    for (std::list<SampleSet*>::iterator i = processor.getClusters().begin();
          i != processor.getClusters().end();
          i++)
     {
-      vector<float> f = calcLegFeatures(*i, *scan);
+      std::vector<float> f = calcLegFeatures(*i, *scan);
 
       for (int k = 0; k < feat_count_; k++)
         tmp_mat.data[k] = (float)(f[k]);
@@ -746,10 +757,10 @@ public:
         ROS_WARN("TF exception spot 3.");
       }
 
-      list<SavedFeature*>::iterator closest = propagated.end();
+      std::list<SavedFeature*>::iterator closest = propagated.end();
       float closest_dist = max_track_jump_m;
 
-      for (list<SavedFeature*>::iterator pf_iter = propagated.begin();
+      for (std::list<SavedFeature*>::iterator pf_iter = propagated.begin();
            pf_iter != propagated.end();
            pf_iter++)
       {
@@ -764,7 +775,8 @@ public:
       // Nothing close to it, start a new track
       if (closest == propagated.end())
       {
-        list<SavedFeature*>::iterator new_saved = saved_features_.insert(saved_features_.end(), new SavedFeature(loc, tfl_));
+        std::list<SavedFeature*>::iterator new_saved =
+          saved_features_.insert(saved_features_.end(), new SavedFeature(loc, tfl_));
       }
       // Add the candidate, the tracker and the distance to a match list
       else
@@ -775,9 +787,9 @@ public:
     // find the match with the shortest distance for each tracker
     while (matches.size() > 0)
     {
-      multiset<MatchedFeature>::iterator matched_iter = matches.begin();
+      std::multiset<MatchedFeature>::iterator matched_iter = matches.begin();
       bool found = false;
-      list<SavedFeature*>::iterator pf_iter = propagated.begin();
+      std::list<SavedFeature*>::iterator pf_iter = propagated.begin();
       while (pf_iter != propagated.end())
       {
         // update the tracker with this candidate
@@ -824,10 +836,10 @@ public:
           ROS_WARN("TF exception spot 5.");
         }
 
-        list<SavedFeature*>::iterator closest = propagated.end();
+        std::list<SavedFeature*>::iterator closest = propagated.end();
         float closest_dist = max_track_jump_m;
 
-        for (list<SavedFeature*>::iterator remain_iter = propagated.begin();
+        for (std::list<SavedFeature*>::iterator remain_iter = propagated.begin();
              remain_iter != propagated.end();
              remain_iter++)
         {
@@ -842,7 +854,8 @@ public:
         // no tracker is within a threshold of this candidate
         // so create a new tracker for this candidate
         if (closest == propagated.end())
-          list<SavedFeature*>::iterator new_saved = saved_features_.insert(saved_features_.end(), new SavedFeature(loc, tfl_));
+          std::list<SavedFeature*>::iterator new_saved =
+            saved_features_.insert(saved_features_.end(), new SavedFeature(loc, tfl_));
         else
           matches.insert(MatchedFeature(matched_iter->candidate_, *closest, closest_dist, matched_iter->probability_));
         matches.erase(matched_iter);
@@ -854,10 +867,10 @@ public:
 
     // Publish Data!
     int i = 0;
-    vector<people_msgs::PositionMeasurement> people;
-    vector<people_msgs::PositionMeasurement> legs;
+    std::vector<people_msgs::PositionMeasurement> people;
+    std::vector<people_msgs::PositionMeasurement> legs;
 
-    for (list<SavedFeature*>::iterator sf_iter = saved_features_.begin();
+    for (std::list<SavedFeature*>::iterator sf_iter = saved_features_.begin();
          sf_iter != saved_features_.end();
          sf_iter++, i++)
     {
@@ -887,7 +900,6 @@ public:
         pos.covariance[8] = 10000.0;
         pos.initialization = 0;
         legs.push_back(pos);
-
       }
 
       if (publish_leg_markers_)

@@ -32,15 +32,15 @@
 *  POSSIBILITY OF SUCH DAMAGE.
 *********************************************************************/
 
-#include "laser_processor.h"
-#include "calc_leg_features.h"
+#include <leg_detector/laser_processor.h>
+#include <leg_detector/calc_leg_features.h>
 
-#include "opencv/cxcore.h"
-#include "opencv/cv.h"
-#include "opencv/ml.h"
+#include <opencv/cxcore.h>
+#include <opencv/cv.h>
+#include <opencv/ml.h>
 
-#include "people_msgs/PositionMeasurement.h"
-#include "sensor_msgs/LaserScan.h"
+#include <people_msgs/PositionMeasurement.h>
+#include <sensor_msgs/LaserScan.h>
 
 using namespace std;
 using namespace laser_processor;
