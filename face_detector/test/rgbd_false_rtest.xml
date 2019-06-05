@@ -1,7 +1,7 @@
 <launch>
   <arg name="expected_success" value="false" />
   <arg name="testnode_name" default="hztest_rgbd_false" />
-  <arg name="topicname_hztest" default="/face_detector/faces_cloud" />  
+  <arg name="topicname_hztest" default="/face_detector/faces_cloud" />
 
   <node ns="wide_stereo" pkg="stereo_image_proc" type="stereo_image_proc" name="stereo" />
 
@@ -11,7 +11,7 @@
     <arg name="image_topic" value="image_raw" />
     <arg name="depth_ns" value="right" />
     <arg name="depth_topic" value="image_raw" />
-  </include> 
+  </include>
 
   <include file="$(find face_detector)/test/common_rtest.xml" pass_all_args="true" />
 </launch>

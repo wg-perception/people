@@ -3,9 +3,9 @@
   <arg name="camera" default="wide_stereo" />
   <arg name="image_topic" default="image_rect" />
   <arg name="fixed_frame" default="wide_stereo_optical_frame" />
-  <arg name="use_rgbd" default="false" />  
+  <arg name="use_rgbd" default="false" />
   <arg name="approximate_sync" default="false" />
-  
+
   <include file="$(find face_detector)/launch/face_detector_common.launch">
     <arg name="camera" value="$(arg camera)" />
     <arg name="image_topic" value="$(arg image_topic)" />

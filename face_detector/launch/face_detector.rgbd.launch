@@ -1,12 +1,12 @@
 <launch>
 
-  <!-- Following args `camera` and `depth_ns` together consist the namespace prefix, and the args `*_topic` make the body of the topic for face_detector node to subscribe. In the example below, you're subscribing to: 
+  <!-- Following args `camera` and `depth_ns` together consist the namespace prefix, and the args `*_topic` make the body of the topic for face_detector node to subscribe. In the example below, you're subscribing to:
 
         /camera/rgb/image_rect_color
-        /camera/depth_ns/image_rect_raw 
+        /camera/depth_ns/image_rect_raw
    -->
   <arg name="camera" default="camera" />
-  <arg name="rgb_ns" default="rgb" />  
+  <arg name="rgb_ns" default="rgb" />
   <arg name="depth_ns" default="depth_registered" />
   <arg name="image_topic" default="image_rect_color" />
   <arg name="depth_topic" default="image_rect_raw" />
@@ -22,7 +22,7 @@
     <arg name="camera" value="$(arg camera)" />
     <arg name="rgb_ns" value="$(arg rgb_ns)" />
     <arg name="image_topic" value="$(arg image_topic)" />
-    <arg name="depth_topic" value="$(arg depth_topic)" />    
+    <arg name="depth_topic" value="$(arg depth_topic)" />
     <arg name="depth_ns" value="$(arg depth_ns)" />
     <arg name="fixed_frame" value="$(arg fixed_frame)" />
 
@@ -30,7 +30,7 @@
     <arg name="paramfile_classifier" value="$(arg paramfile_classifier)"/>
     <arg name="classifier_reliability" value="0.9"/>
     <arg name="do_continuous" value="true" />
-    <arg name="do_publish_faces_of_unknown_size" value="false" />	
+    <arg name="do_publish_faces_of_unknown_size" value="false" />
     <arg name="do_display" value="false" />
     <arg name="use_rgbd" value="true" />
     <arg name="approximate_sync" value="true" />

@@ -10,7 +10,7 @@
   <arg name="paramfile_classifier" default="$(find face_detector)/param/classifier.yaml"/>
   <arg name="classifier_reliability" default="0.9"/>
   <arg name="do_continuous" default="false" />
-  <arg name="do_publish_faces_of_unknown_size" default="false" />	
+  <arg name="do_publish_faces_of_unknown_size" default="false" />
   <arg name="do_display" default="false" />
   <arg name="use_rgbd" default="true" />
   <arg name="approximate_sync" default="true" />
@@ -22,14 +22,14 @@
     <remap from="rgb_ns" to="$(arg rgb_ns)" />
     <remap from="depth_ns" to="$(arg depth_ns)" />
     <remap from="image_topic" to="$(arg image_topic)" />
-    <remap from="depth_topic" to="$(arg depth_topic)" />    
+    <remap from="depth_topic" to="$(arg depth_topic)" />
     <remap from="fixed_frame" to="$(arg fixed_frame)" />
 
     <param name="classifier_name" type="string" value="$(arg classifier_name)" />
     <rosparam command="load" file="$(arg paramfile_classifier)"/>
     <param name="classifier_reliability" type="double" value="$(arg classifier_reliability)"/>
     <param name="do_continuous" type="bool" value="$(arg do_continuous)" />
-    <param name="do_publish_faces_of_unknown_size" type="bool" value="$(arg do_publish_faces_of_unknown_size)" />	
+    <param name="do_publish_faces_of_unknown_size" type="bool" value="$(arg do_publish_faces_of_unknown_size)" />
     <param name="do_display" type="bool" value="$(arg do_display)" />
     <param name="use_rgbd" type="bool" value="$(arg use_rgbd)" />
     <param name="approximate_sync" type="bool" value="$(arg approximate_sync)" />
