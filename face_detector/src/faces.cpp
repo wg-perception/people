@@ -41,6 +41,10 @@
 #include "face_detector/faces.h"
 #include <cfloat>
 #include <algorithm>
+#include <iostream>
+
+#include <ros/time.h>
+#include <ros/console.h>
 
 namespace people
 {

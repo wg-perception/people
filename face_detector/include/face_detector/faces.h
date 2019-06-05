@@ -43,8 +43,6 @@
 
 
 
-#include <stdio.h>
-#include <iostream>
 #include <vector>
 
 #include <opencv/cv.hpp>
@@ -52,8 +50,6 @@
 #include <opencv/cvaux.hpp>
 
 #include "image_geometry/stereo_camera_model.h"
-#include "ros/time.h"
-#include <ros/console.h>
 #include <boost/thread/mutex.hpp>
 #include <boost/bind.hpp>
 #include <boost/thread/thread.hpp>
