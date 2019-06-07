@@ -5,7 +5,7 @@
   <author email="davidvlu@gmail.com">David V. Lu!!</author>
   <maintainer email="davidvlu@gmail.com">David V. Lu!!</maintainer>
   <license>BSD</license>
-  <url>http://ros.org/wiki/people_velocity_tracker</url>  
+  <url>http://ros.org/wiki/people_velocity_tracker</url>
 
   <buildtool_depend>catkin</buildtool_depend>
   <depend>easy_markers</depend>

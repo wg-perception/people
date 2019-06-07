@@ -282,10 +282,10 @@ ScanProcessor::splitConnected(float thresh)
       tmp_clusters.push_back(c);
     }
 
-    //Now that c_iter is empty, we can delete
+    // Now that c_iter is empty, we can delete
     delete(*c_iter);
 
-    //And remove from the map
+    // And remove from the map
     clusters_.erase(c_iter++);
   }
 

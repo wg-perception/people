@@ -12,7 +12,7 @@
     <arg name="image_topic" value="image_raw" />
     <arg name="depth_ns" value="right" />
     <arg name="depth_topic" value="image_raw" />
-  </include> 
+  </include>
 
   <include file="$(find face_detector)/test/common_rtest.xml" pass_all_args="true" />
 </launch>

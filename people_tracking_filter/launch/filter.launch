@@ -24,4 +24,3 @@
 
 <node pkg="people_tracking_filter" type="people_tracker" name="people_tracker" output="screen"/>
 </launch>
-

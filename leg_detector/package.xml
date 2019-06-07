@@ -5,7 +5,7 @@
   <author>Caroline Pantofaru</author>
   <maintainer email="davidvlu@gmail.com">David V. Lu!!</maintainer>
   <license>BSD</license>
-  <url>http://ros.org/wiki/leg_detector</url>  
+  <url>http://ros.org/wiki/leg_detector</url>
 
   <buildtool_depend>catkin</buildtool_depend>
   <depend>bfl</depend>

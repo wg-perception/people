@@ -32,14 +32,15 @@
 *  POSSIBILITY OF SUCH DAMAGE.
 *********************************************************************/
 
-#ifndef CALCLEGFEATURES_HH
-#define CALCLEGFEATURES_HH
+#ifndef LEG_DETECTOR_CALC_LEG_FEATURES_H
+#define LEG_DETECTOR_CALC_LEG_FEATURES_H
 
-#include "laser_processor.h"
-#include "sensor_msgs/LaserScan.h"
+#include <leg_detector/laser_processor.h>
+#include <sensor_msgs/LaserScan.h>
+#include <vector>
 
-// TODO: Should remove scan dependency from here.
+// TODO(dlu): Should remove scan dependency from here.
 // Only used for jump distance
 std::vector<float> calcLegFeatures(laser_processor::SampleSet* cluster, const sensor_msgs::LaserScan& scan);
 
-#endif
+#endif  // LEG_DETECTOR_CALC_LEG_FEATURES_H

@@ -4,20 +4,20 @@
   <arg name="image_topic" default="image_rect" />
   <arg name="fixed_frame" default="wide_stereo_optical_frame" />
 
-  <arg name="do_continuous" default="true" />  
-  <arg name="use_rgbd" default="false" />  
+  <arg name="do_continuous" default="true" />
+  <arg name="use_rgbd" default="false" />
   <arg name="approximate_sync" default="false" />
-  
+
   <include file="$(find face_detector)/launch/face_detector_common.launch">
     <arg name="camera" value="$(arg camera)" />
-    <arg name="image_topic" value="$(arg image_topic)" />	
+    <arg name="image_topic" value="$(arg image_topic)" />
     <arg name="fixed_frame" value="$(arg fixed_frame)" />
 
     <arg name="classifier_name" value="frontalface" />
     <arg name="paramfile_classifier" value="$(find face_detector)/param/classifier.yaml"/>
     <arg name="classifier_reliability" value="0.9"/>
     <arg name="do_continuous" value="true" />
-    <arg name="do_publish_faces_of_unknown_size" value="false" />	
+    <arg name="do_publish_faces_of_unknown_size" value="false" />
     <arg name="do_display" value="false" />
     <arg name="use_rgbd" value="false" />
     <arg name="approximate_sync" value="false" />
