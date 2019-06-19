@@ -1,4 +1,4 @@
-<package format="2">
+<package format="3">
   <name>people_msgs</name>
   <version>1.1.2</version>
   <description>Messages used by nodes in the people stack.</description>
@@ -8,10 +8,21 @@
 
   <url type="website">http://ros.org/wiki/people_msgs</url>
   <author>Caroline Pantofaru</author>
-  <buildtool_depend>catkin</buildtool_depend>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>rosidl_default_generators</buildtool_depend>
+
   <depend>geometry_msgs</depend>
   <depend>std_msgs</depend>
-  <build_depend>message_generation</build_depend>
-  <build_export_depend>message_runtime</build_export_depend>
-  <exec_depend>message_runtime</exec_depend>
+
+  <exec_depend>rosidl_default_runtime</exec_depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+
+  <member_of_group>rosidl_interface_packages</member_of_group>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
 </package>
