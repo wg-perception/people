@@ -5,7 +5,7 @@ project(people_tracking_filter)
 find_package(PkgConfig)
 pkg_check_modules(BFL REQUIRED orocos-bfl)
 
-include_directories(${BFL_INCLUDE_DIRS})
+include_directories(${BFL_INCLUDE_DIRS}/bfl)
 link_directories(${BFL_LIBRARY_DIRS})
 
 find_package(catkin REQUIRED COMPONENTS
