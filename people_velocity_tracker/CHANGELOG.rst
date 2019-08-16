@@ -2,6 +2,11 @@
 Changelog for package people_velocity_tracker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Whitespace cleanup (`#73 <https://github.com/wg-perception/people/issues/73>`_)
+* Contributors: David V. Lu!!
+
 1.0.9 (2015-09-01)
 ------------------
 * change queue sizes to 10

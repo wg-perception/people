@@ -2,6 +2,12 @@
 Changelog for package face_detector
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Whitespace cleanu (`#73 <https://github.com/wg-perception/people/issues/73>`_)
+* Remove and move unused includes (`#70 <https://github.com/wg-perception/people/issues/70>`_)
+* Contributors: David V. Lu!!, Shane Loretz
+
 1.0.9 (2015-09-01)
 ------------------
 * Install missing param directory: face_detector.rgbd.launch fails due to the `param` folder.
