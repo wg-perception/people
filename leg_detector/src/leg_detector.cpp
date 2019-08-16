@@ -740,15 +740,9 @@ public:
 
       memcpy(tmp_mat.data, f.data(), f.size()*sizeof(float));
 
-      // Probability is the fuzzy measure of the probability that the second element should be chosen,
-      // in opencv2 RTrees had a method predict_prob, but that disapeared in opencv3, this is the
-      // substitute.
-
-      cv::Mat votes;
-
-      forest->getVotes(tmp_mat, votes, 0);
-      //first row of columns cotains class labels. Here -1 and 1. second row then contains the number of trees voting for this class.
-      float probability = (float)votes.at<int>(1,1) / (float)forest->getRoots().size();
+      float probability = 0.5 -
+	                  forest->predict(tmp_mat, cv::noArray(), cv::ml::RTrees::PREDICT_SUM) /
+	                  forest->getRoots().size();
 
       Stamped<Point> loc((*i)->center(), scan->header.stamp, scan->header.frame_id);
       try
