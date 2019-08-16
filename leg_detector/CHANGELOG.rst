@@ -2,8 +2,8 @@
 Changelog for package leg_detector
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.3 (2019-08-16)
+------------------
 * [kinetic] Fix leg probabilities (`#68 <https://github.com/wg-perception/people/issues/68>`_)
   * fixed major bug in feature copy
   * reimplement probability as the old version gave results between the class labels which might not be between 0 and 1.

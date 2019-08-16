@@ -2,8 +2,8 @@
 Changelog for package people_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.3 (2019-08-16)
+------------------
 * Document name field in PositionMeasurement (`#75 <https://github.com/wg-perception/people/issues/75>`_)
 * Cleanup (`#73 <https://github.com/wg-perception/people/issues/73>`_)
   * Fill in implied packages
