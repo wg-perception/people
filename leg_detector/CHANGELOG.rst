@@ -2,6 +2,12 @@
 Changelog for package leg_detector
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Cleanup (`#73 <https://github.com/wg-perception/people/issues/73>`_)
+  * General code cleanup (standard headers, whitespace, linting)
+* Contributors: David V. Lu!!
+
 1.0.9 (2015-09-01)
 ------------------
 * Fix handling of scans with negative angle increment
