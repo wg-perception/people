@@ -2,8 +2,8 @@
 Changelog for package people_velocity_tracker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.2.0 (2019-08-19)
+------------------
 * Whitespace cleanup (`#73 <https://github.com/wg-perception/people/issues/73>`_)
 * Contributors: David V. Lu!!
 

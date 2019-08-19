@@ -2,8 +2,8 @@
 Changelog for package leg_detector
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.2.0 (2019-08-19)
+------------------
 * Cleanup (`#73 <https://github.com/wg-perception/people/issues/73>`_)
   * General code cleanup (standard headers, whitespace, linting)
 * Contributors: David V. Lu!!

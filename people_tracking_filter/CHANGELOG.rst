@@ -2,8 +2,8 @@
 Changelog for package people_tracking_filter
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.2.0 (2019-08-19)
+------------------
 * Fix bfl include directory (`#76 <https://github.com/wg-perception/people/issues/76>`_)
 * Whitespace cleanup (`#73 <https://github.com/wg-perception/people/issues/73>`_)
 * Contributors: David V. Lu!!, Lucas Chiesa

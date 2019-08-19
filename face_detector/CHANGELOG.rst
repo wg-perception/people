@@ -2,8 +2,8 @@
 Changelog for package face_detector
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.2.0 (2019-08-19)
+------------------
 * Whitespace cleanu (`#73 <https://github.com/wg-perception/people/issues/73>`_)
 * Remove and move unused includes (`#70 <https://github.com/wg-perception/people/issues/70>`_)
 * Contributors: David V. Lu!!, Shane Loretz
