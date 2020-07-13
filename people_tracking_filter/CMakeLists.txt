@@ -51,6 +51,8 @@ add_library(people_tracking_filter
             src/tracker_kalman.cpp
             src/detector_particle.cpp
 )
+add_dependencies(people_tracking_filter people_msgs_generate_messages_cpp)
+target_link_libraries(people_tracking_filter ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${BFL_LIBRARIES})
 
 add_executable(people_tracker src/people_tracking_node.cpp)
 add_dependencies(people_tracker people_tracking_filter)
@@ -58,7 +60,6 @@ target_link_libraries(people_tracker
    people_tracking_filter ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${BFL_LIBRARIES}
 )
 
-target_link_libraries(people_tracking_filter ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${BFL_LIBRARIES})
 
 install(TARGETS ${PROJECT_NAME}
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
