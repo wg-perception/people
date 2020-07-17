@@ -1,6 +1,5 @@
-#! /usr/bin/env python
+#!/usr/bin/env python
 
-import roslib; roslib.load_manifest('face_detector')
 import rospy
 
 # Brings in the SimpleActionClient
@@ -30,12 +29,13 @@ def face_detector_client():
     # Prints out the result of executing the action
     return client.get_result()  # A FibonacciResult
 
+
 if __name__ == '__main__':
     try:
         # Initializes a rospy node so that the SimpleActionClient can
         # publish and subscribe over ROS.
         rospy.init_node('face_detector_action_client')
         result = face_detector_client()
-        print "Done action"
+        rospy.loginfo("Done action")
     except rospy.ROSInterruptException:
-        print "Program interrupted before completion"
+        rospy.loginfo("Program interrupted before completion")

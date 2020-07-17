@@ -1,6 +1,5 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
-import roslib; roslib.load_manifest('people_velocity_tracker')
 import rospy
 from geometry_msgs.msg import Point, Vector3
 import math
@@ -29,8 +28,6 @@ def scale(v, s):
     v.y *= s
     v.z *= s
 
-def printv(v):
-    print "%.2f %.2f %.2f"%(v.x, v.y, v.z),
 
 gen = MarkerGenerator()
 gen.type = Marker.ARROW
@@ -63,7 +60,7 @@ class PersonEstimate(object):
 
     def velocity(self):
         k = self.k.values()
-        if k == None:
+        if k is None:
             return Vector3()
         v = Vector3(k[0], k[1], k[2])
         return v
@@ -72,7 +69,7 @@ class PersonEstimate(object):
         gen.scale = [.1, .3, 0]
         gen.color = [1, 1, 1, 1]
         vel = self.velocity()
-        #scale(vel, 15)
+        # scale(vel, 15)
         m = gen.marker(points=[self.pos.pos, add(self.pos.pos, vel)])
         m.header = self.pos.header
         pub.publish(m)
@@ -131,6 +128,7 @@ class VelocityTracker(object):
             pl.people.append(person)
 
         self.ppub.publish(pl)
+
 
 rospy.init_node("people_velocity_tracker")
 vt = VelocityTracker()
