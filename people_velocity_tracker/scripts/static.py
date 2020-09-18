@@ -1,6 +1,5 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
-import roslib; roslib.load_manifest('people_velocity_tracker')
 import rospy
 import sys
 from people_msgs.msg import Person, People
@@ -28,6 +27,7 @@ class VelocityTracker(object):
 
             self.ppub.publish(pl)
             rate.sleep()
+
 
 rospy.init_node("people_velocity_tracker")
 vt = VelocityTracker()

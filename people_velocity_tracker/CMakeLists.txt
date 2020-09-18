@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.0.2)
 project(people_velocity_tracker)
 
 find_package(catkin REQUIRED COMPONENTS
@@ -15,11 +15,17 @@ catkin_package(
         easy_markers geometry_msgs kalman_filter people_msgs roslib rospy
 )
 
-catkin_install_python(PROGRAMS scripts/static.py scripts/tracker.py
-  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+if(CATKIN_ENABLE_TESTING)
+  find_package(catkin REQUIRED COMPONENTS roslint)
+  roslint_python()
+  roslint_add_test()
+endif()
 
-install(FILES
-  launch/filtered_tracked_detector.launch
-  launch/tracked_detector.launch
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+catkin_install_python(PROGRAMS scripts/static.py scripts/tracker.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+install(FILES launch/filtered_tracked_detector.launch
+              launch/tracked_detector.launch
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
 )

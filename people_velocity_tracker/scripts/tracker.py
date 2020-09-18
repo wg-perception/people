@@ -1,6 +1,5 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
-import roslib; roslib.load_manifest('people_velocity_tracker')
 import rospy
 from geometry_msgs.msg import Point, Vector3
 import math
@@ -8,29 +7,30 @@ from people_msgs.msg import PositionMeasurementArray, Person, People
 from easy_markers.generator import MarkerGenerator, Marker
 from kalman_filter import Kalman
 
+
 def distance(leg1, leg2):
-    return math.sqrt(math.pow(leg1.x - leg2.x, 2) +
-                     math.pow(leg1.y - leg2.y, 2) +
-                     math.pow(leg1.z - leg2.z, 2))
+    return math.sqrt(math.pow(leg1.x - leg2.x, 2) + math.pow(leg1.y - leg2.y, 2) + math.pow(leg1.z - leg2.z, 2))
+
 
 def average(leg1, leg2):
     return Point((leg1.x + leg2.x) / 2,
                  (leg1.y + leg2.y) / 2,
                  (leg1.z + leg2.z) / 2)
 
+
 def add(v1, v2):
     return Vector3(v1.x + v2.x, v1.y + v2.y, v1.z + v2.z)
 
+
 def subtract(v1, v2):
     return Vector3(v1.x - v2.x, v1.y - v2.y, v1.z - v2.z)
+
 
 def scale(v, s):
     v.x *= s
     v.y *= s
     v.z *= s
 
-def printv(v):
-    print "%.2f %.2f %.2f"%(v.x, v.y, v.z),
 
 gen = MarkerGenerator()
 gen.type = Marker.ARROW
@@ -63,7 +63,7 @@ class PersonEstimate(object):
 
     def velocity(self):
         k = self.k.values()
-        if k == None:
+        if k is None:
             return Vector3()
         v = Vector3(k[0], k[1], k[2])
         return v
@@ -72,7 +72,7 @@ class PersonEstimate(object):
         gen.scale = [.1, .3, 0]
         gen.color = [1, 1, 1, 1]
         vel = self.velocity()
-        #scale(vel, 15)
+        # scale(vel, 15)
         m = gen.marker(points=[self.pos.pos, add(self.pos.pos, vel)])
         m.header = self.pos.header
         pub.publish(m)
@@ -131,6 +131,7 @@ class VelocityTracker(object):
             pl.people.append(person)
 
         self.ppub.publish(pl)
+
 
 rospy.init_node("people_velocity_tracker")
 vt = VelocityTracker()
