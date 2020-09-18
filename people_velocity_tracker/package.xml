@@ -15,4 +15,5 @@
   <depend>roslib</depend>
   <depend>rospy</depend>
   <exec_depend>leg_detector</exec_depend>
+  <test_depend>roslint</test_depend>
 </package>

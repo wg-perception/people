@@ -7,21 +7,24 @@ from people_msgs.msg import PositionMeasurementArray, Person, People
 from easy_markers.generator import MarkerGenerator, Marker
 from kalman_filter import Kalman
 
+
 def distance(leg1, leg2):
-    return math.sqrt(math.pow(leg1.x - leg2.x, 2) +
-                     math.pow(leg1.y - leg2.y, 2) +
-                     math.pow(leg1.z - leg2.z, 2))
+    return math.sqrt(math.pow(leg1.x - leg2.x, 2) + math.pow(leg1.y - leg2.y, 2) + math.pow(leg1.z - leg2.z, 2))
+
 
 def average(leg1, leg2):
     return Point((leg1.x + leg2.x) / 2,
                  (leg1.y + leg2.y) / 2,
                  (leg1.z + leg2.z) / 2)
 
+
 def add(v1, v2):
     return Vector3(v1.x + v2.x, v1.y + v2.y, v1.z + v2.z)
 
+
 def subtract(v1, v2):
     return Vector3(v1.x - v2.x, v1.y - v2.y, v1.z - v2.z)
+
 
 def scale(v, s):
     v.x *= s
