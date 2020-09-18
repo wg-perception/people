@@ -9,10 +9,10 @@
   <url type="website">http://ros.org/wiki/people</url>
   <author>Caroline Pantofaru</author>
   <buildtool_depend>catkin</buildtool_depend>
-  <exec_depend>face_detector</exec_depend>
-  <exec_depend>leg_detector</exec_depend>
+  <!--exec_depend>face_detector</exec_depend>
+  <exec_depend>leg_detector</exec_depend-->
   <exec_depend>people_msgs</exec_depend>
-  <exec_depend>people_tracking_filter</exec_depend>
+  <!--exec_depend>people_tracking_filter</exec_depend-->
   <exec_depend>people_velocity_tracker</exec_depend>
 
   <export>
