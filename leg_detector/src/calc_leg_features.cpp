@@ -34,8 +34,10 @@
 
 #include <leg_detector/calc_leg_features.h>
 
-#include <opencv/cxcore.h>
-#include <opencv/cv.h>
+//#include <opencv/cxcore.h>
+//#include <opencv/cv.h>
+#include <opencv2/core/core_c.h>
+
 #include <algorithm>
 #include <vector>
 

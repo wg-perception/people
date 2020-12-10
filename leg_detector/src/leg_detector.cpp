@@ -37,9 +37,24 @@
 #include <leg_detector/laser_processor.h>
 #include <leg_detector/calc_leg_features.h>
 
-#include <opencv/cxcore.h>
-#include <opencv/cv.h>
-#include <opencv/ml.h>
+//#include <opencv/cxcore.hpp>
+//#include <opencv2/core/core.hpp>
+//#include <opencv2/core/core_c.h>
+//#include <opencv2/core/core.hpp>
+//#include <opencv/cv.h>
+//#include "opencv2/core/types_c.h"
+//#include "opencv2/imgproc/types_c.h"
+//#include "opencv2/imgproc/imgproc_c.h"
+//#include "opencv2/flann/flann.hpp"
+//#include <opencv2/core/core.hpp>
+//#include <opencv/ml.h>
+//#include <opencv2/ml/ml.inl.hpp>
+//#include <opencv2/opencv.hpp>
+//#include <opencv2/core/core.hpp>
+//#include <opencv2/core/types.hpp>
+
+#include <opencv2/core/core_c.h>
+#include <opencv2/ml.hpp>
 
 #include <people_msgs/PositionMeasurement.h>
 #include <people_msgs/PositionMeasurementArray.h>
@@ -67,6 +82,7 @@ using namespace tf;
 using namespace estimation;
 using namespace BFL;
 using namespace MatrixWrapper;
+using namespace cv;
 
 
 static double no_observation_timeout_s = 0.5;
@@ -96,12 +112,13 @@ public:
 
   double reliability, p;
 
-  Stamped<Point> position_;
+  tf::Stamped<tf::Point> position_;
+  //Stamped<Point> position_;
   SavedFeature* other;
   float dist_to_person_;
 
   // one leg tracker
-  SavedFeature(Stamped<Point> loc, TransformListener& tfl)
+  SavedFeature(tf::Stamped<tf::Point> loc, TransformListener& tfl)
     : tfl_(tfl),
       sys_sigma_(Vector3(0.05, 0.05, 0.05), Vector3(1.0, 1.0, 1.0)),
       filter_("tracker_name", sys_sigma_),
@@ -145,7 +162,7 @@ public:
     updatePosition();
   }
 
-  void update(Stamped<Point> loc, double probability)
+  void update(tf::Stamped<tf::Point> loc, double probability)
   {
     StampedTransform pose(Pose(Quaternion(0.0, 0.0, 0.0, 1.0), loc), loc.stamp_, id_, loc.frame_id_);
     tfl_.setTransform(pose);
@@ -359,7 +376,7 @@ public:
 
   double distance(std::list<SavedFeature*>::iterator it1,  std::list<SavedFeature*>::iterator it2)
   {
-    Stamped<Point> one = (*it1)->position_, two = (*it2)->position_;
+    tf::Stamped<tf::Point> one = (*it1)->position_, two = (*it2)->position_;
     double dx = one[0] - two[0], dy = one[1] - two[1], dz = one[2] - two[2];
     return sqrt(dx * dx + dy * dy + dz * dz);
   }
@@ -373,13 +390,13 @@ public:
     if (saved_features_.empty())
       return;
 
-    Point pt;
+    tf::Point pt;
     pointMsgToTF(people_meas->pos, pt);
-    Stamped<Point> person_loc(pt, people_meas->header.stamp, people_meas->header.frame_id);
+    tf::Stamped<tf::Point> person_loc(pt, people_meas->header.stamp, people_meas->header.frame_id);
     person_loc[2] = 0.0;  // Ignore the height of the person measurement.
 
     // Holder for all transformed pts.
-    Stamped<Point> dest_loc(pt, people_meas->header.stamp, people_meas->header.frame_id);
+    tf::Stamped<tf::Point> dest_loc(pt, people_meas->header.stamp, people_meas->header.frame_id);
 
     boost::mutex::scoped_lock lock(saved_mutex_);
 
@@ -744,7 +761,7 @@ public:
 	                  forest->predict(tmp_mat, cv::noArray(), cv::ml::RTrees::PREDICT_SUM) /
 	                  forest->getRoots().size();
 
-      Stamped<Point> loc((*i)->center(), scan->header.stamp, scan->header.frame_id);
+      tf::Stamped<tf::Point> loc((*i)->center(), scan->header.stamp, scan->header.frame_id);
       try
       {
         tfl_.transformPoint(fixed_frame, loc, loc);
@@ -793,7 +810,7 @@ public:
         if (matched_iter->closest_ == *pf_iter)
         {
           // Transform candidate to fixed frame
-          Stamped<Point> loc(matched_iter->candidate_->center(), scan->header.stamp, scan->header.frame_id);
+          tf::Stamped<tf::Point> loc(matched_iter->candidate_->center(), scan->header.stamp, scan->header.frame_id);
           try
           {
             tfl_.transformPoint(fixed_frame, loc, loc);
@@ -823,7 +840,7 @@ public:
       // try to assign the candidate to another tracker
       if (!found)
       {
-        Stamped<Point> loc(matched_iter->candidate_->center(), scan->header.stamp, scan->header.frame_id);
+        tf::Stamped<tf::Point> loc(matched_iter->candidate_->center(), scan->header.stamp, scan->header.frame_id);
         try
         {
           tfl_.transformPoint(fixed_frame, loc, loc);
