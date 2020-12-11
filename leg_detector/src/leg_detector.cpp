@@ -38,21 +38,8 @@
 #include <leg_detector/calc_leg_features.h>
 
 //#include <opencv/cxcore.hpp>
-//#include <opencv2/core/core.hpp>
-//#include <opencv2/core/core_c.h>
-//#include <opencv2/core/core.hpp>
 //#include <opencv/cv.h>
-//#include "opencv2/core/types_c.h"
-//#include "opencv2/imgproc/types_c.h"
-//#include "opencv2/imgproc/imgproc_c.h"
-//#include "opencv2/flann/flann.hpp"
-//#include <opencv2/core/core.hpp>
 //#include <opencv/ml.h>
-//#include <opencv2/ml/ml.inl.hpp>
-//#include <opencv2/opencv.hpp>
-//#include <opencv2/core/core.hpp>
-//#include <opencv2/core/types.hpp>
-
 #include <opencv2/core/core_c.h>
 #include <opencv2/ml.hpp>
 
