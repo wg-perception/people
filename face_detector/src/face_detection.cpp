@@ -63,9 +63,9 @@
 #include "sensor_msgs/PointCloud.h"
 #include "geometry_msgs/Point32.h"
 
-#include "opencv/cxcore.hpp"
-#include "opencv/cv.hpp"
-#include "opencv/highgui.h"
+#include <opencv2/core/core_c.h>
+#include <opencv2/highgui.hpp>
+#include <opencv2/highgui/highgui_c.h>
 
 #include "face_detector/faces.h"
 
