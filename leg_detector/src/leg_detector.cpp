@@ -97,7 +97,6 @@ public:
   double reliability, p;
 
   tf::Stamped<tf::Point> position_;
-  //Stamped<Point> position_;
   SavedFeature* other;
   float dist_to_person_;
 
