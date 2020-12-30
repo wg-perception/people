@@ -37,9 +37,6 @@
 #include <leg_detector/laser_processor.h>
 #include <leg_detector/calc_leg_features.h>
 
-//#include <opencv/cxcore.hpp>
-//#include <opencv/cv.h>
-//#include <opencv/ml.h>
 #include <opencv2/core/core_c.h>
 #include <opencv2/ml.hpp>
 
@@ -1016,4 +1013,3 @@ int main(int argc, char **argv)
 
   return 0;
 }
-
