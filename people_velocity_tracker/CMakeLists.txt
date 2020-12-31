@@ -14,12 +14,10 @@ catkin_package(
     CATKIN_DEPENDS
         easy_markers geometry_msgs kalman_filter people_msgs roslib rospy
 )
+install(FILES launch/filtered_tracked_detector.launch launch/tracked_detector.launch
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+)
 
 catkin_install_python(PROGRAMS scripts/static.py scripts/tracker.py
-  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
-
-install(FILES
-  launch/filtered_tracked_detector.launch
-  launch/tracked_detector.launch
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+                      DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )

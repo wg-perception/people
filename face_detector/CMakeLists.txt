@@ -25,13 +25,6 @@ find_package(catkin REQUIRED COMPONENTS
 find_package(Boost REQUIRED COMPONENTS signals system thread)
 find_package(OpenCV)
 
-include_directories(
-  include
-  ${Boost_INCLUDE_DIRS}
-  ${OpenCV_INCLUDE_DIRS}
-  ${catkin_INCLUDE_DIRS}
-)
-
 add_action_files(
   DIRECTORY action
   FILES FaceDetector.action
@@ -59,29 +52,38 @@ catkin_package(
         tf
 )
 
+include_directories(
+  include
+  ${Boost_INCLUDE_DIRS}
+  ${OpenCV_INCLUDE_DIRS}
+  ${catkin_INCLUDE_DIRS}
+)
+
 add_executable(face_detector
                        src/face_detection.cpp
                        src/faces.cpp)
-target_link_libraries(${PROJECT_NAME}
+add_dependencies(face_detector ${catkin_EXPORTED_TARGETS} ${${PROJECT_NAME}_EXPORTED_TARGETS})
+target_link_libraries(face_detector
   ${catkin_LIBRARIES}
   ${Boost_LIBRARIES}
   ${OpenCV_LIBRARIES})
 
-add_dependencies(face_detector ${catkin_EXPORTED_TARGETS} ${${PROJECT_NAME}_EXPORTED_TARGETS})
-
-install(TARGETS
-  face_detector
-        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+install(TARGETS face_detector
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
-
-install(DIRECTORY include/face_detector/
+install(DIRECTORY include/${PROJECT_NAME}/
         DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
 )
 
-install(DIRECTORY launch param
+install(DIRECTORY param
         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/
+)
+install(DIRECTORY launch
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/
+)
+
+catkin_install_python(PROGRAMS scripts/face_detector_action_client.py
+                      DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
 if(CATKIN_ENABLE_TESTING)
