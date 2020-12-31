@@ -8,7 +8,7 @@
   <url>http://ros.org/wiki/leg_detector</url>
 
   <buildtool_depend>catkin</buildtool_depend>
-  <depend>bfl</depend>
+  <depend>liborocos-bfl</depend>
   <depend>dynamic_reconfigure</depend>
   <depend>geometry_msgs</depend>
   <depend>image_geometry</depend>
