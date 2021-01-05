@@ -50,7 +50,7 @@ namespace people
 {
 
 Faces::Faces():
-  list_(NULL),
+  list_(),
   cam_model_(NULL)
 {
 }
