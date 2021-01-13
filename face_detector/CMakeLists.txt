@@ -84,6 +84,12 @@ install(DIRECTORY launch param
         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/
 )
 
+file(GLOB haarcascade_folder "${OpenCV_INSTALL_PATH}/share/*/haarcascades")
+configure_file(default_folder.in default_folder)
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/default_folder"
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)
+
 if(CATKIN_ENABLE_TESTING)
   find_package(rostest REQUIRED)
 

@@ -42,9 +42,11 @@
 #include <cfloat>
 #include <algorithm>
 #include <iostream>
+#include <fstream>
 
 #include <ros/time.h>
 #include <ros/console.h>
+#include <ros/package.h>
 
 #include <opencv2/imgproc/imgproc_c.h>
 
@@ -73,6 +75,39 @@ Faces::~Faces()
 
 }
 
+std::string getDefaultFolder()
+{
+  std::string path = ros::package::getPath("face_detector");
+  ifstream my_file;
+  my_file.open(path + "/default_folder");
+  std::string default_folder;
+  getline(my_file, default_folder);
+  return default_folder;
+}
+
+bool Faces::loadClassifier(const string& haar_classifier_filename)
+{
+  bool cascade_ok = cascade_.load(haar_classifier_filename);
+  if (cascade_ok)
+  {
+    return true;
+  }
+
+  // Load the default classifier folder and look in there
+  string second_path = getDefaultFolder() + "/" + haar_classifier_filename;
+  cascade_ok = cascade_.load(second_path);
+
+  if (cascade_ok)
+  {
+    return true;
+  }
+  else
+  {
+    ROS_ERROR_STREAM("Cascade file could not be found at " << haar_classifier_filename << " or " <<
+                     second_path);
+    return false;
+  }
+}
 
 /* Note: The multi-threading in this file is left over from a previous incarnation that allowed multiple
  * cascades to be run at once. It hasn't been removed in case we want to return to that model, and since
@@ -91,11 +126,10 @@ void Faces::initFaceDetectionDisparity(uint num_cascades, string haar_classifier
   face_sep_dist_m_ = face_sep_dist_m;
 
   face_go_mutex_ = new boost::mutex();
-  bool cascade_ok = cascade_.load(haar_classifier_filename);
+  bool cascade_ok = loadClassifier(haar_classifier_filename);
 
   if (!cascade_ok)
   {
-    ROS_ERROR_STREAM("Cascade file " << haar_classifier_filename << " doesn't exist.");
     return;
   }
   threads_.create_thread(boost::bind(&Faces::faceDetectionThreadDisparity, this, 0));
@@ -257,11 +291,10 @@ void Faces::initFaceDetectionDepth(uint num_cascades, string haar_classifier_fil
   face_sep_dist_m_ = face_sep_dist_m;
 
   face_go_mutex_ = new boost::mutex();
-  bool cascade_ok = cascade_.load(haar_classifier_filename);
+  bool cascade_ok = loadClassifier(haar_classifier_filename);
 
   if (!cascade_ok)
   {
-    ROS_ERROR_STREAM("Cascade file " << haar_classifier_filename << " doesn't exist.");
     return;
   }
   threads_.create_thread(boost::bind(&Faces::faceDetectionThreadDepth, this, 0));

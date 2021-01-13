@@ -168,6 +168,9 @@ public:
    */
   void initFaceDetectionDepth(uint num_cascades, string haar_classifier_filename, double face_size_min_m, double face_size_max_m, double max_face_z_m, double face_sep_dist_m);
 
+protected:
+  bool loadClassifier(const string& haar_classifier_filename);
+
 ////////////////////
 private:
 

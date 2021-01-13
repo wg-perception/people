@@ -1,1 +1,1 @@
-classifier_filename: /usr/share/opencv4/haarcascades/haarcascade_frontalface_alt.xml
+classifier_filename: haarcascade_frontalface_alt.xml
