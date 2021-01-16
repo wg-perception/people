@@ -44,6 +44,7 @@
 
 #include <ros/ros.h>
 #include <ros/console.h>
+#include <ros/package.h>
 #include <boost/filesystem.hpp>
 #include <boost/thread/mutex.hpp>
 
@@ -74,10 +75,55 @@
 #include <actionlib/server/simple_action_server.h>
 #include <face_detector/FaceDetectorAction.h>
 
+#include <yaml-cpp/yaml.h>
+
 using namespace std;
 
 namespace people
 {
+bool fexists(const std::string& filename)
+{
+  ifstream ifile(filename);
+  return ifile.is_open();
+}
+
+std::string loadClassifierFilename(const ros::NodeHandle& local_nh)
+{
+  std::string param_value;
+  local_nh.param("classifier_filename", param_value, std::string(""));
+  if (fexists(param_value))
+  {
+    return param_value;
+  }
+
+  std::vector<std::string> folders;
+
+  if (local_nh.hasParam("classifier_folders"))
+  {
+    local_nh.param("classifier_folders", folders);
+  }
+  else
+  {
+    YAML::Node folders_yaml = YAML::LoadFile(ros::package::getPath("face_detector") + "/param/default_folders.yaml");
+    for (YAML::const_iterator it=folders_yaml.begin();it!=folders_yaml.end();++it)
+    {
+      folders.push_back(it->as<std::string>());
+    }
+  }
+
+  for (const std::string& folder : folders)
+  {
+    std::string path = folder + "/" + param_value;
+    if (fexists(path))
+    {
+      return path;
+    }
+  }
+
+  ROS_FATAL("Cascade file %s doesn't exist.", param_value.c_str());
+  exit(-1);
+}
+
 
 /** FaceDetector - A wrapper around OpenCV's face detection, plus some usage of depth from stereo to restrict the results based on plausible face size.
  */
@@ -212,7 +258,6 @@ public:
     // Parameters
     ros::NodeHandle local_nh("~");
     local_nh.param("classifier_name", name_, std::string(""));
-    local_nh.param("classifier_filename", haar_filename_, std::string(""));
     local_nh.param("classifier_reliability", reliability_, 0.0);
     local_nh.param("do_display", do_display_, false);
     local_nh.param("do_continuous", do_continuous_, true);
@@ -226,6 +271,8 @@ public:
     local_nh.param("use_rgbd", use_rgbd_, false);
     local_nh.param("queue_size", queue_size, 5);
     local_nh.param("approximate_sync", approx, false);
+
+    haar_filename_ = loadClassifierFilename(local_nh);
 
     if (do_display_)
     {

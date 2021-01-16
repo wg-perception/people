@@ -63,6 +63,7 @@ add_executable(face_detector
                        src/face_detection.cpp
                        src/faces.cpp)
 target_link_libraries(${PROJECT_NAME}
+  yaml-cpp
   ${catkin_LIBRARIES}
   ${Boost_LIBRARIES}
   ${OpenCV_LIBRARIES})
@@ -82,12 +83,6 @@ install(DIRECTORY include/face_detector/
 
 install(DIRECTORY launch param
         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/
-)
-
-file(GLOB haarcascade_folder "${OpenCV_INSTALL_PATH}/share/*/haarcascades")
-configure_file(default_folder.in default_folder)
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/default_folder"
-        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
 
 if(CATKIN_ENABLE_TESTING)
