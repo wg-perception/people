@@ -88,6 +88,8 @@ catkin_install_python(PROGRAMS scripts/face_detector_action_client.py
 
 if(CATKIN_ENABLE_TESTING)
   find_package(rostest REQUIRED)
+  find_package(roslint REQUIRED)
+  find_package(roslaunch REQUIRED)
 
   catkin_download_test_data(${PROJECT_NAME}_noface_test_diamondback.bag
     http://download.ros.org/data/face_detector/face_detector_noface_test_diamondback.bag
@@ -109,4 +111,8 @@ if(CATKIN_ENABLE_TESTING)
 #  add_rostest(test/action-rgbd_true_rtest.xml)
 #  add_rostest(test/action-rgbd_false_rtest.xml)
 
+  roslint_cpp()
+  roslaunch_add_file_check(launch)
+  roslint_python()
+  roslint_add_test()
 endif()

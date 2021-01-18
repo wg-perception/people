@@ -36,6 +36,8 @@
   <exec_depend>dynamic_reconfigure</exec_depend>
   <exec_depend>message_runtime</exec_depend>
 
+  <test_depend>roslaunch</test_depend>
+  <test_depend>roslint</test_depend>
   <test_depend>rostest</test_depend>
   <test_depend>stereo_image_proc</test_depend>
 </package>
