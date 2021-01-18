@@ -34,17 +34,17 @@
 
 /* Author: Wim Meeussen */
 
-#ifndef __TRACKER_PARTICLE__
-#define __TRACKER_PARTICLE__
+#ifndef PEOPLE_TRACKING_FILTER_TRACKER_PARTICLE_H
+#define PEOPLE_TRACKING_FILTER_TRACKER_PARTICLE_H
 
-#include "tracker.h"
+#include <people_tracking_filter/tracker.h>
 
 // bayesian filtering
 #include <bfl/filter/bootstrapfilter.h>
-#include "state_pos_vel.h"
-#include "mcpdf_pos_vel.h"
-#include "sysmodel_pos_vel.h"
-#include "measmodel_pos.h"
+#include <people_tracking_filter/state_pos_vel.h>
+#include <people_tracking_filter/mcpdf_pos_vel.h>
+#include <people_tracking_filter/sysmodel_pos_vel.h>
+#include <people_tracking_filter/measmodel_pos.h>
 
 // TF
 #include <tf/tf.h>
@@ -54,10 +54,10 @@
 
 // log files
 #include <fstream>
+#include <string>
 
 namespace estimation
 {
-
 class TrackerParticle: public Tracker
 {
 public:
@@ -74,13 +74,13 @@ public:
   virtual bool isInitialized() const
   {
     return tracker_initialized_;
-  };
+  }
 
   /// return measure for tracker quality: 0=bad 1=good
   virtual double getQuality() const
   {
     return quality_;
-  };
+  }
 
   /// return the lifetime of the tracker
   virtual double getLifetime() const;
@@ -115,10 +115,6 @@ private:
   bool tracker_initialized_;
   double init_time_, filter_time_, quality_;
   unsigned int num_particles_;
-
-
-}; // class
-
-}; // namespace
-
-#endif
+};  // class
+}  // namespace estimation
+#endif  // PEOPLE_TRACKING_FILTER_TRACKER_PARTICLE_H

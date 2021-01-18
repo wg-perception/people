@@ -34,10 +34,11 @@
 
 /* Author: Wim Meeussen */
 
-#ifndef __PEOPLE_TRACKING_NODE__
-#define __PEOPLE_TRACKING_NODE__
+#ifndef PEOPLE_TRACKING_FILTER_PEOPLE_TRACKING_NODE_H
+#define PEOPLE_TRACKING_FILTER_PEOPLE_TRACKING_NODE_H
 
 #include <string>
+#include <list>
 #include <boost/thread/mutex.hpp>
 
 // ros stuff
@@ -46,9 +47,9 @@
 #include <tf/transform_listener.h>
 
 // people tracking stuff
-#include "tracker.h"
-#include "detector_particle.h"
-#include "gaussian_vector.h"
+#include <people_tracking_filter/tracker.h>
+#include <people_tracking_filter/detector_particle.h>
+#include <people_tracking_filter/gaussian_vector.h>
 
 // messages
 #include <sensor_msgs/PointCloud.h>
@@ -67,7 +68,7 @@ class PeopleTrackingNode
 {
 public:
   /// constructor
-  PeopleTrackingNode(ros::NodeHandle nh);
+  explicit PeopleTrackingNode(ros::NodeHandle nh);
 
   /// destructor
   virtual ~PeopleTrackingNode();
@@ -81,9 +82,7 @@ public:
   /// tracker loop
   void spin();
 
-
 private:
-
   ros::NodeHandle nh_;
 
   ros::Publisher people_filter_pub_;
@@ -112,10 +111,6 @@ private:
 
   // Track only one person who the robot will follow.
   bool follow_one_person_;
-
-
-}; // class
-
-}; // namespace
-
-#endif
+};  // class
+}  // namespace estimation
+#endif  // PEOPLE_TRACKING_FILTER_PEOPLE_TRACKING_NODE_H
