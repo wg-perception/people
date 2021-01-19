@@ -34,13 +34,13 @@
 
 /* Author: Wim Meeussen */
 
-
-#ifndef GAUSSIAN_POS_VEL_H
-#define GAUSSIAN_POS_VEL_H
+#ifndef PEOPLE_TRACKING_FILTER_GAUSSIAN_POS_VEL_H
+#define PEOPLE_TRACKING_FILTER_GAUSSIAN_POS_VEL_H
 
 #include <bfl/pdf/pdf.h>
-#include "state_pos_vel.h"
-#include "gaussian_vector.h"
+#include <people_tracking_filter/state_pos_vel.h>
+#include <people_tracking_filter/gaussian_vector.h>
+#include <vector>
 
 namespace BFL
 {
@@ -73,13 +73,12 @@ public:
 
   // Redefinition of pure virtuals
   virtual Probability ProbabilityGet(const StatePosVel& input) const;
-  bool SampleFrom(vector<Sample<StatePosVel> >& list_samples, const int num_samples, int method = DEFAULT, void * args = NULL) const;
+  bool SampleFrom(vector<Sample<StatePosVel> >& list_samples, const int num_samples, int method = DEFAULT,
+                  void * args = NULL) const;
   virtual bool SampleFrom(Sample<StatePosVel>& one_sample, int method = DEFAULT, void * args = NULL) const;
 
   virtual StatePosVel ExpectedValueGet() const;
   virtual MatrixWrapper::SymmetricMatrix CovarianceGet() const;
-
 };
-
-} // end namespace
-#endif
+}  // end namespace BFL
+#endif  // PEOPLE_TRACKING_FILTER_GAUSSIAN_POS_VEL_H

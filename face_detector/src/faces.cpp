@@ -38,7 +38,7 @@
 
 /* Author: Caroline Pantofaru */
 
-#include "face_detector/faces.h"
+#include <face_detector/faces.h>
 #include <cfloat>
 #include <algorithm>
 #include <iostream>
@@ -47,11 +47,14 @@
 #include <ros/console.h>
 
 #include <opencv2/imgproc/imgproc_c.h>
+#include <string>
+#include <vector>
 
 namespace people
 {
 
 Faces::Faces():
+  list_(),
   cam_model_(NULL)
 {
 }
@@ -70,9 +73,7 @@ Faces::~Faces()
   }
 
   cam_model_ = 0;
-
 }
-
 
 /* Note: The multi-threading in this file is left over from a previous incarnation that allowed multiple
  * cascades to be run at once. It hasn't been removed in case we want to return to that model, and since
@@ -80,8 +81,8 @@ Faces::~Faces()
  * of the face_detector node.
  */
 
-
-void Faces::initFaceDetectionDisparity(uint num_cascades, string haar_classifier_filename, double face_size_min_m, double face_size_max_m, double max_face_z_m, double face_sep_dist_m)
+void Faces::initFaceDetectionDisparity(uint num_cascades, std::string haar_classifier_filename, double face_size_min_m,
+                                       double face_size_max_m, double max_face_z_m, double face_sep_dist_m)
 {
   images_ready_ = 0;
 
@@ -102,14 +103,13 @@ void Faces::initFaceDetectionDisparity(uint num_cascades, string haar_classifier
 }
 
 /////
-
-vector<Box2D3D> Faces::detectAllFacesDisparity(const cv::Mat &image, double threshold, const cv::Mat &disparity_image, image_geometry::StereoCameraModel *cam_model)
+std::vector<Box2D3D> Faces::detectAllFacesDisparity(const cv::Mat &image, double threshold,
+                                                    const cv::Mat &disparity_image,
+                                                    image_geometry::StereoCameraModel *cam_model)
 {
-
   faces_.clear();
 
   // Convert the image to grayscale, if necessary.
-
   if (image.channels() == 1)
   {
     cv_image_gray_.create(image.size(), CV_8UC1);
@@ -147,15 +147,13 @@ vector<Box2D3D> Faces::detectAllFacesDisparity(const cv::Mat &image, double thre
 }
 
 /////
-
 void Faces::faceDetectionThreadDisparity(uint i)
 {
-
-  while (1)
+  while (true)
   {
     boost::mutex::scoped_lock fgmlock(*(face_go_mutex_));
     boost::mutex::scoped_lock tlock(t_mutex_, boost::defer_lock);
-    while (1)
+    while (true)
     {
       tlock.lock();
       if (images_ready_)
@@ -173,36 +171,42 @@ void Faces::faceDetectionThreadDisparity(uint i)
     cv::Point3d p3_2(face_size_min_m_, 0, max_face_z_m_);
     cv::Point2d p2_1 = (cam_model_->left()).project3dToPixel(p3_1);
     cv::Point2d p2_2 = (cam_model_->left()).project3dToPixel(p3_2);
-    int this_min_face_size = (int)(floor(fabs(p2_2.x - p2_1.x)));
+    int this_min_face_size = static_cast<int>(floor(fabs(p2_2.x - p2_1.x)));
 
     std::vector<cv::Rect> faces_vec;
-    cascade_.detectMultiScale(cv_image_gray_, faces_vec,  1.2, 2, cv::CASCADE_DO_CANNY_PRUNING, cv::Size(this_min_face_size, this_min_face_size));
+    cascade_.detectMultiScale(cv_image_gray_, faces_vec,  1.2, 2, cv::CASCADE_DO_CANNY_PRUNING,
+                              cv::Size(this_min_face_size, this_min_face_size));
 
-    // Filter the faces using depth information, if available. Currently checks that the actual face size is within the given limits.
+    // Filter the faces using depth information, if available.
+    // Currently checks that the actual face size is within the given limits.
     cv::Scalar color(0, 255, 0);
     Box2D3D one_face;
     double avg_disp = 0.0;
     cv::Mat uvd(1, 3, CV_32FC1);
     cv::Mat xyz(1, 3, CV_32FC1);
     // For each face...
-    for (uint iface = 0; iface < faces_vec.size(); iface++)  //face_seq->total; iface++) {
+    for (uint iface = 0; iface < faces_vec.size(); iface++)  // face_seq->total; iface++) {
     {
-
       one_face.status = "good";
 
       one_face.box2d = faces_vec[iface];
-      one_face.id = i; // The cascade that computed this face.
+      one_face.id = i;  // The cascade that computed this face.
 
       // Get the median disparity in the middle half of the bounding box.
-      cv::Mat disp_roi_shallow(*disparity_image_, cv::Rect(floor(one_face.box2d.x + 0.25 * one_face.box2d.width),
-                               floor(one_face.box2d.y + 0.25 * one_face.box2d.height),
-                               floor(one_face.box2d.x + 0.75 * one_face.box2d.width) - floor(one_face.box2d.x + 0.25 * one_face.box2d.width) + 1,
-                               floor(one_face.box2d.y + 0.75 * one_face.box2d.height) - floor(one_face.box2d.y + 0.25 * one_face.box2d.height) + 1));
+      cv::Mat disp_roi_shallow(*disparity_image_,
+          cv::Rect(floor(one_face.box2d.x + 0.25 * one_face.box2d.width),
+                   floor(one_face.box2d.y + 0.25 * one_face.box2d.height),
+                   floor(one_face.box2d.x + 0.75 * one_face.box2d.width) -
+                      floor(one_face.box2d.x + 0.25 * one_face.box2d.width) + 1,
+                   floor(one_face.box2d.y + 0.75 * one_face.box2d.height) -
+                      floor(one_face.box2d.y + 0.25 * one_face.box2d.height) + 1));
       cv::Mat disp_roi = disp_roi_shallow.clone();
       cv::Mat tmat = disp_roi.reshape(1, disp_roi.rows * disp_roi.cols);
       cv::Mat tmat_sorted;
       cv::sort(tmat, tmat_sorted, CV_SORT_EVERY_COLUMN + CV_SORT_DESCENDING);
-      avg_disp = tmat_sorted.at<float>(floor(cv::countNonZero(tmat_sorted >= 0.0) / 2.0)); // Get the middle valid disparity (-1 disparities are invalid)
+
+      // Get the middle valid disparity (-1 disparities are invalid)
+      avg_disp = tmat_sorted.at<float>(floor(cv::countNonZero(tmat_sorted >= 0.0) / 2.0));
 
       // Fill in the rest of the face data structure.
       one_face.center2d = cv::Point2d(one_face.box2d.x + one_face.box2d.width / 2.0,
@@ -218,7 +222,9 @@ void Faces::faceDetectionThreadDisparity(uint i)
         cam_model_->projectDisparityTo3d(cv::Point2d(one_face.box2d.width, 0.0), avg_disp, p3_2);
         one_face.width3d = fabs(p3_2.x - p3_1.x);
         cam_model_->projectDisparityTo3d(one_face.center2d, avg_disp, one_face.center3d);
-        if (one_face.center3d.z > max_face_z_m_ || one_face.width3d < face_size_min_m_ || one_face.width3d > face_size_max_m_)
+        if (one_face.center3d.z > max_face_z_m_ ||
+            one_face.width3d < face_size_min_m_ ||
+            one_face.width3d > face_size_max_m_)
         {
           one_face.status = "bad";
         }
@@ -230,7 +236,7 @@ void Faces::faceDetectionThreadDisparity(uint i)
         one_face.status = "unknown";
       }
 
-      // Add faces to the output vector.
+      // Add faces to the output .
       // lock faces
       boost::mutex::scoped_lock lock(face_mutex_);
       faces_.push_back(one_face);
@@ -245,10 +251,9 @@ void Faces::faceDetectionThreadDisparity(uint i)
 }
 
 /////
-
-void Faces::initFaceDetectionDepth(uint num_cascades, string haar_classifier_filename, double face_size_min_m, double face_size_max_m, double max_face_z_m, double face_sep_dist_m)
+void Faces::initFaceDetectionDepth(uint num_cascades, std::string haar_classifier_filename, double face_size_min_m,
+                                   double face_size_max_m, double max_face_z_m, double face_sep_dist_m)
 {
-
   images_ready_ = 0;
 
   face_size_min_m_ = face_size_min_m;
@@ -267,12 +272,10 @@ void Faces::initFaceDetectionDepth(uint num_cascades, string haar_classifier_fil
   threads_.create_thread(boost::bind(&Faces::faceDetectionThreadDepth, this, 0));
 }
 
-
 /////
-
-vector<Box2D3D> Faces::detectAllFacesDepth(const cv::Mat &image, double threshold, const cv::Mat &dimage, image_geometry::StereoCameraModel *cam_model)
+std::vector<Box2D3D> Faces::detectAllFacesDepth(const cv::Mat &image, double threshold, const cv::Mat &dimage,
+                                                image_geometry::StereoCameraModel *cam_model)
 {
-
   faces_.clear();
 
   // Convert the image to grayscale, if necessary.
@@ -314,15 +317,13 @@ vector<Box2D3D> Faces::detectAllFacesDepth(const cv::Mat &image, double threshol
 }
 
 /////
-
 void Faces::faceDetectionThreadDepth(uint i)
 {
-
-  while (1)
+  while (true)
   {
     boost::mutex::scoped_lock fgmlock(*(face_go_mutex_));
     boost::mutex::scoped_lock tlock(t_mutex_, boost::defer_lock);
-    while (1)
+    while (true)
     {
       tlock.lock();
       if (images_ready_)
@@ -340,12 +341,14 @@ void Faces::faceDetectionThreadDepth(uint i)
     cv::Point3d p3_2(face_size_min_m_, 0, max_face_z_m_);
     cv::Point2d p2_1 = (cam_model_->left()).project3dToPixel(p3_1);
     cv::Point2d p2_2 = (cam_model_->left()).project3dToPixel(p3_2);
-    int this_min_face_size = (int)(floor(fabs(p2_2.x - p2_1.x)));
+    int this_min_face_size = static_cast<int>(floor(fabs(p2_2.x - p2_1.x)));
 
     std::vector<cv::Rect> faces_vec;
-    cascade_.detectMultiScale(cv_image_gray_, faces_vec,  1.2, 2, cv::CASCADE_DO_CANNY_PRUNING, cv::Size(this_min_face_size, this_min_face_size));
+    cascade_.detectMultiScale(cv_image_gray_, faces_vec,  1.2, 2, cv::CASCADE_DO_CANNY_PRUNING,
+                              cv::Size(this_min_face_size, this_min_face_size));
 
-    // Filter the faces using depth information, if available. Currently checks that the actual face size is within the given limits.
+    // Filter the faces using depth information, if available.
+    // Currently checks that the actual face size is within the given limits.
     cv::Scalar color(0, 255, 0);
     Box2D3D one_face;
     double avg_d = 0.0;
@@ -354,23 +357,24 @@ void Faces::faceDetectionThreadDepth(uint i)
     // For each face...
     for (uint iface = 0; iface < faces_vec.size(); iface++)
     {
-
       one_face.status = "good";
 
       one_face.box2d = faces_vec[iface];
-      one_face.id = i; // The cascade that computed this face.
+      one_face.id = i;  // The cascade that computed this face.
 
       // Get the median depth in the middle half of the bounding box.
-      cv::Mat depth_roi_shallow(*depth_image_, cv::Rect(floor(one_face.box2d.x + 0.25 * one_face.box2d.width),
-                                floor(one_face.box2d.y + 0.25 * one_face.box2d.height),
-                                floor(one_face.box2d.x + 0.75 * one_face.box2d.width) - floor(one_face.box2d.x + 0.25 * one_face.box2d.width) + 1,
-                                floor(one_face.box2d.y + 0.75 * one_face.box2d.height) - floor(one_face.box2d.y + 0.25 * one_face.box2d.height) + 1));
+      cv::Mat depth_roi_shallow(*depth_image_,
+          cv::Rect(floor(one_face.box2d.x + 0.25 * one_face.box2d.width),
+                   floor(one_face.box2d.y + 0.25 * one_face.box2d.height),
+                   floor(one_face.box2d.x + 0.75 * one_face.box2d.width) -
+                      floor(one_face.box2d.x + 0.25 * one_face.box2d.width) + 1,
+                   floor(one_face.box2d.y + 0.75 * one_face.box2d.height) -
+                      floor(one_face.box2d.y + 0.25 * one_face.box2d.height) + 1));
 
       // Fill in the rest of the face data structure.
       one_face.center2d = cv::Point2d(one_face.box2d.x + one_face.box2d.width / 2.0,
                                       one_face.box2d.y + one_face.box2d.height / 2.0);
       one_face.width2d = one_face.box2d.width;
-
 
       // If the median depth was valid and the face is a reasonable size, the face status is "good".
       // If the median depth was valid but the face isn't a reasonable size, the face status is "bad".
@@ -402,7 +406,9 @@ void Faces::faceDetectionThreadDepth(uint i)
         one_face.center3d = (cam_model_->left()).projectPixelTo3dRay(one_face.center2d);
 
         one_face.center3d = (avg_d / one_face.center3d.z) * one_face.center3d;
-        if (one_face.center3d.z > max_face_z_m_ || one_face.width3d < face_size_min_m_ || one_face.width3d > face_size_max_m_)
+        if (one_face.center3d.z > max_face_z_m_ ||
+            one_face.width3d < face_size_min_m_ ||
+            one_face.width3d > face_size_max_m_)
         {
           one_face.status = "bad";
         }
@@ -426,7 +432,5 @@ void Faces::faceDetectionThreadDepth(uint i)
     fdmlock.unlock();
     face_detection_done_cond_.notify_one();
   }
-
 }
-
-};
+};  // namespace people

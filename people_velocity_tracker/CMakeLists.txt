@@ -16,16 +16,16 @@ catkin_package(
 )
 
 if(CATKIN_ENABLE_TESTING)
-  find_package(catkin REQUIRED COMPONENTS roslint)
+  find_package(catkin REQUIRED COMPONENTS roslaunch roslint)
+  roslaunch_add_file_check(launch)
   roslint_python()
   roslint_add_test()
 endif()
 
-catkin_install_python(PROGRAMS scripts/static.py scripts/tracker.py
-  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+install(FILES launch/filtered_tracked_detector.launch launch/tracked_detector.launch
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
 )
 
-install(FILES launch/filtered_tracked_detector.launch
-              launch/tracked_detector.launch
-        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+catkin_install_python(PROGRAMS scripts/static.py scripts/tracker.py
+                      DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )

@@ -1,15 +1,22 @@
 #!/usr/bin/env python
 
-import rospy
-from geometry_msgs.msg import Point, Vector3
 import math
-from people_msgs.msg import PositionMeasurementArray, Person, People
-from easy_markers.generator import MarkerGenerator, Marker
+
+from easy_markers.generator import Marker, MarkerGenerator
+
+from geometry_msgs.msg import Point, Vector3
+
 from kalman_filter import Kalman
+
+from people_msgs.msg import People, Person, PositionMeasurementArray
+
+import rospy
 
 
 def distance(leg1, leg2):
-    return math.sqrt(math.pow(leg1.x - leg2.x, 2) + math.pow(leg1.y - leg2.y, 2) + math.pow(leg1.z - leg2.z, 2))
+    return math.sqrt(math.pow(leg1.x - leg2.x, 2) +
+                     math.pow(leg1.y - leg2.y, 2) +
+                     math.pow(leg1.z - leg2.z, 2))
 
 
 def average(leg1, leg2):
@@ -30,6 +37,10 @@ def scale(v, s):
     v.x *= s
     v.y *= s
     v.z *= s
+
+
+def printv(v):
+    print('%.2f %.2f %.2f' % (v.x, v.y, v.z),)
 
 
 gen = MarkerGenerator()
@@ -58,7 +69,7 @@ class PersonEstimate(object):
     def age(self):
         return self.pos.header.stamp
 
-    def id(self):
+    def get_id(self):
         return self.pos.object_id
 
     def velocity(self):
@@ -72,14 +83,13 @@ class PersonEstimate(object):
         gen.scale = [.1, .3, 0]
         gen.color = [1, 1, 1, 1]
         vel = self.velocity()
-        # scale(vel, 15)
         m = gen.marker(points=[self.pos.pos, add(self.pos.pos, vel)])
         m.header = self.pos.header
         pub.publish(m)
 
     def get_person(self):
         p = Person()
-        p.name = self.id()
+        p.name = self.get_id()
         p.position = self.pos.pos
         p.velocity = self.velocity()
         p.reliability = self.reliability
@@ -133,6 +143,7 @@ class VelocityTracker(object):
         self.ppub.publish(pl)
 
 
-rospy.init_node("people_velocity_tracker")
-vt = VelocityTracker()
-vt.spin()
+if __name__ == '__main__':
+    rospy.init_node('people_velocity_tracker')
+    vt = VelocityTracker()
+    vt.spin()

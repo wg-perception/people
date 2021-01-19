@@ -34,21 +34,14 @@
 
 /* Author: Wim Meeussen */
 
-#include "people_tracking_filter/detector_particle.h"
-#include "people_tracking_filter/uniform_vector.h"
-
-using namespace MatrixWrapper;
-using namespace BFL;
-using namespace tf;
-using namespace std;
-using namespace ros;
-using namespace geometry_msgs;
-
-
-
+#include <people_tracking_filter/detector_particle.h>
+#include <people_tracking_filter/uniform_vector.h>
+#include <vector>
 
 namespace estimation
 {
+using MatrixWrapper::Matrix;
+
 // constructor
 DetectorParticle::DetectorParticle(unsigned int num_particles):
   prior_(num_particles),
@@ -59,35 +52,29 @@ DetectorParticle::DetectorParticle(unsigned int num_particles):
   num_particles_(num_particles)
 {}
 
-
-
 // destructor
 DetectorParticle::~DetectorParticle()
 {
   if (filter_) delete filter_;
 }
 
-
 // initialize prior density of filter
 void DetectorParticle::initialize(const tf::Vector3& mu, const tf::Vector3& size, const double time)
 {
-  cout << "Initializing detector with " << num_particles_ << " particles, with uniform size "
-       << size << " around " << mu << endl;
+  std::cout << "Initializing detector with " << num_particles_ << " particles, with uniform size "
+            << size << " around " << mu << std::endl;
 
-  UniformVector uniform_vector(mu, size);
-  vector<Sample<tf::Vector3> > prior_samples(num_particles_);
+  BFL::UniformVector uniform_vector(mu, size);
+  std::vector<BFL::Sample<tf::Vector3> > prior_samples(num_particles_);
   uniform_vector.SampleFrom(prior_samples, num_particles_, CHOLESKY, NULL);
   prior_.ListOfSamplesSet(prior_samples);
-  filter_ = new BootstrapFilter<tf::Vector3, tf::Vector3>(&prior_, &prior_, 0, num_particles_ / 4.0);
+  filter_ = new BFL::BootstrapFilter<tf::Vector3, tf::Vector3>(&prior_, &prior_, 0, num_particles_ / 4.0);
 
   // detector initialized
   detector_initialized_ = true;
   quality_ = 1;
   filter_time_ = time;
 }
-
-
-
 
 // update filter prediction
 bool DetectorParticle::updatePrediction(const double dt)
@@ -102,10 +89,9 @@ bool DetectorParticle::updatePrediction(const double dt)
   return res;
 }
 
-
-
 // update filter correction
-bool DetectorParticle::updateCorrection(const tf::Vector3&  meas, const MatrixWrapper::SymmetricMatrix& cov, const double time)
+bool DetectorParticle::updateCorrection(const tf::Vector3&  meas, const MatrixWrapper::SymmetricMatrix& cov,
+                                        const double time)
 {
   assert(cov.columns() == 3);
 
@@ -113,7 +99,7 @@ bool DetectorParticle::updateCorrection(const tf::Vector3&  meas, const MatrixWr
   filter_time_ = time;
 
   // set covariance
-  ((MeasPdfVector*)(meas_model_.MeasurementPdfGet()))->CovarianceSet(cov);
+  static_cast<BFL::MeasPdfVector*>(meas_model_.MeasurementPdfGet())->CovarianceSet(cov);
 
   // update filter
   bool res = filter_->Update(&meas_model_, meas);
@@ -122,20 +108,17 @@ bool DetectorParticle::updateCorrection(const tf::Vector3&  meas, const MatrixWr
   return res;
 }
 
-
 // get evenly spaced particle cloud
 void DetectorParticle::getParticleCloud(const tf::Vector3& step, double threshold, sensor_msgs::PointCloud& cloud) const
 {
-  ((MCPdfVector*)(filter_->PostGet()))->getParticleCloud(step, threshold, cloud);
+  static_cast<BFL::MCPdfVector*>(filter_->PostGet())->getParticleCloud(step, threshold, cloud);
 }
-
 
 // get most recent filter posterior
 void DetectorParticle::getEstimate(tf::Vector3& est) const
 {
-  est = ((MCPdfVector*)(filter_->PostGet()))->ExpectedValueGet();
+  est = static_cast<BFL::MCPdfVector*>(filter_->PostGet())->ExpectedValueGet();
 }
-
 
 void DetectorParticle::getEstimate(people_msgs::PositionMeasurement& est) const
 {
@@ -149,18 +132,9 @@ void DetectorParticle::getEstimate(people_msgs::PositionMeasurement& est) const
   est.header.frame_id = "base_link";
 }
 
-
-
-
-
 /// Get histogram from certain area
 Matrix DetectorParticle::getHistogram(const tf::Vector3& min, const tf::Vector3& max, const tf::Vector3& step) const
 {
-  return ((MCPdfVector*)(filter_->PostGet()))->getHistogram(min, max, step);
+  return static_cast<BFL::MCPdfVector*>(filter_->PostGet())->getHistogram(min, max, step);
 }
-
-
-}; // namespace
-
-
-
+}  // namespace estimation

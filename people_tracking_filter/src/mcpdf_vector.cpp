@@ -34,63 +34,57 @@
 
 /* Author: Wim Meeussen */
 
-#include "people_tracking_filter/mcpdf_vector.h"
-#include "people_tracking_filter/state_pos_vel.h"
+#include <people_tracking_filter/mcpdf_vector.h>
+#include <people_tracking_filter/state_pos_vel.h>
 #include <assert.h>
 #include <vector>
 #include <std_msgs/Float64.h>
-#include "people_tracking_filter/rgb.h"
+#include <people_tracking_filter/rgb.h>
+#include <algorithm>
 
-
-using namespace MatrixWrapper;
-using namespace BFL;
-using namespace tf;
-
+namespace BFL
+{
 static const unsigned int NUM_CONDARG   = 1;
 
-
 MCPdfVector::MCPdfVector(unsigned int num_samples)
-  : MCPdf<Vector3> (num_samples, NUM_CONDARG)
+  : MCPdf<tf::Vector3> (num_samples, NUM_CONDARG)
 {}
 
 MCPdfVector::~MCPdfVector() {}
 
-
-WeightedSample<Vector3>
+WeightedSample<tf::Vector3>
 MCPdfVector::SampleGet(unsigned int particle) const
 {
-  assert((int)particle >= 0 && particle < _listOfSamples.size());
+  assert(static_cast<int>(particle) >= 0 && particle < _listOfSamples.size());
   return _listOfSamples[particle];
 }
 
-
-Vector3 MCPdfVector::ExpectedValueGet() const
+tf::Vector3 MCPdfVector::ExpectedValueGet() const
 {
-  Vector3 pos(0, 0, 0);
+  tf::Vector3 pos(0, 0, 0);
   double current_weight;
-  std::vector<WeightedSample<Vector3> >::const_iterator it_los;
+  std::vector<WeightedSample<tf::Vector3> >::const_iterator it_los;
   for (it_los = _listOfSamples.begin() ; it_los != _listOfSamples.end() ; it_los++)
   {
     current_weight = it_los->WeightGet();
     pos += (it_los->ValueGet() * current_weight);
   }
 
-  return Vector3(pos);
+  return tf::Vector3(pos);
 }
 
-
 /// Get evenly distributed particle cloud
-void MCPdfVector::getParticleCloud(const Vector3& step, double threshold, sensor_msgs::PointCloud& cloud) const
+void MCPdfVector::getParticleCloud(const tf::Vector3& step, double threshold, sensor_msgs::PointCloud& cloud) const
 {
   unsigned int num_samples = _listOfSamples.size();
   assert(num_samples > 0);
-  Vector3 m = _listOfSamples[0].ValueGet();
-  Vector3 M = _listOfSamples[0].ValueGet();
+  tf::Vector3 m = _listOfSamples[0].ValueGet();
+  tf::Vector3 M = _listOfSamples[0].ValueGet();
 
   // calculate min and max
   for (unsigned int s = 0; s < num_samples; s++)
   {
-    Vector3 v = _listOfSamples[s].ValueGet();
+    tf::Vector3 v = _listOfSamples[s].ValueGet();
     for (unsigned int i = 0; i < 3; i++)
     {
       if (v[i] < m[i]) m[i] = v[i];
@@ -107,10 +101,10 @@ void MCPdfVector::getParticleCloud(const Vector3& step, double threshold, sensor
   for (unsigned int r = 1; r <= row; r++)
     for (unsigned int c = 1; c <= col; c++)
       if (hist(r, c) > threshold) total++;
-  cout << "size total " << total << endl;
+  std::cout << "size total " << total << std::endl;
 
-  vector<geometry_msgs::Point32> points(total);
-  vector<float> weights(total);
+  std::vector<geometry_msgs::Point32> points(total);
+  std::vector<float> weights(total);
   sensor_msgs::ChannelFloat32 channel;
   for (unsigned int r = 1; r <= row; r++)
     for (unsigned int c = 1; c <= col; c++)
@@ -120,10 +114,10 @@ void MCPdfVector::getParticleCloud(const Vector3& step, double threshold, sensor
           points[t].x = m[0] + (step[0] * r);
         points[t].y = m[1] + (step[1] * c);
         points[t].z = m[2];
-        weights[t] = rgb[999 - (int)trunc(max(0.0, min(999.0, hist(r, c) * 2 * total * total)))];
+        weights[t] = rgb[999 - static_cast<int>(trunc(std::max(0.0, std::min(999.0, hist(r, c) * 2 * total * total))))];
         t++;
       }
-  cout << "points size " << points.size() << endl;
+  std::cout << "points size " << points.size() << std::endl;
   cloud.header.frame_id = "base_link";
   cloud.points  = points;
   channel.name = "rgb";
@@ -131,9 +125,10 @@ void MCPdfVector::getParticleCloud(const Vector3& step, double threshold, sensor
   cloud.channels.push_back(channel);
 }
 
-
 /// Get histogram from pos
-MatrixWrapper::Matrix MCPdfVector::getHistogram(const Vector3& m, const Vector3& M, const Vector3& step) const
+MatrixWrapper::Matrix MCPdfVector::getHistogram(const tf::Vector3& m,
+                                                const tf::Vector3& M,
+                                                const tf::Vector3& step) const
 {
   unsigned int num_samples = _listOfSamples.size();
   unsigned int rows = round((M[0] - m[0]) / step[0]);
@@ -144,7 +139,7 @@ MatrixWrapper::Matrix MCPdfVector::getHistogram(const Vector3& m, const Vector3&
   // calculate histogram
   for (unsigned int i = 0; i < num_samples; i++)
   {
-    Vector3 rel(_listOfSamples[i].ValueGet() - m);
+    tf::Vector3 rel(_listOfSamples[i].ValueGet() - m);
     unsigned int r = round(rel[0] / step[0]);
     unsigned int c = round(rel[1] / step[1]);
     if (r >= 1 && c >= 1 && r <= rows && c <= cols)
@@ -154,12 +149,9 @@ MatrixWrapper::Matrix MCPdfVector::getHistogram(const Vector3& m, const Vector3&
   return hist;
 }
 
-
-
 unsigned int
 MCPdfVector::numParticlesGet() const
 {
   return _listOfSamples.size();
 }
-
-
+}  // namespace BFL

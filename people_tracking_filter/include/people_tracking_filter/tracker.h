@@ -34,10 +34,10 @@
 
 /* Author: Wim Meeussen */
 
-#ifndef __TRACKER__
-#define __TRACKER__
+#ifndef PEOPLE_TRACKING_FILTER_TRACKER_H
+#define PEOPLE_TRACKING_FILTER_TRACKER_H
 
-#include "state_pos_vel.h"
+#include <people_tracking_filter/state_pos_vel.h>
 #include <people_msgs/PositionMeasurement.h>
 #include <bfl/wrappers/matrix/matrix_wrapper.h>
 #include <string>
@@ -50,10 +50,10 @@ class Tracker
 {
 public:
   /// constructor
-  Tracker(const std::string& name): name_(name) {};
+  explicit Tracker(const std::string& name): name_(name) {}
 
   /// destructor
-  virtual ~Tracker() {};
+  virtual ~Tracker() {}
 
   /// return the name of the tracker
   const std::string& getName() const
@@ -87,9 +87,6 @@ public:
 
 private:
   std::string name_;
-
-}; // class
-
-}; // namespace
-
-#endif
+};  // class
+}  // namespace estimation
+#endif  // PEOPLE_TRACKING_FILTER_TRACKER_H

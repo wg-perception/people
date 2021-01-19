@@ -35,10 +35,11 @@
 #include <leg_detector/laser_processor.h>
 
 #include <stdexcept>
+#include <list>
+#include <set>
 
-using namespace ros;
-using namespace std;
-using namespace laser_processor;
+namespace laser_processor
+{
 
 Sample* Sample::Extract(int ind, const sensor_msgs::LaserScan& scan)
 {
@@ -63,7 +64,7 @@ void SampleSet::clear()
        i != end();
        i++)
   {
-    delete(*i);
+    delete *i;
   }
   set<Sample*, CompareSample>::clear();
 }
@@ -73,7 +74,7 @@ void SampleSet::appendToCloud(sensor_msgs::PointCloud& cloud, int r, int g, int 
   float color_val = 0;
 
   int rgb = (r << 16) | (g << 8) | b;
-  color_val = *(float*) & (rgb);
+  color_val = *(float*) & (rgb);   // NOLINT(readability/casting)
 
   for (iterator sample_iter = begin();
        sample_iter != end();
@@ -136,7 +137,7 @@ void ScanMask::addScan(sensor_msgs::LaserScan& scan)
       {
         if ((*m)->range > s->range)
         {
-          delete(*m);
+          delete *m;
           mask_.erase(m);
           mask_.insert(s);
         }
@@ -192,26 +193,25 @@ ScanProcessor::ScanProcessor(const sensor_msgs::LaserScan& scan, ScanMask& mask_
   }
 
   clusters_.push_back(cluster);
-
 }
 
 ScanProcessor::~ScanProcessor()
 {
-  for (list<SampleSet*>::iterator c = clusters_.begin();
+  for (std::list<SampleSet*>::iterator c = clusters_.begin();
        c != clusters_.end();
        c++)
-    delete(*c);
+    delete *c;
 }
 
 void
 ScanProcessor::removeLessThan(uint32_t num)
 {
-  list<SampleSet*>::iterator c_iter = clusters_.begin();
+  std::list<SampleSet*>::iterator c_iter = clusters_.begin();
   while (c_iter != clusters_.end())
   {
     if ((*c_iter)->size() < num)
     {
-      delete(*c_iter);
+      delete *c_iter;
       clusters_.erase(c_iter++);
     }
     else
@@ -225,9 +225,9 @@ ScanProcessor::removeLessThan(uint32_t num)
 void
 ScanProcessor::splitConnected(float thresh)
 {
-  list<SampleSet*> tmp_clusters;
+  std::list<SampleSet*> tmp_clusters;
 
-  list<SampleSet*>::iterator c_iter = clusters_.begin();
+  std::list<SampleSet*>::iterator c_iter = clusters_.begin();
 
   // For each cluster
   while (c_iter != clusters_.end())
@@ -239,16 +239,16 @@ ScanProcessor::splitConnected(float thresh)
       SampleSet::iterator s_first = (*c_iter)->begin();
 
       // Start a new queue
-      list<Sample*> sample_queue;
+      std::list<Sample*> sample_queue;
       sample_queue.push_back(*s_first);
 
       (*c_iter)->erase(s_first);
 
       // Grow until we get to the end of the queue
-      list<Sample*>::iterator s_q = sample_queue.begin();
+      std::list<Sample*>::iterator s_q = sample_queue.begin();
       while (s_q != sample_queue.end())
       {
-        int expand = (int)(asin(thresh / (*s_q)->range) / std::abs(scan_.angle_increment));
+        int expand = static_cast<int>(asin(thresh / (*s_q)->range) / std::abs(scan_.angle_increment));
 
         SampleSet::iterator s_rest = (*c_iter)->begin();
 
@@ -283,7 +283,7 @@ ScanProcessor::splitConnected(float thresh)
     }
 
     // Now that c_iter is empty, we can delete
-    delete(*c_iter);
+    delete *c_iter;
 
     // And remove from the map
     clusters_.erase(c_iter++);
@@ -291,3 +291,5 @@ ScanProcessor::splitConnected(float thresh)
 
   clusters_.insert(clusters_.begin(), tmp_clusters.begin(), tmp_clusters.end());
 }
+
+}  // namespace laser_processor

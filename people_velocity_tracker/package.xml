@@ -14,6 +14,7 @@
   <depend>people_msgs</depend>
   <depend>roslib</depend>
   <depend>rospy</depend>
-  <!-- Temporarily removed exec_depend>leg_detector</exec_depend-->
+  <exec_depend>leg_detector</exec_depend>
+  <test_depend>roslaunch</test_depend>
   <test_depend>roslint</test_depend>
 </package>

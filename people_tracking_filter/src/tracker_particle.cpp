@@ -34,22 +34,17 @@
 
 /* Author: Wim Meeussen */
 
-#include "people_tracking_filter/tracker_particle.h"
-#include "people_tracking_filter/gaussian_pos_vel.h"
-
-using namespace MatrixWrapper;
-using namespace BFL;
-using namespace tf;
-using namespace std;
-using namespace ros;
-
-
-
+#include <people_tracking_filter/tracker_particle.h>
+#include <people_tracking_filter/gaussian_pos_vel.h>
+#include <string>
+#include <vector>
 
 namespace estimation
 {
+using MatrixWrapper::Matrix;
+
 // constructor
-TrackerParticle::TrackerParticle(const string& name, unsigned int num_particles, const StatePosVel& sysnoise):
+TrackerParticle::TrackerParticle(const std::string& name, unsigned int num_particles, const BFL::StatePosVel& sysnoise):
   Tracker(name),
   prior_(num_particles),
   filter_(NULL),
@@ -57,29 +52,25 @@ TrackerParticle::TrackerParticle(const string& name, unsigned int num_particles,
   meas_model_(tf::Vector3(0.1, 0.1, 0.1)),
   tracker_initialized_(false),
   num_particles_(num_particles)
-{};
-
-
+{}
 
 // destructor
 TrackerParticle::~TrackerParticle()
 {
   if (filter_) delete filter_;
-};
-
+}
 
 // initialize prior density of filter
-void TrackerParticle::initialize(const StatePosVel& mu, const StatePosVel& sigma, const double time)
+void TrackerParticle::initialize(const BFL::StatePosVel& mu, const BFL::StatePosVel& sigma, const double time)
 {
-  cout << "Initializing tracker with " << num_particles_ << " particles, with covariance "
-       << sigma << " around " << mu << endl;
+  std::cout << "Initializing tracker with " << num_particles_ << " particles, with covariance "
+            << sigma << " around " << mu << std::endl;
 
-
-  GaussianPosVel gauss_pos_vel(mu, sigma);
-  vector<Sample<StatePosVel> > prior_samples(num_particles_);
+  BFL::GaussianPosVel gauss_pos_vel(mu, sigma);
+  std::vector<BFL::Sample<BFL::StatePosVel> > prior_samples(num_particles_);
   gauss_pos_vel.SampleFrom(prior_samples, num_particles_, CHOLESKY, NULL);
   prior_.ListOfSamplesSet(prior_samples);
-  filter_ = new BootstrapFilter<StatePosVel, tf::Vector3>(&prior_, &prior_, 0, num_particles_ / 4.0);
+  filter_ = new BFL::BootstrapFilter<BFL::StatePosVel, tf::Vector3>(&prior_, &prior_, 0, num_particles_ / 4.0);
 
   // tracker initialized
   tracker_initialized_ = true;
@@ -87,9 +78,6 @@ void TrackerParticle::initialize(const StatePosVel& mu, const StatePosVel& sigma
   filter_time_ = time;
   init_time_ = time;
 }
-
-
-
 
 // update filter prediction
 bool TrackerParticle::updatePrediction(const double time)
@@ -108,15 +96,13 @@ bool TrackerParticle::updatePrediction(const double time)
   return res;
 };
 
-
-
 // update filter correction
 bool TrackerParticle::updateCorrection(const tf::Vector3&  meas, const MatrixWrapper::SymmetricMatrix& cov)
 {
   assert(cov.columns() == 3);
 
   // set covariance
-  ((MeasPdfPos*)(meas_model_.MeasurementPdfGet()))->CovarianceSet(cov);
+  static_cast<BFL::MeasPdfPos*>(meas_model_.MeasurementPdfGet())->CovarianceSet(cov);
 
   // update filter
   bool res = filter_->Update(&meas_model_, meas);
@@ -125,24 +111,21 @@ bool TrackerParticle::updateCorrection(const tf::Vector3&  meas, const MatrixWra
   return res;
 };
 
-
 // get evenly spaced particle cloud
 void TrackerParticle::getParticleCloud(const tf::Vector3& step, double threshold, sensor_msgs::PointCloud& cloud) const
 {
-  ((MCPdfPosVel*)(filter_->PostGet()))->getParticleCloud(step, threshold, cloud);
+  static_cast<BFL::MCPdfPosVel*>(filter_->PostGet())->getParticleCloud(step, threshold, cloud);
 };
-
 
 // get most recent filter posterior
-void TrackerParticle::getEstimate(StatePosVel& est) const
+void TrackerParticle::getEstimate(BFL::StatePosVel& est) const
 {
-  est = ((MCPdfPosVel*)(filter_->PostGet()))->ExpectedValueGet();
+  est = static_cast<BFL::MCPdfPosVel*>(filter_->PostGet())->ExpectedValueGet();
 };
-
 
 void TrackerParticle::getEstimate(people_msgs::PositionMeasurement& est) const
 {
-  StatePosVel tmp = filter_->PostGet()->ExpectedValueGet();
+  BFL::StatePosVel tmp = filter_->PostGet()->ExpectedValueGet();
 
   est.pos.x = tmp.pos_[0];
   est.pos.y = tmp.pos_[1];
@@ -152,22 +135,16 @@ void TrackerParticle::getEstimate(people_msgs::PositionMeasurement& est) const
   est.object_id = getName();
 }
 
-
-
-
-
 /// Get histogram from certain area
 Matrix TrackerParticle::getHistogramPos(const tf::Vector3& min, const tf::Vector3& max, const tf::Vector3& step) const
 {
-  return ((MCPdfPosVel*)(filter_->PostGet()))->getHistogramPos(min, max, step);
+  return static_cast<BFL::MCPdfPosVel*>(filter_->PostGet())->getHistogramPos(min, max, step);
 };
-
 
 Matrix TrackerParticle::getHistogramVel(const tf::Vector3& min, const tf::Vector3& max, const tf::Vector3& step) const
 {
-  return ((MCPdfPosVel*)(filter_->PostGet()))->getHistogramVel(min, max, step);
+  return static_cast<BFL::MCPdfPosVel*>(filter_->PostGet())->getHistogramVel(min, max, step);
 };
-
 
 double TrackerParticle::getLifetime() const
 {
@@ -177,7 +154,6 @@ double TrackerParticle::getLifetime() const
     return 0;
 }
 
-
 double TrackerParticle::getTime() const
 {
   if (tracker_initialized_)
@@ -185,7 +161,4 @@ double TrackerParticle::getTime() const
   else
     return 0;
 }
-}; // namespace
-
-
-
+}  // namespace estimation

@@ -34,17 +34,16 @@
 
 /* Author: Wim Meeussen */
 
-#include "people_tracking_filter/uniform_vector.h"
+#include <people_tracking_filter/uniform_vector.h>
 #include <bfl/wrappers/rng/rng.h>
 #include <cmath>
 #include <cassert>
-
-using namespace tf;
+#include <vector>
 
 namespace BFL
 {
-UniformVector::UniformVector(const Vector3& mu, const Vector3& size)
-  : Pdf<Vector3> (1),
+UniformVector::UniformVector(const tf::Vector3& mu, const tf::Vector3& size)
+  : Pdf<tf::Vector3> (1),
     mu_(mu),
     size_(size)
 {
@@ -53,7 +52,6 @@ UniformVector::UniformVector(const Vector3& mu, const Vector3& size)
 
   probability_ = 1 / (size_[0] * 2 * size_[1] * 2 * size_[2] * 2);
 }
-
 
 UniformVector::~UniformVector() {}
 
@@ -69,9 +67,7 @@ std::ostream& operator<< (std::ostream& os, const UniformVector& g)
   return os;
 }
 
-
-
-Probability UniformVector::ProbabilityGet(const Vector3& input) const
+Probability UniformVector::ProbabilityGet(const tf::Vector3& input) const
 {
   for (unsigned int i = 0; i < 3; i++)
   {
@@ -81,30 +77,28 @@ Probability UniformVector::ProbabilityGet(const Vector3& input) const
   return probability_;
 }
 
-
 bool
-UniformVector::SampleFrom(vector<Sample<Vector3> >& list_samples, const int num_samples, int method, void * args) const
+UniformVector::SampleFrom(vector<Sample<tf::Vector3> >& list_samples, const int num_samples,
+                          int method, void* args) const
 {
   list_samples.resize(num_samples);
-  vector<Sample<Vector3> >::iterator sample_it = list_samples.begin();
+  vector<Sample<tf::Vector3> >::iterator sample_it = list_samples.begin();
   for (sample_it = list_samples.begin(); sample_it != list_samples.end(); sample_it++)
     SampleFrom(*sample_it, method, args);
 
   return true;
 }
 
-
 bool
-UniformVector::SampleFrom(Sample<Vector3>& one_sample, int method, void * args) const
+UniformVector::SampleFrom(Sample<tf::Vector3>& one_sample, int method, void * args) const
 {
-  one_sample.ValueSet(Vector3(((runif() - 0.5) * 2 * size_[0]) + mu_[0],
-                              ((runif() - 0.5) * 2 * size_[1]) + mu_[1],
-                              ((runif() - 0.5) * 2 * size_[2]) + mu_[2]));
+  one_sample.ValueSet(tf::Vector3(((runif() - 0.5) * 2 * size_[0]) + mu_[0],
+                                  ((runif() - 0.5) * 2 * size_[1]) + mu_[1],
+                                  ((runif() - 0.5) * 2 * size_[2]) + mu_[2]));
   return true;
 }
 
-
-Vector3
+tf::Vector3
 UniformVector::ExpectedValueGet() const
 {
   return mu_;
@@ -120,4 +114,4 @@ UniformVector::CovarianceGet() const
   return sigma;
 }
 
-} // End namespace BFL
+}  // End namespace BFL
