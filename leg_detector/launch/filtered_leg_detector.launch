@@ -1,4 +1,5 @@
 <launch>
     <include file="$(find map_laser)/lfilter.launch"/>
-    <node pkg="leg_detector" type="leg_detector" name="leg_detector" args="scan:=base_scan_filter $(find leg_detector)/config/trained_leg_detector.yaml"/>
+    <node pkg="leg_detector" type="leg_detector" name="leg_detector"
+          args="scan:=base_scan_filter $(find leg_detector)/config/trained_leg_detector.yaml"/>
 </launch>

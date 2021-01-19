@@ -17,6 +17,7 @@
   <depend>geometry_msgs</depend>
   <depend>image_geometry</depend>
   <depend>image_transport</depend>
+  <depend>message_filters</depend>
   <depend>people_msgs</depend>
   <depend>rosbag</depend>
   <depend>roscpp</depend>
@@ -25,10 +26,9 @@
   <depend>sensor_msgs</depend>
   <depend>std_msgs</depend>
   <depend>std_srvs</depend>
+  <depend>stereo_image_proc</depend>
   <depend>stereo_msgs</depend>
   <depend>tf</depend>
-  <depend>message_filters</depend>
-  <depend>stereo_image_proc</depend>
 
   <build_depend>message_generation</build_depend>
   <build_export_depend>message_runtime</build_export_depend>
@@ -36,6 +36,8 @@
   <exec_depend>dynamic_reconfigure</exec_depend>
   <exec_depend>message_runtime</exec_depend>
 
-  <test_depend>stereo_image_proc</test_depend>
+  <test_depend>roslaunch</test_depend>
+  <test_depend>roslint</test_depend>
   <test_depend>rostest</test_depend>
+  <test_depend>stereo_image_proc</test_depend>
 </package>

@@ -34,11 +34,11 @@
 
 /* Author: Wim Meeussen */
 
-#ifndef MCPDF_POSVEL_H
-#define MCPDF_POSVEL_H
+#ifndef PEOPLE_TRACKING_FILTER_MCPDF_POS_VEL_H
+#define PEOPLE_TRACKING_FILTER_MCPDF_POS_VEL_H
 
 #include <bfl/pdf/mcpdf.h>
-#include "state_pos_vel.h"
+#include <people_tracking_filter/state_pos_vel.h>
 #include <tf/tf.h>
 #include <sensor_msgs/PointCloud.h>
 
@@ -49,7 +49,7 @@ class MCPdfPosVel: public MCPdf<StatePosVel>
 {
 public:
   /// Constructor
-  MCPdfPosVel(unsigned int num_samples);
+  explicit MCPdfPosVel(unsigned int num_samples);
 
   /// Destructor
   virtual ~MCPdfPosVel();
@@ -69,11 +69,8 @@ public:
 
 private:
   /// Get histogram from certain area
-  MatrixWrapper::Matrix getHistogram(const tf::Vector3& min, const tf::Vector3& max, const tf::Vector3& step, bool pos_hist) const;
-
+  MatrixWrapper::Matrix getHistogram(const tf::Vector3& min, const tf::Vector3& max, const tf::Vector3& step,
+                                     bool pos_hist) const;
 };
-
-
-
-} // end namespace
-#endif
+}  // end namespace BFL
+#endif  // PEOPLE_TRACKING_FILTER_MCPDF_POS_VEL_H

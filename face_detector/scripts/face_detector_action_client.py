@@ -1,25 +1,22 @@
 #! /usr/bin/env python
 
-import roslib; roslib.load_manifest('face_detector')
-import rospy
-
-# Brings in the SimpleActionClient
 import actionlib
 
-# Brings in the messages used by the face_detector action, including the
-# goal message and the result message.
-import face_detector.msg
+from face_detector.msg import FaceDetectorAction, FaceDetectorGoal
+
+import rospy
+
 
 def face_detector_client():
     # Creates the SimpleActionClient, passing the type of the action to the constructor.
-    client = actionlib.SimpleActionClient('face_detector_action', face_detector.msg.FaceDetectorAction)
+    client = actionlib.SimpleActionClient('face_detector_action', FaceDetectorAction)
 
     # Waits until the action server has started up and started
     # listening for goals.
     client.wait_for_server()
 
-    # Creates a goal to send to the action server.
-    goal = face_detector.msg.FaceDetectorGoal()
+    # Creates a goal to send to the action server. (no parameters)
+    goal = FaceDetectorGoal()
 
     # Sends the goal to the action server.
     client.send_goal(goal)
@@ -27,8 +24,8 @@ def face_detector_client():
     # Waits for the server to finish performing the action.
     client.wait_for_result()
 
-    # Prints out the result of executing the action
-    return client.get_result()  # A FibonacciResult
+    return client.get_result()  # people_msgs/PositionMeasurement[] face_positions
+
 
 if __name__ == '__main__':
     try:
@@ -36,6 +33,6 @@ if __name__ == '__main__':
         # publish and subscribe over ROS.
         rospy.init_node('face_detector_action_client')
         result = face_detector_client()
-        print "Done action"
+        print('Done action')
     except rospy.ROSInterruptException:
-        print "Program interrupted before completion"
+        print('Program interrupted before completion')

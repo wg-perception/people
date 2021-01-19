@@ -34,71 +34,54 @@
 
 /* Author: Wim Meeussen */
 
-#include "people_tracking_filter/measmodel_pos.h"
+#include <people_tracking_filter/measmodel_pos.h>
 
-using namespace std;
-using namespace BFL;
-using namespace tf;
-
-
+namespace BFL
+{
 static const unsigned int NUM_MEASMODEL_POS_COND_ARGS   = 1;
 static const unsigned int DIM_MEASMODEL_POS             = 13;
 
-
-
 // Constructor
-MeasPdfPos::MeasPdfPos(const Vector3& sigma)
-  : ConditionalPdf<Vector3, StatePosVel>(DIM_MEASMODEL_POS, NUM_MEASMODEL_POS_COND_ARGS),
-    meas_noise_(Vector3(0, 0, 0), sigma)
+MeasPdfPos::MeasPdfPos(const tf::Vector3& sigma)
+  : ConditionalPdf<tf::Vector3, StatePosVel>(DIM_MEASMODEL_POS, NUM_MEASMODEL_POS_COND_ARGS),
+    meas_noise_(tf::Vector3(0, 0, 0), sigma)
 {}
-
 
 // Destructor
 MeasPdfPos::~MeasPdfPos()
 {}
 
-
-
 Probability
-MeasPdfPos::ProbabilityGet(const Vector3& measurement) const
+MeasPdfPos::ProbabilityGet(const tf::Vector3& measurement) const
 {
   return meas_noise_.ProbabilityGet(measurement - ConditionalArgumentGet(0).pos_);
 }
 
-
-
 bool
-MeasPdfPos::SampleFrom(Sample<Vector3>& one_sample, int method, void *args) const
+MeasPdfPos::SampleFrom(Sample<tf::Vector3>& one_sample, int method, void *args) const
 {
-  cerr << "MeasPdfPos::SampleFrom Method not applicable" << endl;
+  std::cerr << "MeasPdfPos::SampleFrom Method not applicable" << std::endl;
   assert(0);
   return false;
 }
 
-
-
-
-Vector3
+tf::Vector3
 MeasPdfPos::ExpectedValueGet() const
 {
-  cerr << "MeasPdfPos::ExpectedValueGet Method not applicable" << endl;
-  Vector3 result;
+  std::cerr << "MeasPdfPos::ExpectedValueGet Method not applicable" << std::endl;
+  tf::Vector3 result;
   assert(0);
   return result;
 }
 
-
-
-
 SymmetricMatrix
 MeasPdfPos::CovarianceGet() const
 {
-  cerr << "MeasPdfPos::CovarianceGet Method not applicable" << endl;
+  std::cerr << "MeasPdfPos::CovarianceGet Method not applicable" << std::endl;
   SymmetricMatrix Covar(DIM_MEASMODEL_POS);
   assert(0);
   return Covar;
 }
-
 
 void
 MeasPdfPos::CovarianceSet(const MatrixWrapper::SymmetricMatrix& cov)
@@ -106,6 +89,4 @@ MeasPdfPos::CovarianceSet(const MatrixWrapper::SymmetricMatrix& cov)
   tf::Vector3 cov_vec(sqrt(cov(1, 1)), sqrt(cov(2, 2)), sqrt(cov(3, 3)));
   meas_noise_.sigmaSet(cov_vec);
 }
-
-
-
+}  // namespace BFL
