@@ -24,5 +24,7 @@
   <depend>visualization_msgs</depend>
   <exec_depend>laser_filters</exec_depend>
   <exec_depend>map_laser</exec_depend>
+  <test_depend>roslaunch</test_depend>
+  <test_depend>roslint</test_depend>
 
 </package>

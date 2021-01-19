@@ -34,13 +34,12 @@
 
 /* Author: Wim Meeussen */
 
-#ifndef GAUSSIAN_VECTOR_H
-#define GAUSSIAN_VECTOR_H
+#ifndef PEOPLE_TRACKING_FILTER_GAUSSIAN_VECTOR_H
+#define PEOPLE_TRACKING_FILTER_GAUSSIAN_VECTOR_H
 
 #include <bfl/pdf/pdf.h>
 #include <tf/tf.h>
-
-
+#include <vector>
 
 namespace BFL
 {
@@ -67,7 +66,8 @@ public:
 
   // Redefinition of pure virtuals
   virtual Probability ProbabilityGet(const tf::Vector3& input) const;
-  bool SampleFrom(vector<Sample<tf::Vector3> >& list_samples, const int num_samples, int method = DEFAULT, void * args = NULL) const;
+  bool SampleFrom(vector<Sample<tf::Vector3> >& list_samples, const int num_samples, int method = DEFAULT,
+                  void * args = NULL) const;
   virtual bool SampleFrom(Sample<tf::Vector3>& one_sample, int method = DEFAULT, void * args = NULL) const;
 
   virtual tf::Vector3 ExpectedValueGet() const;
@@ -75,6 +75,5 @@ public:
 
   virtual GaussianVector* Clone() const;
 };
-
-} // end namespace
-#endif
+}  // end namespace BFL
+#endif  // PEOPLE_TRACKING_FILTER_GAUSSIAN_VECTOR_H

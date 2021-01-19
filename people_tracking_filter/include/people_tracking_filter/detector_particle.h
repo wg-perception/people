@@ -34,16 +34,16 @@
 
 /* Author: Wim Meeussen */
 
-#ifndef __DETECTOR_PARTICLE__
-#define __DETECTOR_PARTICLE__
+#ifndef PEOPLE_TRACKING_FILTER_DETECTOR_PARTICLE_H
+#define PEOPLE_TRACKING_FILTER_DETECTOR_PARTICLE_H
 
-#include "tracker.h"
+#include <people_tracking_filter/tracker.h>
 
 // bayesian filtering
 #include <bfl/filter/bootstrapfilter.h>
-#include "mcpdf_vector.h"
-#include "measmodel_vector.h"
-#include "sysmodel_vector.h"
+#include <people_tracking_filter/mcpdf_vector.h>
+#include <people_tracking_filter/measmodel_vector.h>
+#include <people_tracking_filter/sysmodel_vector.h>
 
 // TF
 #include <tf/tf.h>
@@ -61,7 +61,7 @@ class DetectorParticle
 {
 public:
   /// constructor
-  DetectorParticle(unsigned int num_particles);
+  explicit DetectorParticle(unsigned int num_particles);
 
   /// destructor
   ~DetectorParticle();
@@ -100,7 +100,7 @@ public:
 private:
   // pdf / model / filter
   BFL::MCPdfVector                                          prior_;
-  BFL::BootstrapFilter<tf::Vector3, tf::Vector3>* filter_;
+  BFL::BootstrapFilter<tf::Vector3, tf::Vector3>*           filter_;
   BFL::SysModelVector                                       sys_model_;
   BFL::MeasModelVector                                      meas_model_;
 
@@ -108,10 +108,6 @@ private:
   bool detector_initialized_;
   double filter_time_, quality_;
   unsigned int num_particles_;
-
-
-}; // class
-
-}; // namespace
-
-#endif
+};  // class
+}  // namespace estimation
+#endif  // PEOPLE_TRACKING_FILTER_DETECTOR_PARTICLE_H

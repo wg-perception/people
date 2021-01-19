@@ -34,74 +34,61 @@
 
 /* Author: Wim Meeussen */
 
-
-#include "people_tracking_filter/sysmodel_vector.h"
-
-
-using namespace std;
-using namespace BFL;
-using namespace tf;
-
+#include <people_tracking_filter/sysmodel_vector.h>
 
 static const unsigned int NUM_SYS_VECTOR_COND_ARGS  = 1;
 static const unsigned int DIM_SYS_VECTOR            = 3;
 
-
+namespace BFL
+{
 // Constructor
-SysPdfVector::SysPdfVector(const Vector3& sigma)
-  : ConditionalPdf<Vector3, Vector3>(DIM_SYS_VECTOR, NUM_SYS_VECTOR_COND_ARGS),
-    noise_(Vector3(0, 0, 0), sigma)
+SysPdfVector::SysPdfVector(const tf::Vector3& sigma)
+  : ConditionalPdf<tf::Vector3, tf::Vector3>(DIM_SYS_VECTOR, NUM_SYS_VECTOR_COND_ARGS),
+    noise_(tf::Vector3(0, 0, 0), sigma)
 {}
-
-
 
 // Destructor
 SysPdfVector::~SysPdfVector()
 {}
 
-
-
 Probability
-SysPdfVector::ProbabilityGet(const Vector3& state) const
+SysPdfVector::ProbabilityGet(const tf::Vector3& state) const
 {
-  cerr << "SysPdfVector::ProbabilityGet Method not applicable" << endl;
+  std::cerr << "SysPdfVector::ProbabilityGet Method not applicable" << std::endl;
   assert(0);
   return 0;
 }
 
-
 bool
-SysPdfVector::SampleFrom(Sample<Vector3>& one_sample, int method, void *args) const
+SysPdfVector::SampleFrom(Sample<tf::Vector3>& one_sample, int method, void *args) const
 {
-  Vector3& res = one_sample.ValueGet();
+  tf::Vector3& res = one_sample.ValueGet();
 
   // get conditional argument: state
   res = this->ConditionalArgumentGet(0);
 
   // add noise
-  Sample<Vector3> noise_sample;
+  Sample<tf::Vector3> noise_sample;
   noise_.SampleFrom(noise_sample, method, args);
   res += noise_sample.ValueGet();
 
   return true;
 }
 
-
-Vector3
+tf::Vector3
 SysPdfVector::ExpectedValueGet() const
 {
-  cerr << "SysPdfVector::ExpectedValueGet Method not applicable" << endl;
+  std::cerr << "SysPdfVector::ExpectedValueGet Method not applicable" << std::endl;
   assert(0);
-  return Vector3();
-
+  return tf::Vector3();
 }
 
 SymmetricMatrix
 SysPdfVector::CovarianceGet() const
 {
-  cerr << "SysPdfVector::CovarianceGet Method not applicable" << endl;
+  std::cerr << "SysPdfVector::CovarianceGet Method not applicable" << std::endl;
   SymmetricMatrix Covar(DIM_SYS_VECTOR);
   assert(0);
   return Covar;
 }
-
+}  // namespace BFL

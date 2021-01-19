@@ -35,8 +35,8 @@
 /* Author: Wim Meeussen */
 
 
-#ifndef STATE_POS_VEL_H
-#define STATE_POS_VEL_H
+#ifndef PEOPLE_TRACKING_FILTER_STATE_POS_VEL_H
+#define PEOPLE_TRACKING_FILTER_STATE_POS_VEL_H
 
 #include <tf/tf.h>
 
@@ -50,10 +50,10 @@ public:
 
   /// Constructor
   StatePosVel(const tf::Vector3& pos = tf::Vector3(0, 0, 0),
-              const tf::Vector3& vel = tf::Vector3(0, 0, 0)):  pos_(pos), vel_(vel) {};
+              const tf::Vector3& vel = tf::Vector3(0, 0, 0)):  pos_(pos), vel_(vel) {}
 
   /// Destructor
-  ~StatePosVel() {};
+  ~StatePosVel() {}
 
   /// operator +=
   StatePosVel& operator += (const StatePosVel& s)
@@ -80,10 +80,6 @@ public:
        << "(" << s.vel_[0] << ", " << s.vel_[1] << ", "  << s.vel_[2] << ") ";
     return os;
   };
-
-
-
-
 };
-} // end namespace
-#endif
+}  // end namespace BFL
+#endif  // PEOPLE_TRACKING_FILTER_STATE_POS_VEL_H

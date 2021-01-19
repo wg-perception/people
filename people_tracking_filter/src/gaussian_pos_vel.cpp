@@ -34,13 +34,11 @@
 
 /* Author: Wim Meeussen */
 
-
-#include "people_tracking_filter/gaussian_pos_vel.h"
+#include <people_tracking_filter/gaussian_pos_vel.h>
 #include <bfl/wrappers/rng/rng.h>
 #include <cmath>
 #include <cassert>
-
-using namespace tf;
+#include <vector>
 
 namespace BFL
 {
@@ -52,7 +50,6 @@ GaussianPosVel::GaussianPosVel(const StatePosVel& mu, const StatePosVel& sigma)
     gauss_vel_(mu.vel_, sigma.vel_)
 {}
 
-
 GaussianPosVel::~GaussianPosVel() {}
 
 GaussianPosVel* GaussianPosVel::Clone() const
@@ -62,43 +59,40 @@ GaussianPosVel* GaussianPosVel::Clone() const
 
 std::ostream& operator<< (std::ostream& os, const GaussianPosVel& g)
 {
-  os << "\nMu pos :\n"    << g.ExpectedValueGet().pos_ << endl
-     << "\nMu vel :\n"    << g.ExpectedValueGet().vel_ << endl
-     << "\nSigma:\n" << g.CovarianceGet() << endl;
+  os << "\nMu pos :\n"    << g.ExpectedValueGet().pos_ << std::endl
+     << "\nMu vel :\n"    << g.ExpectedValueGet().vel_ << std::endl
+     << "\nSigma:\n" << g.CovarianceGet() << std::endl;
   return os;
 }
-
 
 Probability GaussianPosVel::ProbabilityGet(const StatePosVel& input) const
 {
   return gauss_pos_.ProbabilityGet(input.pos_) * gauss_vel_.ProbabilityGet(input.vel_);
 }
 
-
 bool
-GaussianPosVel::SampleFrom(vector<Sample<StatePosVel> >& list_samples, const int num_samples, int method, void * args) const
+GaussianPosVel::SampleFrom(std::vector<Sample<StatePosVel> >& list_samples, const int num_samples, int method,
+                           void * args) const
 {
   list_samples.resize(num_samples);
-  vector<Sample<StatePosVel> >::iterator sample_it = list_samples.begin();
+  std::vector<Sample<StatePosVel> >::iterator sample_it = list_samples.begin();
   for (sample_it = list_samples.begin(); sample_it != list_samples.end(); sample_it++)
     SampleFrom(*sample_it, method, args);
 
   return true;
 }
 
-
 bool
 GaussianPosVel::SampleFrom(Sample<StatePosVel>& one_sample, int method, void * args) const
 {
-  one_sample.ValueSet(StatePosVel(Vector3(rnorm(mu_.pos_[0], sigma_.pos_[0]*dt_),
-                                          rnorm(mu_.pos_[1], sigma_.pos_[1]*dt_),
-                                          rnorm(mu_.pos_[2], sigma_.pos_[2]*dt_)),
-                                  Vector3(rnorm(mu_.vel_[0], sigma_.vel_[0]*dt_),
-                                          rnorm(mu_.vel_[1], sigma_.vel_[1]*dt_),
-                                          rnorm(mu_.vel_[2], sigma_.vel_[2]*dt_))));
+  one_sample.ValueSet(StatePosVel(tf::Vector3(rnorm(mu_.pos_[0], sigma_.pos_[0]*dt_),
+                                              rnorm(mu_.pos_[1], sigma_.pos_[1]*dt_),
+                                              rnorm(mu_.pos_[2], sigma_.pos_[2]*dt_)),
+                                  tf::Vector3(rnorm(mu_.vel_[0], sigma_.vel_[0]*dt_),
+                                              rnorm(mu_.vel_[1], sigma_.vel_[1]*dt_),
+                                              rnorm(mu_.vel_[2], sigma_.vel_[2]*dt_))));
   return true;
 }
-
 
 StatePosVel
 GaussianPosVel::ExpectedValueGet() const
@@ -118,5 +112,4 @@ GaussianPosVel::CovarianceGet() const
   }
   return sigma;
 }
-
-} // End namespace BFL
+}  // End namespace BFL
