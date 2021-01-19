@@ -93,8 +93,8 @@ bool
 UniformVector::SampleFrom(Sample<tf::Vector3>& one_sample, int method, void * args) const
 {
   one_sample.ValueSet(tf::Vector3(((runif() - 0.5) * 2 * size_[0]) + mu_[0],
-                                 ((runif() - 0.5) * 2 * size_[1]) + mu_[1],
-                                 ((runif() - 0.5) * 2 * size_[2]) + mu_[2]));
+                                  ((runif() - 0.5) * 2 * size_[1]) + mu_[1],
+                                  ((runif() - 0.5) * 2 * size_[2]) + mu_[2]));
   return true;
 }
 

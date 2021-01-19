@@ -110,7 +110,7 @@ public:
         }
 
         while (p.nextMsg())
-          {}
+        {}
       }
     }
   }
@@ -232,9 +232,9 @@ public:
       test_total++;
     }
 
-    printf(" Pos train set: %d/%d %g\n", pos_right, pos_total, static_cast<float>(pos_right) / pos_total;
-    printf(" Neg train set: %d/%d %g\n", neg_right, neg_total, static_cast<float>(neg_right) / neg_total;
-    printf(" Test set:      %d/%d %g\n", test_right, test_total, static_cast<float>(test_right) / test_total;
+    printf(" Pos train set: %d/%d %g\n", pos_right, pos_total, static_cast<float>(pos_right) / pos_total);
+    printf(" Neg train set: %d/%d %g\n", neg_right, neg_total, static_cast<float>(neg_right) / neg_total);
+    printf(" Test set:      %d/%d %g\n", test_right, test_total, static_cast<float>(test_right) / test_total);
 
     cvReleaseMat(&tmp_mat);
   }

@@ -64,7 +64,7 @@ void SampleSet::clear()
        i != end();
        i++)
   {
-    delete(*i);
+    delete *i;
   }
   set<Sample*, CompareSample>::clear();
 }
@@ -137,7 +137,7 @@ void ScanMask::addScan(sensor_msgs::LaserScan& scan)
       {
         if ((*m)->range > s->range)
         {
-          delete(*m);
+          delete *m;
           mask_.erase(m);
           mask_.insert(s);
         }
@@ -200,7 +200,7 @@ ScanProcessor::~ScanProcessor()
   for (std::list<SampleSet*>::iterator c = clusters_.begin();
        c != clusters_.end();
        c++)
-    delete(*c);
+    delete *c;
 }
 
 void
@@ -211,7 +211,7 @@ ScanProcessor::removeLessThan(uint32_t num)
   {
     if ((*c_iter)->size() < num)
     {
-      delete(*c_iter);
+      delete *c_iter;
       clusters_.erase(c_iter++);
     }
     else
@@ -283,7 +283,7 @@ ScanProcessor::splitConnected(float thresh)
     }
 
     // Now that c_iter is empty, we can delete
-    delete(*c_iter);
+    delete *c_iter;
 
     // And remove from the map
     clusters_.erase(c_iter++);

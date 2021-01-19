@@ -489,7 +489,7 @@ public:
       if (closest != end)
       {
         std::cout << "Replaced one leg with a distance of " << closest_dist
-             << " and a distance between the legs of " << closest_dist_between_legs << std::endl;
+                  << " and a distance between the legs of " << closest_dist_between_legs << std::endl;
         (*closest)->object_id = people_meas->object_id;
       }
       else
@@ -562,7 +562,7 @@ public:
       (*closest1)->object_id = people_meas->object_id;
       (*closest2)->object_id = people_meas->object_id;
       std::cout << "Found a completely new pair with total distance " << closest_pair_dist
-           << " and a distance between the legs of " << closest_dist_between_legs << std::endl;
+                << " and a distance between the legs of " << closest_dist_between_legs << std::endl;
       return;
     }
 
@@ -701,7 +701,7 @@ public:
       {
         if ((*sf_iter)->other)
           (*sf_iter)->other->other = NULL;
-        delete(*sf_iter);
+        delete *sf_iter;
         saved_features_.erase(sf_iter++);
       }
       else

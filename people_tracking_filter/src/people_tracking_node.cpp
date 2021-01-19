@@ -176,7 +176,7 @@ void PeopleTrackingNode::callbackRcv(const people_msgs::PositionMeasurement::Con
       }
       else
         ROS_INFO("Found a person, but he/she is not close enough to start following. "
-                 "Person is %f away, and must be less than %f away.", cur_dist , tracker_init_dist);
+                 "Person is %f away, and must be less than %f away.", cur_dist, tracker_init_dist);
     }
     else
       ROS_INFO("Failed crazy conditional.");
