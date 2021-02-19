@@ -733,8 +733,8 @@ public:
       memcpy(tmp_mat.data, f.data(), f.size()*sizeof(float));
 
       float probability = 0.5 -
-	                  forest->predict(tmp_mat, cv::noArray(), cv::ml::RTrees::PREDICT_SUM) /
-	                  forest->getRoots().size();
+                          forest->predict(tmp_mat, cv::noArray(), cv::ml::RTrees::PREDICT_SUM) /
+                          forest->getRoots().size();
 
       tf::Stamped<tf::Point> loc((*i)->center(), scan->header.stamp, scan->header.frame_id);
       try
