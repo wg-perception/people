@@ -25,13 +25,6 @@ find_package(catkin REQUIRED COMPONENTS
 find_package(Boost REQUIRED COMPONENTS signals system thread)
 find_package(OpenCV)
 
-include_directories(
-  include
-  ${Boost_INCLUDE_DIRS}
-  ${OpenCV_INCLUDE_DIRS}
-  ${catkin_INCLUDE_DIRS}
-)
-
 add_action_files(
   DIRECTORY action
   FILES FaceDetector.action
@@ -59,33 +52,44 @@ catkin_package(
         tf
 )
 
+include_directories(
+  include
+  ${Boost_INCLUDE_DIRS}
+  ${OpenCV_INCLUDE_DIRS}
+  ${catkin_INCLUDE_DIRS}
+)
+
 add_executable(face_detector
                        src/face_detection.cpp
                        src/faces.cpp)
-target_link_libraries(${PROJECT_NAME}
+add_dependencies(face_detector ${catkin_EXPORTED_TARGETS} ${${PROJECT_NAME}_EXPORTED_TARGETS})
+target_link_libraries(face_detector
   ${catkin_LIBRARIES}
   ${Boost_LIBRARIES}
   ${OpenCV_LIBRARIES})
 
-add_dependencies(face_detector ${catkin_EXPORTED_TARGETS} ${${PROJECT_NAME}_EXPORTED_TARGETS})
-
-install(TARGETS
-  face_detector
-        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+install(TARGETS face_detector
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
-
-install(DIRECTORY include/face_detector/
+install(DIRECTORY include/${PROJECT_NAME}/
         DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
 )
 
-install(DIRECTORY launch param
+install(DIRECTORY param
         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/
+)
+install(DIRECTORY launch
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/
+)
+
+catkin_install_python(PROGRAMS scripts/face_detector_action_client.py
+                      DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
 if(CATKIN_ENABLE_TESTING)
   find_package(rostest REQUIRED)
+  find_package(roslint REQUIRED)
+  find_package(roslaunch REQUIRED)
 
   catkin_download_test_data(${PROJECT_NAME}_noface_test_diamondback.bag
     http://download.ros.org/data/face_detector/face_detector_noface_test_diamondback.bag
@@ -98,8 +102,8 @@ if(CATKIN_ENABLE_TESTING)
 
 #  add_rostest(test/wide-stereo_true_rtest.xml)
 #  add_rostest(test/wide-stereo_false_rtest.xml)
-  add_rostest(test/rgbd_true_rtest.xml)
-  add_rostest(test/rgbd_false_rtest.xml)
+#  add_rostest(test/rgbd_true_rtest.xml)
+#  add_rostest(test/rgbd_false_rtest.xml)
 #  add_rostest(test/narrow-stereo_true_rtest.xml)
 #  add_rostest(test/narrow-stereo_false_rtest.xml)
 #  add_rostest(test/action-wide_true_rtest.xml)
@@ -107,4 +111,8 @@ if(CATKIN_ENABLE_TESTING)
 #  add_rostest(test/action-rgbd_true_rtest.xml)
 #  add_rostest(test/action-rgbd_false_rtest.xml)
 
+  roslint_cpp()
+  roslaunch_add_file_check(launch)
+  roslint_python()
+  roslint_add_test()
 endif()

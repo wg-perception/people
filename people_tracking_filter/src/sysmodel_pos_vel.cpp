@@ -34,41 +34,31 @@
 
 /* Author: Wim Meeussen */
 
+#include <people_tracking_filter/sysmodel_pos_vel.h>
 
-#include "people_tracking_filter/sysmodel_pos_vel.h"
-
-
-using namespace std;
-using namespace BFL;
-using namespace tf;
-
+namespace BFL
+{
 
 static const unsigned int NUM_SYS_POS_VEL_COND_ARGS = 1;
 static const unsigned int DIM_SYS_POS_VEL           = 6;
 
-
 // Constructor
-SysPdfPosVel::SysPdfPosVel(const StatePosVel& sigma)
+SysPdfPosVel::SysPdfPosVel(const BFL::StatePosVel& sigma)
   : ConditionalPdf<StatePosVel, StatePosVel>(DIM_SYS_POS_VEL, NUM_SYS_POS_VEL_COND_ARGS),
-    noise_(StatePosVel(Vector3(0, 0, 0), Vector3(0, 0, 0)), sigma)
+    noise_(StatePosVel(tf::Vector3(0, 0, 0), tf::Vector3(0, 0, 0)), sigma)
 {}
-
-
 
 // Destructor
 SysPdfPosVel::~SysPdfPosVel()
 {}
 
-
-
 Probability
 SysPdfPosVel::ProbabilityGet(const StatePosVel& state) const
 {
-  cerr << "SysPdfPosVel::ProbabilityGet Method not applicable" << endl;
+  std::cerr << "SysPdfPosVel::ProbabilityGet Method not applicable" << std::endl;
   assert(0);
   return 0;
 }
-
 
 bool
 SysPdfPosVel::SampleFrom(Sample<StatePosVel>& one_sample, int method, void *args) const
@@ -90,22 +80,20 @@ SysPdfPosVel::SampleFrom(Sample<StatePosVel>& one_sample, int method, void *args
   return true;
 }
 
-
 StatePosVel
 SysPdfPosVel::ExpectedValueGet() const
 {
-  cerr << "SysPdfPosVel::ExpectedValueGet Method not applicable" << endl;
+  std::cerr << "SysPdfPosVel::ExpectedValueGet Method not applicable" << std::endl;
   assert(0);
   return StatePosVel();
-
 }
 
 SymmetricMatrix
 SysPdfPosVel::CovarianceGet() const
 {
-  cerr << "SysPdfPosVel::CovarianceGet Method not applicable" << endl;
+  std::cerr << "SysPdfPosVel::CovarianceGet Method not applicable" << std::endl;
   SymmetricMatrix Covar(DIM_SYS_POS_VEL);
   assert(0);
   return Covar;
 }
-
+}  // namespace BFL

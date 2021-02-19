@@ -34,10 +34,10 @@
 
 /* Author: Wim Meeussen */
 
-#ifndef __TRACKER_KALMAN__
-#define __TRACKER_KALMAN__
+#ifndef PEOPLE_TRACKING_FILTER_TRACKER_KALMAN_H
+#define PEOPLE_TRACKING_FILTER_TRACKER_KALMAN_H
 
-#include "tracker.h"
+#include <people_tracking_filter/tracker.h>
 
 // bayesian filtering
 #include <bfl/filter/extendedkalmanfilter.h>
@@ -46,13 +46,14 @@
 #include <bfl/pdf/linearanalyticconditionalgaussian.h>
 
 
-#include "state_pos_vel.h"
+#include <people_tracking_filter/state_pos_vel.h>
 
 // TF
 #include <tf/tf.h>
 
 // log files
 #include <fstream>
+#include <string>
 
 namespace estimation
 {
@@ -96,7 +97,6 @@ public:
   virtual void getEstimate(BFL::StatePosVel& est) const;
   virtual void getEstimate(people_msgs::PositionMeasurement& est) const;
 
-
 private:
   // pdf / model / filter
   BFL::Gaussian                                           prior_;
@@ -113,10 +113,6 @@ private:
   // vars
   bool tracker_initialized_;
   double init_time_, filter_time_, quality_;
-
-
-}; // class
-
-}; // namespace
-
-#endif
+};  // class
+}  // namespace estimation
+#endif  // PEOPLE_TRACKING_FILTER_TRACKER_KALMAN_H

@@ -38,35 +38,30 @@
 
 /* Author: Caroline Pantofaru */
 
-#ifndef FACES_H
-#define FACES_H
+#ifndef FACE_DETECTOR_FACES_H
+#define FACE_DETECTOR_FACES_H
 
-
-
+#include <string>
 #include <vector>
 
 #include <opencv/cv.hpp>
 #include <opencv/cxcore.hpp>
 #include <opencv/cvaux.hpp>
 
-#include "image_geometry/stereo_camera_model.h"
+#include <image_geometry/stereo_camera_model.h>
 #include <boost/thread/mutex.hpp>
 #include <boost/bind.hpp>
 #include <boost/thread/thread.hpp>
 #include <boost/thread/condition.hpp>
 
-
-using namespace std;
-
 #define FACE_SIZE_MIN_M 0.1 /**< Default minimum face size, in meters. Only use this for initialization. */
 #define FACE_SIZE_MAX_M 0.5 /**< Default maximum face size, in meters. Only use this for initialization. */
-#define MAX_FACE_Z_M    8.0 /**< Default maximum distance from the camera, in meters. Only use this for initialization. */
+#define MAX_FACE_Z_M    8.0 /**< Default maximum distance from the camera, in meters. Only use for initialization. */
 // Default thresholds for face tracking.
 #define FACE_SEP_DIST_M 1.0 /**< Default separation distance for associating faces. Only use this for initialization. */
 
 namespace people
 {
-
 
 /*!
  * \brief A structure for holding information about boxes in 2d and 3d.
@@ -78,30 +73,26 @@ struct Box2D3D
   double width2d;
   double width3d;
   cv::Rect box2d;
-  string status;
+  std::string status;
   int id;
 };
-
 
 /*!
  * \brief A structure containing the person's identifying data.
  */
 struct Face
 {
-  string id;
-  string name;
+  std::string id;
+  std::string name;
 };
-
 
 /*!
  * \brief Contains a list of faces and functions that can be performed on that list.
  * This includes utility tasks such as set/get data, to more complicated tasks such as detection or tracking.
  */
-
 class Faces
 {
 public:
-
   // Default thresholds for the face detection algorithm.
 
   // Thresholds for the face detection algorithm.
@@ -111,14 +102,11 @@ public:
   // Thresholds for face tracking.
   double face_sep_dist_m_; /**< Separation distance for associating faces. */
 
-
-
   // Create an empty list of people.
   Faces();
 
   // Destroy a list of people.
   ~Faces();
-
 
   /*!
    * \brief Detect all faces in an image and disparity image.
@@ -132,7 +120,8 @@ public:
    * Output:
    * A vector of Box2D3Ds containing the bounding boxes around found faces in 2D and 3D.
    */
-  vector<Box2D3D> detectAllFacesDisparity(const cv::Mat &image, double threshold, const cv::Mat &disparity_image, image_geometry::StereoCameraModel *cam_model);
+  std::vector<Box2D3D> detectAllFacesDisparity(const cv::Mat &image, double threshold, const cv::Mat &disparity_image,
+                                               image_geometry::StereoCameraModel *cam_model);
 
   /*!
    * \brief Detect all faces in an image and depth image.
@@ -146,7 +135,8 @@ public:
    * Output:
    * A vector of Box2D3Ds containing the bounding boxes around found faces in 2D and 3D.
    */
-  vector<Box2D3D> detectAllFacesDepth(const cv::Mat &image, double threshold, const cv::Mat &depth_image, image_geometry::StereoCameraModel *cam_model);
+  std::vector<Box2D3D> detectAllFacesDepth(const cv::Mat &image, double threshold, const cv::Mat &depth_image,
+                                           image_geometry::StereoCameraModel *cam_model);
 
   /*!
    * \brief Initialize the face detector with images and disparities.
@@ -156,8 +146,8 @@ public:
    * \param num_cascades Should always be 1 (may change in the future.)
    * \param haar_classifier_filename Full path to the cascade file.
    */
-  void initFaceDetectionDisparity(uint num_cascades, string haar_classifier_filename, double face_size_min_m, double face_size_max_m, double max_face_z_m, double face_sep_dist_m);
-
+  void initFaceDetectionDisparity(uint num_cascades, std::string haar_classifier_filename, double face_size_min_m,
+                                  double face_size_max_m, double max_face_z_m, double face_sep_dist_m);
 
   /*!
    * \brief Initialize the face detector with images and depth.
@@ -167,13 +157,13 @@ public:
    * \param num_cascades Should always be 1 (may change in the future.)
    * \param haar_classifier_filename Full path to the cascade file.
    */
-  void initFaceDetectionDepth(uint num_cascades, string haar_classifier_filename, double face_size_min_m, double face_size_max_m, double max_face_z_m, double face_sep_dist_m);
+  void initFaceDetectionDepth(uint num_cascades, std::string haar_classifier_filename, double face_size_min_m,
+                              double face_size_max_m, double max_face_z_m, double face_sep_dist_m);
 
 ////////////////////
 private:
-
-  vector<Face> list_;  /**< The list of face ids. */
-  vector<Box2D3D> faces_; /**< The list of face positions. */
+  std::vector<Face> list_;  /**< The list of face ids. */
+  std::vector<Box2D3D> faces_; /**< The list of face positions. */
 
   cv::Mat cv_image_gray_;  /**< Grayscale image */
   cv::Mat const* disparity_image_; /**< Disparity image */
@@ -192,10 +182,7 @@ private:
 
   void faceDetectionThreadDisparity(uint i);
   void faceDetectionThreadDepth(uint i);
-
 };
+}  // namespace people
 
-};
-
-#endif
-
+#endif  // FACE_DETECTOR_FACES_H

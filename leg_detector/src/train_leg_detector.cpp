@@ -42,21 +42,21 @@
 #include <people_msgs/PositionMeasurement.h>
 #include <sensor_msgs/LaserScan.h>
 
-using namespace std;
-using namespace laser_processor;
-using namespace ros;
+#include <list>
+#include <string>
+#include <vector>
 
 enum LoadType {LOADING_NONE, LOADING_POS, LOADING_NEG, LOADING_TEST};
 
 class TrainLegDetector
 {
 public:
-  ScanMask mask_;
+  laser_processor::ScanMask mask_;
   int mask_count_;
 
-  vector< vector<float> > pos_data_;
-  vector< vector<float> > neg_data_;
-  vector< vector<float> > test_data_;
+  std::vector< std::vector<float> > pos_data_;
+  std::vector< std::vector<float> > neg_data_;
+  std::vector< std::vector<float> > test_data_;
 
   CvRTrees forest;
 
@@ -96,28 +96,28 @@ public:
         switch (load)
         {
         case LOADING_POS:
-          p.addHandler<sensor_msgs::LaserScan>(string("*"), &TrainLegDetector::loadCb, this, &pos_data_);
+          p.addHandler<sensor_msgs::LaserScan>(std::string("*"), &TrainLegDetector::loadCb, this, &pos_data_);
           break;
         case LOADING_NEG:
-          mask_count_ = 1000; // effectively disable masking
-          p.addHandler<sensor_msgs::LaserScan>(string("*"), &TrainLegDetector::loadCb, this, &neg_data_);
+          mask_count_ = 1000;  // effectively disable masking
+          p.addHandler<sensor_msgs::LaserScan>(std::string("*"), &TrainLegDetector::loadCb, this, &neg_data_);
           break;
         case LOADING_TEST:
-          p.addHandler<sensor_msgs::LaserScan>(string("*"), &TrainLegDetector::loadCb, this, &test_data_);
+          p.addHandler<sensor_msgs::LaserScan>(std::string("*"), &TrainLegDetector::loadCb, this, &test_data_);
           break;
         default:
           break;
         }
 
         while (p.nextMsg())
-          {}
+        {}
       }
     }
   }
 
-  void loadCb(string name, sensor_msgs::LaserScan* scan, ros::Time t, ros::Time t_no_use, void* n)
+  void loadCb(std::string name, sensor_msgs::LaserScan* scan, ros::Time t, ros::Time t_no_use, void* n)
   {
-    vector< vector<float> >* data = (vector< vector<float> >*)(n);
+    std::vector< std::vector<float> >* data = (std::vector< std::vector<float> >*)(n);
 
     if (mask_count_++ < 20)
     {
@@ -125,11 +125,11 @@ public:
     }
     else
     {
-      ScanProcessor processor(*scan, mask_);
+      laser_processor::ScanProcessor processor(*scan, mask_);
       processor.splitConnected(connected_thresh_);
       processor.removeLessThan(5);
 
-      for (list<SampleSet*>::iterator i = processor.getClusters().begin();
+      for (std::list<laser_processor::SampleSet*>::iterator i = processor.getClusters().begin();
            i != processor.getClusters().end();
            i++)
         data->push_back(calcLegFeatures(*i, *scan));
@@ -146,11 +146,11 @@ public:
 
     // Put positive data in opencv format.
     int j = 0;
-    for (vector< vector<float> >::iterator i = pos_data_.begin();
+    for (std::vector< std::vector<float> >::iterator i = pos_data_.begin();
          i != pos_data_.end();
          i++)
     {
-      float* data_row = (float*)(cv_data->data.ptr + cv_data->step * j);
+      float* data_row = reinterpret_cast<float*>(cv_data->data.ptr + cv_data->step * j);
       for (int k = 0; k < feat_count_; k++)
         data_row[k] = (*i)[k];
 
@@ -159,11 +159,11 @@ public:
     }
 
     // Put negative data in opencv format.
-    for (vector< vector<float> >::iterator i = neg_data_.begin();
+    for (std::vector< std::vector<float> >::iterator i = neg_data_.begin();
          i != neg_data_.end();
          i++)
     {
-      float* data_row = (float*)(cv_data->data.ptr + cv_data->step * j);
+      float* data_row = reinterpret_cast<float*>(cv_data->data.ptr + cv_data->step * j);
       for (int k = 0; k < feat_count_; k++)
         data_row[k] = (*i)[k];
 
@@ -195,12 +195,12 @@ public:
 
     int pos_right = 0;
     int pos_total = 0;
-    for (vector< vector<float> >::iterator i = pos_data_.begin();
+    for (std::vector< std::vector<float> >::iterator i = pos_data_.begin();
          i != pos_data_.end();
          i++)
     {
       for (int k = 0; k < feat_count_; k++)
-        tmp_mat->data.fl[k] = (float)((*i)[k]);
+        tmp_mat->data.fl[k] = static_cast<float>((*i)[k]);
       if (forest.predict(tmp_mat) > 0)
         pos_right++;
       pos_total++;
@@ -208,12 +208,12 @@ public:
 
     int neg_right = 0;
     int neg_total = 0;
-    for (vector< vector<float> >::iterator i = neg_data_.begin();
+    for (std::vector< std::vector<float> >::iterator i = neg_data_.begin();
          i != neg_data_.end();
          i++)
     {
       for (int k = 0; k < feat_count_; k++)
-        tmp_mat->data.fl[k] = (float)((*i)[k]);
+        tmp_mat->data.fl[k] = static_cast<float>((*i)[k]);
       if (forest.predict(tmp_mat) < 0)
         neg_right++;
       neg_total++;
@@ -221,23 +221,22 @@ public:
 
     int test_right = 0;
     int test_total = 0;
-    for (vector< vector<float> >::iterator i = test_data_.begin();
+    for (std::vector< std::vector<float> >::iterator i = test_data_.begin();
          i != test_data_.end();
          i++)
     {
       for (int k = 0; k < feat_count_; k++)
-        tmp_mat->data.fl[k] = (float)((*i)[k]);
+        tmp_mat->data.fl[k] = static_cast<float>((*i)[k]);
       if (forest.predict(tmp_mat) > 0)
         test_right++;
       test_total++;
     }
 
-    printf(" Pos train set: %d/%d %g\n", pos_right, pos_total, (float)(pos_right) / pos_total);
-    printf(" Neg train set: %d/%d %g\n", neg_right, neg_total, (float)(neg_right) / neg_total);
-    printf(" Test set:      %d/%d %g\n", test_right, test_total, (float)(test_right) / test_total);
+    printf(" Pos train set: %d/%d %g\n", pos_right, pos_total, static_cast<float>(pos_right) / pos_total);
+    printf(" Neg train set: %d/%d %g\n", neg_right, neg_total, static_cast<float>(neg_right) / neg_total);
+    printf(" Test set:      %d/%d %g\n", test_right, test_total, static_cast<float>(test_right) / test_total);
 
     cvReleaseMat(&tmp_mat);
-
   }
 
   void save(char* file)
