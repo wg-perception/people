@@ -34,22 +34,21 @@
 
 /* Author: Wim Meeussen */
 
-#include "people_tracking_filter/tracker_kalman.h"
+#include <people_tracking_filter/tracker_kalman.h>
+#include <algorithm>
+#include <string>
 
-using namespace MatrixWrapper;
-using namespace BFL;
-using namespace tf;
-using namespace std;
-using namespace ros;
-
-
-const static double damping_velocity = 0.9;
-
+static const double damping_velocity = 0.9;
 
 namespace estimation
 {
+
+using MatrixWrapper::Matrix;
+using MatrixWrapper::ColumnVector;
+using MatrixWrapper::SymmetricMatrix;
+
 // constructor
-TrackerKalman::TrackerKalman(const string& name, const StatePosVel& sysnoise):
+TrackerKalman::TrackerKalman(const std::string& name, const BFL::StatePosVel& sysnoise):
   Tracker(name),
   filter_(NULL),
   sys_pdf_(NULL),
@@ -75,10 +74,9 @@ TrackerKalman::TrackerKalman(const string& name, const StatePosVel& sysnoise):
     sys_sigma_(i + 1, i + 1) = pow(sysnoise.pos_[i], 2);
     sys_sigma_(i + 4, i + 4) = pow(sysnoise.vel_[i], 2);
   }
-  Gaussian sys_noise(sys_mu, sys_sigma_);
-  sys_pdf_   = new LinearAnalyticConditionalGaussian(sys_matrix_, sys_noise);
-  sys_model_ = new LinearAnalyticSystemModelGaussianUncertainty(sys_pdf_);
-
+  BFL::Gaussian sys_noise(sys_mu, sys_sigma_);
+  sys_pdf_   = new BFL::LinearAnalyticConditionalGaussian(sys_matrix_, sys_noise);
+  sys_model_ = new BFL::LinearAnalyticSystemModelGaussianUncertainty(sys_pdf_);
 
   // create meas model
   Matrix meas_matrix(3, 6);
@@ -92,12 +90,10 @@ TrackerKalman::TrackerKalman(const string& name, const StatePosVel& sysnoise):
   meas_sigma = 0;
   for (unsigned int i = 0; i < 3; i++)
     meas_sigma(i + 1, i + 1) = 0;
-  Gaussian meas_noise(meas_mu, meas_sigma);
-  meas_pdf_   = new LinearAnalyticConditionalGaussian(meas_matrix, meas_noise);
-  meas_model_ = new LinearAnalyticMeasurementModelGaussianUncertainty(meas_pdf_);
+  BFL::Gaussian meas_noise(meas_mu, meas_sigma);
+  meas_pdf_   = new BFL::LinearAnalyticConditionalGaussian(meas_matrix, meas_noise);
+  meas_model_ = new BFL::LinearAnalyticMeasurementModelGaussianUncertainty(meas_pdf_);
 };
-
-
 
 // destructor
 TrackerKalman::~TrackerKalman()
@@ -109,10 +105,8 @@ TrackerKalman::~TrackerKalman()
   if (meas_model_)  delete meas_model_;
 };
 
-
-
 // initialize prior density of filter
-void TrackerKalman::initialize(const StatePosVel& mu, const StatePosVel& sigma, const double time)
+void TrackerKalman::initialize(const BFL::StatePosVel& mu, const BFL::StatePosVel& sigma, const double time)
 {
   ColumnVector mu_vec(6);
   SymmetricMatrix sigma_vec(6);
@@ -124,8 +118,8 @@ void TrackerKalman::initialize(const StatePosVel& mu, const StatePosVel& sigma, 
     sigma_vec(i + 1, i + 1) = pow(sigma.pos_[i], 2);
     sigma_vec(i + 4, i + 4) = pow(sigma.vel_[i], 2);
   }
-  prior_ = Gaussian(mu_vec, sigma_vec);
-  filter_ = new ExtendedKalmanFilter(&prior_);
+  prior_ = BFL::Gaussian(mu_vec, sigma_vec);
+  filter_ = new BFL::ExtendedKalmanFilter(&prior_);
 
   // tracker initialized
   tracker_initialized_ = true;
@@ -133,9 +127,6 @@ void TrackerKalman::initialize(const StatePosVel& mu, const StatePosVel& sigma, 
   filter_time_ = time;
   init_time_ = time;
 }
-
-
-
 
 // update filter prediction
 bool TrackerKalman::updatePrediction(const double time)
@@ -160,8 +151,6 @@ bool TrackerKalman::updatePrediction(const double time)
   return res;
 };
 
-
-
 // update filter correction
 bool TrackerKalman::updateCorrection(const tf::Vector3&  meas, const MatrixWrapper::SymmetricMatrix& cov)
 {
@@ -173,7 +162,7 @@ bool TrackerKalman::updateCorrection(const tf::Vector3&  meas, const MatrixWrapp
     meas_vec(i + 1) = meas[i];
 
   // set covariance
-  ((LinearAnalyticConditionalGaussian*)(meas_model_->MeasurementPdfGet()))->AdditiveNoiseSigmaSet(cov);
+  static_cast<BFL::LinearAnalyticConditionalGaussian*>(meas_model_->MeasurementPdfGet())->AdditiveNoiseSigmaSet(cov);
 
   // update filter
   bool res = filter_->Update(meas_model_, meas_vec);
@@ -183,8 +172,7 @@ bool TrackerKalman::updateCorrection(const tf::Vector3&  meas, const MatrixWrapp
   return res;
 };
 
-
-void TrackerKalman::getEstimate(StatePosVel& est) const
+void TrackerKalman::getEstimate(BFL::StatePosVel& est) const
 {
   ColumnVector tmp = filter_->PostGet()->ExpectedValueGet();
   for (unsigned int i = 0; i < 3; i++)
@@ -193,7 +181,6 @@ void TrackerKalman::getEstimate(StatePosVel& est) const
     est.vel_[i] = tmp(i + 4);
   }
 };
-
 
 void TrackerKalman::getEstimate(people_msgs::PositionMeasurement& est) const
 {
@@ -207,19 +194,15 @@ void TrackerKalman::getEstimate(people_msgs::PositionMeasurement& est) const
   est.object_id = getName();
 }
 
-
-
-
 double TrackerKalman::calculateQuality()
 {
   double sigma_max = 0;
   SymmetricMatrix cov = filter_->PostGet()->CovarianceGet();
   for (unsigned int i = 1; i <= 2; i++)
-    sigma_max = max(sigma_max, sqrt(cov(i, i)));
+    sigma_max = std::max(sigma_max, sqrt(cov(i, i)));
 
-  return 1.0 - min(1.0, sigma_max / 1.5);
+  return 1.0 - std::min(1.0, sigma_max / 1.5);
 }
-
 
 double TrackerKalman::getLifetime() const
 {
@@ -236,7 +219,4 @@ double TrackerKalman::getTime() const
   else
     return 0;
 }
-
-}; // namespace
-
-
+}   // namespace estimation

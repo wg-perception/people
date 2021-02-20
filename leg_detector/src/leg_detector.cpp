@@ -60,21 +60,12 @@
 #include <string>
 #include <vector>
 
-using namespace laser_processor;
-using namespace ros;
-using namespace tf;
-using namespace estimation;
-using namespace BFL;
-using namespace MatrixWrapper;
-using namespace cv;
-
-
 static double no_observation_timeout_s = 0.5;
 static double max_second_leg_age_s     = 2.0;
 static double max_track_jump_m         = 1.0;
 static double max_meas_jump_m          = 0.75;  // 1.0
 static double leg_pair_separation_m    = 1.0;
-static std::string fixed_frame         = "odom_combined";
+static const char* fixed_frame         = "odom_combined";
 
 static double kal_p = 4, kal_q = .002, kal_r = 10;
 static bool use_filter = true;
@@ -84,10 +75,10 @@ class SavedFeature
 {
 public:
   static int nextid;
-  TransformListener& tfl_;
+  tf::TransformListener& tfl_;
 
   BFL::StatePosVel sys_sigma_;
-  TrackerKalman filter_;
+  estimation::TrackerKalman filter_;
 
   std::string id_;
   std::string object_id;
@@ -101,14 +92,14 @@ public:
   float dist_to_person_;
 
   // one leg tracker
-  SavedFeature(tf::Stamped<tf::Point> loc, TransformListener& tfl)
+  SavedFeature(tf::Stamped<tf::Point> loc, tf::TransformListener& tfl)
     : tfl_(tfl),
-      sys_sigma_(Vector3(0.05, 0.05, 0.05), Vector3(1.0, 1.0, 1.0)),
+      sys_sigma_(tf::Vector3(0.05, 0.05, 0.05), tf::Vector3(1.0, 1.0, 1.0)),
       filter_("tracker_name", sys_sigma_),
       reliability(-1.), p(4)
   {
     char id[100];
-    snprintf(id, 100, "legtrack%d", nextid++);
+    snprintf(id, sizeof(id), "legtrack%d", nextid++);
     id_ = std::string(id);
 
     object_id = "";
@@ -124,13 +115,13 @@ public:
     {
       ROS_WARN("TF exception spot 6.");
     }
-    StampedTransform pose(Pose(Quaternion(0.0, 0.0, 0.0, 1.0), loc), loc.stamp_, id_, loc.frame_id_);
+    tf::StampedTransform pose(tf::Pose(tf::Quaternion(0.0, 0.0, 0.0, 1.0), loc), loc.stamp_, id_, loc.frame_id_);
     tfl_.setTransform(pose);
 
-    StatePosVel prior_sigma(Vector3(0.1, 0.1, 0.1), Vector3(0.0000001, 0.0000001, 0.0000001));
+    BFL::StatePosVel prior_sigma(tf::Vector3(0.1, 0.1, 0.1), tf::Vector3(0.0000001, 0.0000001, 0.0000001));
     filter_.initialize(loc, prior_sigma, time_.toSec());
 
-    StatePosVel est;
+    BFL::StatePosVel est;
     filter_.getEstimate(est);
 
     updatePosition();
@@ -147,13 +138,13 @@ public:
 
   void update(tf::Stamped<tf::Point> loc, double probability)
   {
-    StampedTransform pose(Pose(Quaternion(0.0, 0.0, 0.0, 1.0), loc), loc.stamp_, id_, loc.frame_id_);
+    tf::StampedTransform pose(tf::Pose(tf::Quaternion(0.0, 0.0, 0.0, 1.0), loc), loc.stamp_, id_, loc.frame_id_);
     tfl_.setTransform(pose);
 
     meas_time_ = loc.stamp_;
     time_ = meas_time_;
 
-    SymmetricMatrix cov(3);
+    MatrixWrapper::SymmetricMatrix cov(3);
     cov = 0.0;
     cov(1, 1) = 0.0025;
     cov(2, 2) = 0.0025;
@@ -190,7 +181,7 @@ public:
 private:
   void updatePosition()
   {
-    StatePosVel est;
+    BFL::StatePosVel est;
     filter_.getEstimate(est);
 
     position_[0] = est.pos_[0];
@@ -211,12 +202,12 @@ int SavedFeature::nextid = 0;
 class MatchedFeature
 {
 public:
-  SampleSet* candidate_;
+  laser_processor::SampleSet* candidate_;
   SavedFeature* closest_;
   float distance_;
   double probability_;
 
-  MatchedFeature(SampleSet* candidate, SavedFeature* closest, float distance, double probability)
+  MatchedFeature(laser_processor::SampleSet* candidate, SavedFeature* closest, float distance, double probability)
     : candidate_(candidate)
     , closest_(closest)
     , distance_(distance)
@@ -239,11 +230,11 @@ char** g_argv;
 class LegDetector
 {
 public:
-  NodeHandle nh_;
+  ros::NodeHandle nh_;
 
-  TransformListener tfl_;
+  tf::TransformListener tfl_;
 
-  ScanMask mask_;
+  laser_processor::ScanMask mask_;
 
   int mask_count_;
 
@@ -278,7 +269,7 @@ public:
   tf::MessageFilter<people_msgs::PositionMeasurement> people_notifier_;
   tf::MessageFilter<sensor_msgs::LaserScan> laser_notifier_;
 
-  LegDetector(ros::NodeHandle nh) :
+  explicit LegDetector(ros::NodeHandle nh) :
     nh_(nh),
     mask_count_(0),
     feat_count_(0),
@@ -299,7 +290,7 @@ public:
     else
     {
       printf("Please provide a trained random forests classifier as an input.\n");
-      shutdown();
+      ros::shutdown();
     }
 
     nh_.param<bool>("use_seeds", use_seeds_, !true);
@@ -344,9 +335,9 @@ public:
     max_track_jump_m         = config.max_track_jump;
     max_meas_jump_m          = config.max_meas_jump;
     leg_pair_separation_m    = config.leg_pair_separation;
-    if (fixed_frame.compare(config.fixed_frame) != 0)
+    if (std::string(fixed_frame).compare(config.fixed_frame) != 0)
     {
-      fixed_frame              = config.fixed_frame;
+      fixed_frame              = config.fixed_frame.c_str();
       laser_notifier_.setTargetFrame(fixed_frame);
       people_notifier_.setTargetFrame(fixed_frame);
     }
@@ -419,7 +410,7 @@ public:
     }
 
     // Try to find one or two trackers with the same label and within the max distance of the person.
-    cout << "Looking for two legs" << endl;
+    std::cout << "Looking for two legs" << std::endl;
     it2 = end;
     for (it1 = begin; it1 != end; ++it1)
     {
@@ -446,7 +437,7 @@ public:
     // If we found two legs with the right label and within the max distance, all is good, return.
     if (it1 != end && it2 != end)
     {
-      cout << "Found matching pair. The second distance was " << (*it1)->dist_to_person_ << endl;
+      std::cout << "Found matching pair. The second distance was " << (*it1)->dist_to_person_ << std::endl;
       return;
     }
 
@@ -456,7 +447,7 @@ public:
     //   * doesn't yet have a label  (=valid precondition),
     //   * is within the max distance,
     //   * is less than max_second_leg_age_s old.
-    cout << "Looking for one leg plus one new leg" << endl;
+    std::cout << "Looking for one leg plus one new leg" << std::endl;
     float dist_between_legs, closest_dist_between_legs;
     if (it2 != end)
     {
@@ -496,20 +487,20 @@ public:
       // If we found a close, unlabeled leg, set it's label.
       if (closest != end)
       {
-        cout << "Replaced one leg with a distance of " << closest_dist
-             << " and a distance between the legs of " << closest_dist_between_legs << endl;
+        std::cout << "Replaced one leg with a distance of " << closest_dist
+                  << " and a distance between the legs of " << closest_dist_between_legs << std::endl;
         (*closest)->object_id = people_meas->object_id;
       }
       else
       {
-        cout << "Returned one matched leg only" << endl;
+        std::cout << "Returned one matched leg only" << std::endl;
       }
 
       // Regardless of whether we found a second leg, return.
       return;
     }
 
-    cout << "Looking for a pair of new legs" << endl;
+    std::cout << "Looking for a pair of new legs" << std::endl;
     // If we didn't find any legs with this person's label,
     // try to find two unlabeled legs that are close together and close to the tracker.
     it1 = saved_features_.begin();
@@ -569,21 +560,21 @@ public:
     {
       (*closest1)->object_id = people_meas->object_id;
       (*closest2)->object_id = people_meas->object_id;
-      cout << "Found a completely new pair with total distance " << closest_pair_dist
-           << " and a distance between the legs of " << closest_dist_between_legs << endl;
+      std::cout << "Found a completely new pair with total distance " << closest_pair_dist
+                << " and a distance between the legs of " << closest_dist_between_legs << std::endl;
       return;
     }
 
-    cout << "Looking for just one leg" << endl;
+    std::cout << "Looking for just one leg" << std::endl;
     // No pair worked, try for just one leg.
     if (closest != end)
     {
       (*closest)->object_id = people_meas->object_id;
-      cout << "Returned one new leg only" << endl;
+      std::cout << "Returned one new leg only" << std::endl;
       return;
     }
 
-    cout << "Nothing matched" << endl;
+    std::cout << "Nothing matched" << std::endl;
   }
 
   void pairLegs()
@@ -678,7 +669,7 @@ public:
       if (best1 != end)
       {
         char id[100];
-        snprintf(id, 100, "Person%d", next_p_id_++);
+        snprintf(id, sizeof(id), "Person%d", next_p_id_++);
         (*best1)->object_id = std::string(id);
         (*best2)->object_id = std::string(id);
         (*best1)->other = *best2;
@@ -693,7 +684,7 @@ public:
 
   void laserCallback(const sensor_msgs::LaserScan::ConstPtr& scan)
   {
-    ScanProcessor processor(*scan, mask_);
+    laser_processor::ScanProcessor processor(*scan, mask_);
 
     processor.splitConnected(connected_thresh_);
     processor.removeLessThan(5);
@@ -709,7 +700,7 @@ public:
       {
         if ((*sf_iter)->other)
           (*sf_iter)->other->other = NULL;
-        delete(*sf_iter);
+        delete *sf_iter;
         saved_features_.erase(sf_iter++);
       }
       else
@@ -732,7 +723,7 @@ public:
     // For each candidate, find the closest tracker (within threshold) and add to the match list
     // If no tracker is found, start a new one
     std::multiset<MatchedFeature> matches;
-    for (std::list<SampleSet*>::iterator i = processor.getClusters().begin();
+    for (std::list<laser_processor::SampleSet*>::iterator i = processor.getClusters().begin();
          i != processor.getClusters().end();
          i++)
     {
@@ -741,8 +732,8 @@ public:
       memcpy(tmp_mat.data, f.data(), f.size()*sizeof(float));
 
       float probability = 0.5 -
-	                  forest->predict(tmp_mat, cv::noArray(), cv::ml::RTrees::PREDICT_SUM) /
-	                  forest->getRoots().size();
+                          forest->predict(tmp_mat, cv::noArray(), cv::ml::RTrees::PREDICT_SUM) /
+                          forest->getRoots().size();
 
       tf::Stamped<tf::Point> loc((*i)->center(), scan->header.stamp, scan->header.frame_id);
       try

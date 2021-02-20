@@ -4,8 +4,6 @@ project(people_tracking_filter)
 # Look for bfl (Bayesian Filtering Library)
 find_package(PkgConfig)
 pkg_check_modules(BFL REQUIRED orocos-bfl)
-
-include_directories(${BFL_INCLUDE_DIRS}/bfl)
 link_directories(${BFL_LIBRARY_DIRS})
 
 find_package(catkin REQUIRED COMPONENTS
@@ -34,7 +32,7 @@ catkin_package(
 )
 
 include_directories(
-  include ${catkin_INCLUDE_DIRS}
+  include ${catkin_INCLUDE_DIRS} ${BFL_INCLUDE_DIRS}/bfl
 )
 
 add_library(people_tracking_filter
@@ -51,31 +49,33 @@ add_library(people_tracking_filter
             src/tracker_kalman.cpp
             src/detector_particle.cpp
 )
+add_dependencies(people_tracking_filter ${catkin_EXPORTED_TARGETS})
+target_link_libraries(people_tracking_filter ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${BFL_LIBRARIES})
 
 add_executable(people_tracker src/people_tracking_node.cpp)
-add_dependencies(people_tracker people_tracking_filter)
+add_dependencies(people_tracker people_tracking_filter ${catkin_EXPORTED_TARGETS})
 target_link_libraries(people_tracker
    people_tracking_filter ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${BFL_LIBRARIES}
 )
 
-target_link_libraries(people_tracking_filter ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${BFL_LIBRARIES})
+if(CATKIN_ENABLE_TESTING)
+  find_package(catkin REQUIRED COMPONENTS roslaunch roslint)
+  roslaunch_add_file_check(launch)
+  roslint_cpp()
+  roslint_add_test()
+endif()
 
-install(TARGETS ${PROJECT_NAME}
+install(TARGETS people_tracking_filter
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
 )
-
 install(TARGETS people_tracker
-        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
-
 install(DIRECTORY include/${PROJECT_NAME}/
         DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
 )
-
 install(DIRECTORY launch
-        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )

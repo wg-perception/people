@@ -34,12 +34,12 @@
 
 /* Author: Wim Meeussen */
 
-#ifndef MEASMODEL_POS_H
-#define MEASMODEL_POS_H
+#ifndef PEOPLE_TRACKING_FILTER_MEASMODEL_POS_H
+#define PEOPLE_TRACKING_FILTER_MEASMODEL_POS_H
 
-#include "state_pos_vel.h"
-#include "tf/tf.h"
-#include "gaussian_vector.h"
+#include <people_tracking_filter/state_pos_vel.h>
+#include <tf/tf.h>
+#include <people_tracking_filter/gaussian_vector.h>
 #include <bfl/model/measurementmodel.h>
 #include <bfl/pdf/conditionalpdf.h>
 #include <bfl/wrappers/matrix/matrix_wrapper.h>
@@ -47,13 +47,12 @@
 
 namespace BFL
 {
-
 class MeasPdfPos
   : public BFL::ConditionalPdf<tf::Vector3, StatePosVel>
 {
 public:
   /// Constructor
-  MeasPdfPos(const tf::Vector3& sigma);
+  explicit MeasPdfPos(const tf::Vector3& sigma);
 
   /// Destructor
   virtual ~MeasPdfPos();
@@ -64,26 +63,19 @@ public:
   // Redefining pure virtual methods
   virtual BFL::Probability ProbabilityGet(const tf::Vector3& input) const;
   virtual bool SampleFrom(BFL::Sample<tf::Vector3>& one_sample, int method, void *args) const;   // Not applicable
-  virtual tf::Vector3 ExpectedValueGet() const; // Not applicable
-  virtual MatrixWrapper::SymmetricMatrix  CovarianceGet() const; // Not applicable
-
+  virtual tf::Vector3 ExpectedValueGet() const;  // Not applicable
+  virtual MatrixWrapper::SymmetricMatrix  CovarianceGet() const;  // Not applicable
 
 private:
   GaussianVector meas_noise_;
-
-}; // class
-
-
-
-
-
+};  // class
 
 class MeasModelPos
   : public BFL::MeasurementModel<tf::Vector3, StatePosVel>
 {
 public:
   /// constructor
-  MeasModelPos(const tf::Vector3& sigma)
+  explicit MeasModelPos(const tf::Vector3& sigma)
     : BFL::MeasurementModel<tf::Vector3, StatePosVel>(new MeasPdfPos(sigma))
   {};
 
@@ -92,10 +84,6 @@ public:
   {
     delete MeasurementPdfGet();
   };
-
-}; // class
-
-} //namespace
-
-
-#endif
+};  // class
+}  // namespace BFL
+#endif  // PEOPLE_TRACKING_FILTER_MEASMODEL_POS_H

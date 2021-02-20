@@ -34,8 +34,8 @@
 
 /* Author: Wim Meeussen */
 
-#ifndef MCPDF_VECTOR_H
-#define MCPDF_VECTOR_H
+#ifndef PEOPLE_TRACKING_FILTER_MCPDF_VECTOR_H
+#define PEOPLE_TRACKING_FILTER_MCPDF_VECTOR_H
 
 #include <bfl/pdf/mcpdf.h>
 #include <tf/tf.h>
@@ -48,7 +48,7 @@ class MCPdfVector: public MCPdf<tf::Vector3>
 {
 public:
   /// Constructor
-  MCPdfVector(unsigned int num_samples);
+  explicit MCPdfVector(unsigned int num_samples);
 
   /// Destructor
   virtual ~MCPdfVector();
@@ -62,10 +62,6 @@ public:
   virtual tf::Vector3 ExpectedValueGet() const;
   virtual WeightedSample<tf::Vector3> SampleGet(unsigned int particle) const;
   virtual unsigned int numParticlesGet() const;
-
 };
-
-
-
-} // end namespace
-#endif
+}  // end namespace BFL
+#endif  // PEOPLE_TRACKING_FILTER_MCPDF_VECTOR_H
