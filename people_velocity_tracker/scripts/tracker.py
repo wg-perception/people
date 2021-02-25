@@ -93,6 +93,7 @@ class PersonEstimate(object):
         p.position = self.pos.pos
         p.velocity = self.velocity()
         p.reliability = self.reliability
+        p.position_measurement = self.pos
         return self.pos.header.frame_id, p
 
 
