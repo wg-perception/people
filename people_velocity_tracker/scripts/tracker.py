@@ -134,7 +134,7 @@ class VelocityTracker(object):
         pl = People()
         pl.header.frame_id = None
 
-        for p in self.people.values():
+        for p in list(self.people.values()):
             p.publish_markers(self.mpub)
             frame, person = p.get_person()
             pl.header.frame_id = frame
