@@ -32,7 +32,7 @@ catkin_package(
 )
 
 include_directories(
-  include ${catkin_INCLUDE_DIRS} ${BFL_INCLUDE_DIRS}/bfl
+  include ${catkin_INCLUDE_DIRS} ${BFL_INCLUDE_DIRS}/..
 )
 
 add_library(people_tracking_filter
