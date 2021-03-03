@@ -29,6 +29,7 @@
   <depend>stereo_image_proc</depend>
   <depend>stereo_msgs</depend>
   <depend>tf</depend>
+  <depend>yaml-cpp</depend>
 
   <build_depend>message_generation</build_depend>
   <build_export_depend>message_runtime</build_export_depend>

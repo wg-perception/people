@@ -24,6 +24,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 find_package(Boost REQUIRED COMPONENTS system thread)
 find_package(OpenCV)
+find_package(yaml-cpp REQUIRED)
 
 add_action_files(
   DIRECTORY action
