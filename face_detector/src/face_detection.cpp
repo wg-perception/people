@@ -716,7 +716,9 @@ private:
           else
           {
             max_id_++;
-            pos.object_id = static_cast<std::ostringstream*>(&(std::ostringstream() << max_id_))->str();
+            std::ostringstream oss;
+            oss << max_id_;
+            pos.object_id = oss.str();
             ROS_INFO_STREAM_NAMED("face_detector", "Didn't find face to match, starting new ID " << pos.object_id);
           }
           result_.face_positions.push_back(pos);
