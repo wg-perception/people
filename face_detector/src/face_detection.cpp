@@ -323,7 +323,8 @@ public:
         exact_depth_sync_.reset(new ExactDepthSync(ExactDepthPolicy(queue_size),
                                 image_sub_, depth_image_sub_, c1_info_sub_, c2_info_sub_));
         exact_depth_sync_->registerCallback(std::bind(&FaceDetector::imageCBAllDepth,
-                                            this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
+                                            this, std::placeholders::_1, std::placeholders::_2,
+                                            std::placeholders::_3, std::placeholders::_4));
       }
     }
     else
@@ -352,7 +353,8 @@ public:
         exact_disp_sync_.reset(new ExactDispSync(ExactDispPolicy(queue_size),
                                image_sub_, disp_image_sub_, c1_info_sub_, c2_info_sub_));
         exact_disp_sync_->registerCallback(std::bind(&FaceDetector::imageCBAllDisp,
-                                           this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
+                                           this, std::placeholders::_1, std::placeholders::_2,
+                                           std::placeholders::_3, std::placeholders::_4));
       }
     }
 
