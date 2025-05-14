@@ -254,8 +254,8 @@ public:
     ROS_INFO_STREAM_NAMED("face_detector", "Constructing FaceDetector.");
 
     // Action stuff
-    as_.registerGoalCallback(boost::bind(&FaceDetector::goalCB, this));
-    as_.registerPreemptCallback(boost::bind(&FaceDetector::preemptCB, this));
+    as_.registerGoalCallback(std::bind(&FaceDetector::goalCB, this));
+    as_.registerPreemptCallback(std::bind(&FaceDetector::preemptCB, this));
     as_.start();
 
     faces_ = new Faces();
@@ -315,15 +315,16 @@ public:
       {
         approximate_depth_sync_.reset(new ApproximateDepthSync(ApproximateDepthPolicy(queue_size),
                                       image_sub_, depth_image_sub_, c1_info_sub_, c2_info_sub_));
-        approximate_depth_sync_->registerCallback(boost::bind(&FaceDetector::imageCBAllDepth,
-            this, _1, _2, _3, _4));
+        approximate_depth_sync_->registerCallback(std::bind(&FaceDetector::imageCBAllDepth,
+            this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
       }
       else
       {
         exact_depth_sync_.reset(new ExactDepthSync(ExactDepthPolicy(queue_size),
                                 image_sub_, depth_image_sub_, c1_info_sub_, c2_info_sub_));
-        exact_depth_sync_->registerCallback(boost::bind(&FaceDetector::imageCBAllDepth,
-                                            this, _1, _2, _3, _4));
+        exact_depth_sync_->registerCallback(std::bind(&FaceDetector::imageCBAllDepth,
+                                            this, std::placeholders::_1, std::placeholders::_2,
+                                            std::placeholders::_3, std::placeholders::_4));
       }
     }
     else
@@ -344,21 +345,22 @@ public:
       {
         approximate_disp_sync_.reset(new ApproximateDispSync(ApproximateDispPolicy(queue_size),
                                      image_sub_, disp_image_sub_, c1_info_sub_, c2_info_sub_));
-        approximate_disp_sync_->registerCallback(boost::bind(&FaceDetector::imageCBAllDisp,
-            this, _1, _2, _3, _4));
+        approximate_disp_sync_->registerCallback(std::bind(&FaceDetector::imageCBAllDisp,
+            this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
       }
       else
       {
         exact_disp_sync_.reset(new ExactDispSync(ExactDispPolicy(queue_size),
                                image_sub_, disp_image_sub_, c1_info_sub_, c2_info_sub_));
-        exact_disp_sync_->registerCallback(boost::bind(&FaceDetector::imageCBAllDisp,
-                                           this, _1, _2, _3, _4));
+        exact_disp_sync_->registerCallback(std::bind(&FaceDetector::imageCBAllDisp,
+                                           this, std::placeholders::_1, std::placeholders::_2,
+                                           std::placeholders::_3, std::placeholders::_4));
       }
     }
 
     // Connection callbacks and advertise
-    ros::SubscriberStatusCallback pos_pub_connect_cb = boost::bind(&FaceDetector::connectCb, this);
-    ros::SubscriberStatusCallback cloud_pub_connect_cb = boost::bind(&FaceDetector::connectCb, this);
+    ros::SubscriberStatusCallback pos_pub_connect_cb = std::bind(&FaceDetector::connectCb, this);
+    ros::SubscriberStatusCallback cloud_pub_connect_cb = std::bind(&FaceDetector::connectCb, this);
     if (do_continuous_)
       ROS_INFO_STREAM_NAMED("face_detector", "You must subscribe to one of FaceDetector's outbound topics "
                                              "or else it will not publish anything.");

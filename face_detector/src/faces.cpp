@@ -99,7 +99,7 @@ void Faces::initFaceDetectionDisparity(uint num_cascades, std::string haar_class
     ROS_ERROR_STREAM("Cascade file " << haar_classifier_filename << " doesn't exist.");
     return;
   }
-  threads_.create_thread(boost::bind(&Faces::faceDetectionThreadDisparity, this, 0));
+  threads_.create_thread(std::bind(&Faces::faceDetectionThreadDisparity, this, 0));
 }
 
 /////
@@ -269,7 +269,7 @@ void Faces::initFaceDetectionDepth(uint num_cascades, std::string haar_classifie
     ROS_ERROR_STREAM("Cascade file " << haar_classifier_filename << " doesn't exist.");
     return;
   }
-  threads_.create_thread(boost::bind(&Faces::faceDetectionThreadDepth, this, 0));
+  threads_.create_thread(std::bind(&Faces::faceDetectionThreadDepth, this, 0));
 }
 
 /////
