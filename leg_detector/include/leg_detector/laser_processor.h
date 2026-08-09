@@ -73,7 +73,7 @@ struct CompareSample
 {
   CompareSample() {}
 
-  inline bool operator()(const Sample* a, const Sample* b)
+  inline bool operator()(const Sample* a, const Sample* b) const
   {
     return (a->index <  b->index);
   }

@@ -302,15 +302,13 @@ public:
 
     if (use_seeds_)
     {
-      people_notifier_.registerCallback(boost::bind(&LegDetector::peopleCallback, this, _1));
+      people_notifier_.registerCallback([this](auto msg){ peopleCallback(msg); });
       people_notifier_.setTolerance(ros::Duration(0.01));
     }
-    laser_notifier_.registerCallback(boost::bind(&LegDetector::laserCallback, this, _1));
+    laser_notifier_.registerCallback([this](auto scan){ laserCallback(scan); });
     laser_notifier_.setTolerance(ros::Duration(0.01));
 
-    dynamic_reconfigure::Server<leg_detector::LegDetectorConfig>::CallbackType f;
-    f = boost::bind(&LegDetector::configure, this, _1, _2);
-    server_.setCallback(f);
+    server_.setCallback([this](auto& config, uint32_t level){ configure(config, level); });
 
     feature_id_ = 0;
   }
@@ -731,9 +729,12 @@ public:
 
       memcpy(tmp_mat.data, f.data(), f.size()*sizeof(float));
 
-      float probability = 0.5 -
-                          forest->predict(tmp_mat, cv::noArray(), cv::ml::RTrees::PREDICT_SUM) /
-                          forest->getRoots().size();
+      cv::Mat votes;
+
+      forest->getVotes(tmp_mat, votes, 0);
+      // first row of columns cotains class labels. Here -1 and 1.
+      // second row then contains the number of trees voting for this class.
+      float probability = static_cast<float>(votes.at<int>(1, 1)) / static_cast<float>(forest->getRoots().size());
 
       tf::Stamped<tf::Point> loc((*i)->center(), scan->header.stamp, scan->header.frame_id);
       try

@@ -22,7 +22,7 @@ find_package(catkin REQUIRED COMPONENTS
         tf
 )
 
-find_package(Boost REQUIRED COMPONENTS system thread)
+find_package(Boost REQUIRED COMPONENTS thread)
 find_package(OpenCV)
 find_package(yaml-cpp REQUIRED)
 

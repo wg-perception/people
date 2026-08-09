@@ -316,14 +316,15 @@ public:
         approximate_depth_sync_.reset(new ApproximateDepthSync(ApproximateDepthPolicy(queue_size),
                                       image_sub_, depth_image_sub_, c1_info_sub_, c2_info_sub_));
         approximate_depth_sync_->registerCallback(boost::bind(&FaceDetector::imageCBAllDepth,
-            this, _1, _2, _3, _4));
+            this, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3, boost::placeholders::_4));
       }
       else
       {
         exact_depth_sync_.reset(new ExactDepthSync(ExactDepthPolicy(queue_size),
                                 image_sub_, depth_image_sub_, c1_info_sub_, c2_info_sub_));
         exact_depth_sync_->registerCallback(boost::bind(&FaceDetector::imageCBAllDepth,
-                                            this, _1, _2, _3, _4));
+                                            this, boost::placeholders::_1, boost::placeholders::_2,
+                                            boost::placeholders::_3, boost::placeholders::_4));
       }
     }
     else
@@ -345,14 +346,15 @@ public:
         approximate_disp_sync_.reset(new ApproximateDispSync(ApproximateDispPolicy(queue_size),
                                      image_sub_, disp_image_sub_, c1_info_sub_, c2_info_sub_));
         approximate_disp_sync_->registerCallback(boost::bind(&FaceDetector::imageCBAllDisp,
-            this, _1, _2, _3, _4));
+            this, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3, boost::placeholders::_4));
       }
       else
       {
         exact_disp_sync_.reset(new ExactDispSync(ExactDispPolicy(queue_size),
                                image_sub_, disp_image_sub_, c1_info_sub_, c2_info_sub_));
         exact_disp_sync_->registerCallback(boost::bind(&FaceDetector::imageCBAllDisp,
-                                           this, _1, _2, _3, _4));
+                                           this, boost::placeholders::_1, boost::placeholders::_2,
+                                           boost::placeholders::_3, boost::placeholders::_4));
       }
     }
 
@@ -716,7 +718,9 @@ private:
           else
           {
             max_id_++;
-            pos.object_id = static_cast<std::ostringstream*>(&(std::ostringstream() << max_id_))->str();
+            std::ostringstream oss;
+            oss << max_id_;
+            pos.object_id = oss.str();
             ROS_INFO_STREAM_NAMED("face_detector", "Didn't find face to match, starting new ID " << pos.object_id);
           }
           result_.face_positions.push_back(pos);
